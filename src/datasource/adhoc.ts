@@ -1,3 +1,5 @@
+import { CustomFilterMap, CustomFilterValue } from '../types/types';
+
 export const DEFAULT_VALUES_QUERY = 'SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300';
 export default class AdHocFilter {
   tagKeys: any[];
@@ -5,6 +7,8 @@ export default class AdHocFilter {
   datasource: any;
   query: string;
   adHocValuesQuery: string;
+  customFilterMaps: CustomFilterMap[];
+  useCustomFilterMaps: boolean;
 
   constructor(datasource: any) {
     const queryFilter = "database NOT IN ('system','INFORMATION_SCHEMA','information_schema')";
@@ -15,6 +19,8 @@ export default class AdHocFilter {
     this.tagValues = [];
     this.datasource = datasource;
     this.adHocValuesQuery = datasource.adHocValuesQuery;
+    this.useCustomFilterMaps = datasource.useCustomFilterMaps || false;
+    this.customFilterMaps = datasource.customFilterMaps || [];
     let filter = queryFilter;
     if (datasource.defaultDatabase.length > 0) {
       filter = "database = '" + datasource.defaultDatabase + "'";
@@ -22,12 +28,66 @@ export default class AdHocFilter {
     this.query = columnsQuery.replace('{filter}', filter);
   }
 
+  /**
+   * Returns tag keys from custom filter maps
+   * @returns Promise<any[]> Array of tag key objects with text and value properties
+   */
+  private getCustomTagKeys(): Promise<any[]> {
+    try {
+      const tagKeys = this.customFilterMaps
+        .filter((map) => map && map.id && map.label && map.key) // Filter out malformed maps
+        .map((map) => ({
+          text: map.label,
+          value: map.key
+        }));
+      
+      return Promise.resolve(tagKeys);
+    } catch (error) {
+      console.error('Error processing custom filter maps:', error);
+      return Promise.resolve([]);
+    }
+  }
+
+  /**
+   * Returns tag values for a specific custom filter map
+   * @param filterMap The custom filter map to get values from
+   * @returns Promise<any[]> Array of tag value objects with text and value properties
+   */
+  private getCustomTagValues(filterMap: CustomFilterMap): Promise<any[]> {
+    try {
+      if (!filterMap || !filterMap.values || !Array.isArray(filterMap.values)) {
+        return Promise.resolve([]);
+      }
+
+      const tagValues = filterMap.values.map((value: CustomFilterValue) => ({
+        text: value.label,
+        value: value.value
+      }));
+
+      return Promise.resolve(tagValues);
+    } catch (error) {
+      console.error('Error processing custom filter map values:', error);
+      return Promise.resolve([]);
+    }
+  }
+
   // GetTagKeys fetches columns from CH tables according to provided filters
   // if no filters applied all tables from all databases will be fetched
   // if datasource setting `defaultDatabase` is set only tables from that database will be fetched
   // if query param passed it will be performed instead of default
+  // If custom filter maps are enabled and available, returns custom tag keys instead
   GetTagKeys(query?: string) {
     let self = this;
+    
+    // Check for custom filter maps first
+    if (this.useCustomFilterMaps && this.customFilterMaps.length > 0) {
+      return this.getCustomTagKeys().then(function (customTagKeys) {
+        self.tagKeys = customTagKeys;
+        return customTagKeys;
+      });
+    }
+    
+    // Fallback to auto-discovery
     if (this.tagKeys.length > 0) {
       return Promise.resolve(this.tagKeys);
     }
@@ -79,7 +139,15 @@ export default class AdHocFilter {
   // GetTagValues returns column values according to passed options
   // Values for fields with Enum type were already fetched in GetTagKeys func and stored in `tagValues`
   // Values for fields which not represented on `tagValues` get from ClickHouse and cached on `tagValues`
+  // If custom filter maps are enabled, checks for matching custom filter map first
   async GetTagValues(options) {
+    // Check for custom filter maps first
+    if (this.useCustomFilterMaps && this.customFilterMaps.length > 0) {
+      const customMap = this.customFilterMaps.find((map) => map && map.key === options.key);
+      if (customMap) {
+        return this.getCustomTagValues(customMap);
+      }
+    }
     // Determine which query to use initially
     const initialQuery = this.adHocValuesQuery || DEFAULT_VALUES_QUERY;
     // Function to build the query
