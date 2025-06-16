@@ -61,6 +61,7 @@ Restart Grafana, check data sources list at Configuration -> Datasources -> New,
 * Table view
 * SingleStat view
 * Ad-hoc filters
+* Custom filter maps for ad-hoc filters
 * Annotations
 * Alerts support
 * Histogram support
@@ -1063,6 +1064,8 @@ You can make following query with `Table` formatting:
 
 ## Ad-hoc filters
 
+### Traditional Auto-Discovery Mode
+
 If there is an Ad-hoc variable, plugin will fetch all columns of all tables of all databases (except system database) as tags.
 So in dropdown menu will be options like `database.table.column`. If you specify the default database it will only fetch tables and columns from that database, and the dropdown menu will have an option like `table.column`.
 If there are ENUM columns, the plugin will fetch their options and use them as tag values.
@@ -1088,6 +1091,45 @@ SELECT database, table, name, type FROM system.columns WHERE table='myTable' ORD
 ```
 
 That should help to control data fetching by ad-hoc queries.
+
+### Custom Filter Maps Mode
+
+For better performance and control over available filters, you can now use **Custom Filter Maps** instead of auto-discovery. This feature allows you to define specific filter options manually, avoiding expensive queries against `system.columns` on large databases.
+
+#### Benefits of Custom Filter Maps:
+- **Performance**: No system queries, faster dashboard loading
+- **Control**: Show only relevant filters to users
+- **User Experience**: Provide meaningful labels and descriptions
+- **Security**: Prevent exposure of internal database structure
+
+#### Configuration:
+1. In datasource settings, go to "Additional" section
+2. Enable "Use Custom Filter Maps"
+3. Define your filter maps with:
+   - **Label**: User-friendly display name
+   - **Field Key**: Database column name
+   - **Values**: Available filter options with labels
+   - **Description**: Optional explanation
+
+#### Example Configuration:
+```json
+[
+  {
+    "id": "priority",
+    "label": "Task Priority",
+    "key": "priority",
+    "values": [
+      { "label": "Critical", "value": "critical" },
+      { "label": "High", "value": "high" },
+      { "label": "Medium", "value": "medium" },
+      { "label": "Low", "value": "low" }
+    ],
+    "description": "Priority level for tasks"
+  }
+]
+```
+
+For detailed documentation, see [Custom Filter Maps Guide](docs/CUSTOM_FILTER_MAPS.md).
 
 ## Template variable values via Query
 

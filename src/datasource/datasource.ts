@@ -18,7 +18,7 @@ import {
 } from '@grafana/data';
 import { BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
-import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
+import {CHDataSourceOptions, CHQuery, CustomFilterMap, DatasourceMode, DEFAULT_QUERY} from '../types/types';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, Observable } from 'rxjs';
@@ -52,6 +52,8 @@ export class CHDataSource
   adHocHideTableNames: boolean;
   uid: string;
   datasourceMode?: DatasourceMode;
+  useCustomFilterMaps: boolean;
+  customFilterMaps: CustomFilterMap[];
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
@@ -71,6 +73,8 @@ export class CHDataSource
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
     this.xClickHouseSSLCertificateAuth = instanceSettings.jsonData.xClickHouseSSLCertificateAuth || false;
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
+    this.useCustomFilterMaps = instanceSettings.jsonData?.useCustomFilterMaps || false;
+    this.customFilterMaps = instanceSettings.jsonData?.customFilterMaps || [];
     if (instanceSettings.jsonData.useDefaultConfiguration) {
       this.defaultValues = {
         dateTime: {
@@ -93,6 +97,11 @@ export class CHDataSource
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);
     this.responseParser = new ResponseParser();
+    
+    // Log custom filter maps initialization
+    if (this.useCustomFilterMaps) {
+      console.log('CHDataSource: Custom filter maps enabled with', this.customFilterMaps.length, 'filter maps');
+    }
     this.variables = {
       getType(): VariableSupportType {
         return VariableSupportType.Custom;

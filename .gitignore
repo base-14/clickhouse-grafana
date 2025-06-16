@@ -57,6 +57,9 @@ venv/
 # aider
 .aider*
 
+# development scripts
+start-grafana-dev.sh
+
 # GopherJS generated files
 # src/datasource/backend_gopher.js
 # src/datasource/backend_gopher.js.map
