@@ -1,6 +1,16 @@
 import { CustomFilterMap, CustomFilterValue } from '../types/types';
 
 export const DEFAULT_VALUES_QUERY = 'SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300';
+
+export const DEFAULT_KEYS_QUERY = `SELECT DISTINCT arrayJoin(mapKeys(ResourceAttributes)) as attribute_key
+FROM otel_logs_local
+WHERE TimestampTime > now() - interval 1 hour
+ORDER BY attribute_key
+LIMIT 100`;
+
+export const DEFAULT_ADHOC_VALUES_QUERY = `SELECT DISTINCT arrayJoin(mapValues(ResourceAttributes)) as values 
+FROM {table} 
+WHERE {timefilter} AND {key} = '{selectedkey}'`;
 export default class AdHocFilter {
   tagKeys: any[];
   tagValues: { [key: string]: any } = {};
@@ -32,7 +42,7 @@ export default class AdHocFilter {
    * Returns tag keys from custom filter maps
    * @returns Promise<any[]> Array of tag key objects with text and value properties
    */
-  private getCustomTagKeys(): Promise<any[]> {
+  getCustomTagKeys(): Promise<any[]> {
     try {
       const tagKeys = this.customFilterMaps
         .filter((map) => map && map.id && map.label && map.key) // Filter out malformed maps
@@ -53,7 +63,7 @@ export default class AdHocFilter {
    * @param filterMap The custom filter map to get values from
    * @returns Promise<any[]> Array of tag value objects with text and value properties
    */
-  private getCustomTagValues(filterMap: CustomFilterMap): Promise<any[]> {
+  getCustomTagValues(filterMap: CustomFilterMap): Promise<any[]> {
     try {
       if (!filterMap || !filterMap.values || !Array.isArray(filterMap.values)) {
         return Promise.resolve([]);

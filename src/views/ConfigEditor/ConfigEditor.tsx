@@ -1,14 +1,13 @@
 import React, { FormEvent, useEffect, useState } from 'react';
 import { CodeEditor, DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput, Select } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, SelectableValue } from '@grafana/data';
-import { CHDataSourceOptions, CustomFilterMap } from '../../types/types';
+import { CHDataSourceOptions } from '../../types/types';
 import _ from 'lodash';
 import { DefaultValues } from './FormParts/DefaultValues/DefaultValues';
-import { CustomFilterMapsEditor } from './components/CustomFilterMapsEditor';
 import { LANGUAGE_ID } from '../QueryEditor/components/QueryTextEditor/editor/initiateEditor';
 import { MONACO_EDITOR_OPTIONS } from '../constants';
 import { COMPRESSION_TYPE_OPTIONS } from './constants';
-import { DEFAULT_VALUES_QUERY } from '../../datasource/adhoc';
+import { DEFAULT_VALUES_QUERY, DEFAULT_KEYS_QUERY, DEFAULT_ADHOC_VALUES_QUERY } from '../../datasource/adhoc';
 
 export interface CHSecureJsonData {
   password?: string;
@@ -20,11 +19,14 @@ interface Props extends DataSourcePluginOptionsEditorProps<CHDataSourceOptions> 
 export function ConfigEditor(props: Props) {
   const { onOptionsChange, options } = props;
   const newOptions = _.cloneDeep(options);
-  const { jsonData, secureJsonFields } = newOptions;
+  const { secureJsonFields } = newOptions;
+  const jsonData = newOptions.jsonData || {};
   const secureJsonData = (options.secureJsonData || {}) as CHSecureJsonData;
   const [selectedCompressionType, setSelectedCompressionType] = useState(jsonData.compressionType);
-  const [adHocValuesQuery, setAdHocValuesQuery] = useState(jsonData.adHocValuesQuery || DEFAULT_VALUES_QUERY);
-  const [customFilterMaps, setCustomFilterMaps] = useState<CustomFilterMap[]>(jsonData.customFilterMaps || []);
+  const [adHocValuesQuery, setAdHocValuesQuery] = useState(
+    jsonData.adHocValuesQuery || (jsonData.useCustomFilterMaps ? DEFAULT_ADHOC_VALUES_QUERY : DEFAULT_VALUES_QUERY)
+  );
+  const [adHocKeysQuery, setAdHocKeysQuery] = useState(jsonData.adHocKeysQuery || DEFAULT_KEYS_QUERY);
 
   useEffect(() => {
     jsonData.adHocValuesQuery = adHocValuesQuery;
@@ -38,7 +40,7 @@ export function ConfigEditor(props: Props) {
   }, [adHocValuesQuery]);
 
   useEffect(() => {
-    jsonData.customFilterMaps = customFilterMaps;
+    jsonData.adHocKeysQuery = adHocKeysQuery;
 
     onOptionsChange({
       ...newOptions,
@@ -46,7 +48,8 @@ export function ConfigEditor(props: Props) {
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customFilterMaps]);
+  }, [adHocKeysQuery]);
+
 
   // @todo remove when merged https://github.com/grafana/grafana/pull/80858
   if (newOptions.url !== '') {
@@ -230,31 +233,8 @@ export function ConfigEditor(props: Props) {
             options={COMPRESSION_TYPE_OPTIONS}
           />
         </InlineField>
-        <InlineField
-          label="Configure AdHoc Filters request"
-          labelWidth={32}
-          tooltip="To be able to configure request properfly please use macroses {field} {database} {table}"
-        >
-          <div style={{ position: 'relative', minWidth: '600px' }}>
-            <CodeEditor
-              height={Math.max((jsonData.adHocValuesQuery || '').split('\n').length * 18, 150)}
-              value={adHocValuesQuery}
-              language={LANGUAGE_ID}
-              monacoOptions={MONACO_EDITOR_OPTIONS}
-              onChange={setAdHocValuesQuery}
-            />
-          </div>
-        </InlineField>
-        <InlineField label="Hide table names in adhoc filters" labelWidth={32} tooltip="Applicable if you want adhoc with short filed names">
-          <InlineSwitch
-            data-test-id="adhoc-hide-table-names"
-            id="adhoc"
-            value={jsonData.adHocHideTableNames || false}
-            onChange={(e) => onSwitchToggle('adHocHideTableNames', e.currentTarget.checked)}
-          />
-        </InlineField>
         <InlineField 
-          label="Use Custom Filter Maps" 
+          label="Use maps instead of columns" 
           labelWidth={32}
           tooltip="Enable custom filter maps instead of auto-discovering all database columns. This improves performance and provides better control over available filters."
         >
@@ -265,13 +245,65 @@ export function ConfigEditor(props: Props) {
             onChange={(e) => onSwitchToggle('useCustomFilterMaps', e.currentTarget.checked)}
           />
         </InlineField>
-        {jsonData.useCustomFilterMaps && (
-          <div style={{ marginTop: '16px', padding: '16px', border: '1px solid #e3e3e3', borderRadius: '4px' }}>
-            <CustomFilterMapsEditor
-              customFilterMaps={customFilterMaps}
-              onChange={setCustomFilterMaps}
+        {jsonData.useCustomFilterMaps ? (
+          <>
+            <InlineField
+              label="Configure Adhoc Keys Request"
+              labelWidth={32}
+              tooltip="To be able to configure request properly please use macros {field} {database} {table}"
+            >
+              <div style={{ position: 'relative', minWidth: '600px' }}>
+                <CodeEditor
+                  height={Math.max((jsonData.adHocKeysQuery || '').split('\n').length * 18, 150)}
+                  value={adHocKeysQuery}
+                  language={LANGUAGE_ID}
+                  monacoOptions={MONACO_EDITOR_OPTIONS}
+                  onChange={setAdHocKeysQuery}
+                />
+              </div>
+            </InlineField>
+            <InlineField
+              label="Configure Adhoc Values Request"
+              labelWidth={32}
+              tooltip="To be able to configure request properly please use macros {field} {database} {table}"
+            >
+              <div style={{ position: 'relative', minWidth: '600px' }}>
+                <CodeEditor
+                  height={Math.max((jsonData.adHocValuesQuery || '').split('\n').length * 18, 150)}
+                  value={adHocValuesQuery}
+                  language={LANGUAGE_ID}
+                  monacoOptions={MONACO_EDITOR_OPTIONS}
+                  onChange={setAdHocValuesQuery}
+                />
+              </div>
+            </InlineField>
+          </>
+        ) : (
+          <InlineField
+            label="Configure Adhoc Filters Request"
+            labelWidth={32}
+            tooltip="To be able to configure request properly please use macros {field} {database} {table}"
+          >
+            <div style={{ position: 'relative', minWidth: '600px' }}>
+              <CodeEditor
+                height={Math.max((jsonData.adHocValuesQuery || DEFAULT_VALUES_QUERY).split('\n').length * 18, 150)}
+                value={adHocValuesQuery}
+                language={LANGUAGE_ID}
+                monacoOptions={MONACO_EDITOR_OPTIONS}
+                onChange={setAdHocValuesQuery}
+              />
+            </div>
+          </InlineField>
+        )}
+        {!jsonData.useCustomFilterMaps && (
+          <InlineField label="Hide table names in adhoc filters" labelWidth={32} tooltip="Applicable if you want adhoc with short filed names">
+            <InlineSwitch
+              data-test-id="adhoc-hide-table-names"
+              id="adhoc"
+              value={jsonData.adHocHideTableNames || false}
+              onChange={(e) => onSwitchToggle('adHocHideTableNames', e.currentTarget.checked)}
             />
-          </div>
+          </InlineField>
         )}
       </div>
     </>

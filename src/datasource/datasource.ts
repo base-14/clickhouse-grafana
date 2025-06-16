@@ -63,33 +63,34 @@ export class CHDataSource
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;
     this.withCredentials = instanceSettings.withCredentials;
-    this.addCorsHeader = instanceSettings.jsonData.addCorsHeader || false;
-    this.usePOST = instanceSettings.jsonData.usePOST || false;
-    this.useCompression = instanceSettings.jsonData.useCompression || false;
-    this.adHocValuesQuery = instanceSettings.jsonData.adHocValuesQuery || '';
-    this.adHocHideTableNames = instanceSettings.jsonData.adHocHideTableNames || false;
-    this.compressionType = instanceSettings.jsonData.compressionType || '';
-    this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
-    this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
-    this.xClickHouseSSLCertificateAuth = instanceSettings.jsonData.xClickHouseSSLCertificateAuth || false;
-    this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
-    this.useCustomFilterMaps = instanceSettings.jsonData?.useCustomFilterMaps || false;
-    this.customFilterMaps = instanceSettings.jsonData?.customFilterMaps || [];
-    if (instanceSettings.jsonData.useDefaultConfiguration) {
+    const jsonData = instanceSettings.jsonData || {};
+    this.addCorsHeader = jsonData.addCorsHeader || false;
+    this.usePOST = jsonData.usePOST || false;
+    this.useCompression = jsonData.useCompression || false;
+    this.adHocValuesQuery = jsonData.adHocValuesQuery || '';
+    this.adHocHideTableNames = jsonData.adHocHideTableNames || false;
+    this.compressionType = jsonData.compressionType || '';
+    this.defaultDatabase = jsonData.defaultDatabase || '';
+    this.xHeaderUser = jsonData.xHeaderUser || '';
+    this.xClickHouseSSLCertificateAuth = jsonData.xClickHouseSSLCertificateAuth || false;
+    this.useYandexCloudAuthorization = jsonData.useYandexCloudAuthorization || false;
+    this.useCustomFilterMaps = jsonData.useCustomFilterMaps || false;
+    this.customFilterMaps = jsonData.customFilterMaps || [];
+    if (jsonData.useDefaultConfiguration) {
       this.defaultValues = {
         dateTime: {
-          defaultDateTime64: instanceSettings.jsonData.defaultDateTime64,
-          defaultDateTime: instanceSettings.jsonData.defaultDateTime,
-          defaultUint32: instanceSettings.jsonData.defaultUint32,
-          defaultDateDate32: instanceSettings.jsonData.defaultDateDate32,
-          defaultFloat: instanceSettings.jsonData.defaultFloat,
-          defaultTimeStamp64_3: instanceSettings.jsonData.defaultTimeStamp64_3,
-          defaultTimeStamp64_6: instanceSettings.jsonData.defaultTimeStamp64_6,
-          defaultTimeStamp64_9: instanceSettings.jsonData.defaultTimeStamp64_9,
+          defaultDateTime64: jsonData.defaultDateTime64,
+          defaultDateTime: jsonData.defaultDateTime,
+          defaultUint32: jsonData.defaultUint32,
+          defaultDateDate32: jsonData.defaultDateDate32,
+          defaultFloat: jsonData.defaultFloat,
+          defaultTimeStamp64_3: jsonData.defaultTimeStamp64_3,
+          defaultTimeStamp64_6: jsonData.defaultTimeStamp64_6,
+          defaultTimeStamp64_9: jsonData.defaultTimeStamp64_9,
         },
-        defaultDateTimeType: instanceSettings.jsonData.defaultDateTimeType,
-        contextWindowSize: instanceSettings.jsonData.contextWindowSize,
-        nullifySparse: instanceSettings.jsonData.nullifySparse,
+        defaultDateTimeType: jsonData.defaultDateTimeType,
+        contextWindowSize: jsonData.contextWindowSize,
+        nullifySparse: jsonData.nullifySparse,
       };
     }
 
