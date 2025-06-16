@@ -17,6 +17,7 @@ export default class AdHocFilter {
   datasource: any;
   query: string;
   adHocValuesQuery: string;
+  adHocKeysQuery: string;
   customFilterMaps: CustomFilterMap[];
   useCustomFilterMaps: boolean;
 
@@ -29,13 +30,20 @@ export default class AdHocFilter {
     this.tagValues = [];
     this.datasource = datasource;
     this.adHocValuesQuery = datasource.adHocValuesQuery;
+    this.adHocKeysQuery = datasource.adHocKeysQuery || '';
     this.useCustomFilterMaps = datasource.useCustomFilterMaps || false;
     this.customFilterMaps = datasource.customFilterMaps || [];
-    let filter = queryFilter;
-    if (datasource.defaultDatabase.length > 0) {
-      filter = "database = '" + datasource.defaultDatabase + "'";
+    
+    // Use custom keys query if provided, otherwise fall back to default columns query
+    if (this.adHocKeysQuery && this.adHocKeysQuery.trim() !== '') {
+      this.query = this.adHocKeysQuery;
+    } else {
+      let filter = queryFilter;
+      if (datasource.defaultDatabase.length > 0) {
+        filter = "database = '" + datasource.defaultDatabase + "'";
+      }
+      this.query = columnsQuery.replace('{filter}', filter);
     }
-    this.query = columnsQuery.replace('{filter}', filter);
   }
 
   /**
@@ -106,7 +114,12 @@ export default class AdHocFilter {
       q = query;
     }
     return this.datasource.metricFindQuery(q).then(function (response: any) {
-      return self.processTagKeysResponse(response);
+      // Use custom processing if we're using a custom keys query
+      if (self.adHocKeysQuery && self.adHocKeysQuery.trim() !== '') {
+        return self.processCustomTagKeysResponse(response);
+      } else {
+        return self.processTagKeysResponse(response);
+      }
     });
   }
 
@@ -146,11 +159,44 @@ export default class AdHocFilter {
     return Promise.resolve(this.tagKeys);
   }
 
+  processCustomTagKeysResponse(response: any): Promise<any[]> {
+    // Clear existing tag keys for custom query
+    this.tagKeys = [];
+    
+    response.forEach((item: any) => {
+      // Custom query can return items in different formats
+      // Handle common formats: { key: 'value' } or { text: 'value' } or just string values
+      let key: string;
+      let text: string;
+      
+      if (typeof item === 'string') {
+        key = item;
+        text = item;
+      } else if (item.key) {
+        key = item.key;
+        text = item.text || item.label || item.key;
+      } else if (item.text) {
+        key = item.text;
+        text = item.text;
+      } else if (item.value) {
+        key = item.value;
+        text = item.text || item.label || item.value;
+      } else {
+        // Skip malformed items
+        return;
+      }
+      
+      this.tagKeys.push({ text: text, value: key });
+    });
+
+    return Promise.resolve(this.tagKeys);
+  }
+
   // GetTagValues returns column values according to passed options
   // Values for fields with Enum type were already fetched in GetTagKeys func and stored in `tagValues`
   // Values for fields which not represented on `tagValues` get from ClickHouse and cached on `tagValues`
   // If custom filter maps are enabled, checks for matching custom filter map first
-  async GetTagValues(options) {
+  async GetTagValues(options: any) {
     // Check for custom filter maps first
     if (this.useCustomFilterMaps && this.customFilterMaps.length > 0) {
       const customMap = this.customFilterMaps.find((map) => map && map.key === options.key);

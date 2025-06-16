@@ -1,5 +1,5 @@
 import AdHocFilter from './adhoc';
-import { CustomFilterMap, CustomFilterValue } from '../types/types';
+import { CustomFilterMap } from '../types/types';
 
 describe('AdHocFilter with Custom Filter Maps', () => {
   let mockDatasource: any;
@@ -10,6 +10,7 @@ describe('AdHocFilter with Custom Filter Maps', () => {
       defaultDatabase: '',
       adHocHideTableNames: false,
       adHocValuesQuery: '',
+      adHocKeysQuery: '',
       useCustomFilterMaps: false,
       customFilterMaps: [],
       metricFindQuery: jest.fn()
@@ -359,6 +360,71 @@ describe('AdHocFilter with Custom Filter Maps', () => {
 
       expect(result1).toEqual(result2);
       expect(result1).toEqual([{ text: 'Value1', value: 'value1' }]);
+    });
+  });
+
+  describe('Custom AdHoc Keys Query', () => {
+    it('should use adHocKeysQuery instead of default columnsQuery when provided', async () => {
+      const customKeysQuery = 'SELECT DISTINCT name as key FROM custom_table ORDER BY key LIMIT 50';
+      
+      mockDatasource.useCustomFilterMaps = false; // Not using custom filter maps
+      mockDatasource.customFilterMaps = [];
+      mockDatasource.adHocKeysQuery = customKeysQuery;
+      mockDatasource.metricFindQuery.mockResolvedValue([
+        { key: 'custom_key1' },
+        { key: 'custom_key2' }
+      ]);
+
+      adHocFilter = new AdHocFilter(mockDatasource);
+
+      await adHocFilter.GetTagKeys();
+
+      // Should call metricFindQuery with the custom keys query, not the default columns query
+      expect(mockDatasource.metricFindQuery).toHaveBeenCalledWith(customKeysQuery);
+      expect(mockDatasource.metricFindQuery).not.toHaveBeenCalledWith(
+        expect.stringContaining('SELECT database, table, name, type FROM system.columns')
+      );
+    });
+
+    it('should fall back to default columnsQuery when adHocKeysQuery is empty', async () => {
+      mockDatasource.useCustomFilterMaps = false;
+      mockDatasource.customFilterMaps = [];
+      mockDatasource.adHocKeysQuery = ''; // Empty custom keys query
+      mockDatasource.metricFindQuery.mockResolvedValue([
+        { database: 'test_db', table: 'test_table', name: 'column1', type: 'String' }
+      ]);
+
+      adHocFilter = new AdHocFilter(mockDatasource);
+
+      await adHocFilter.GetTagKeys();
+
+      // Should use default columns query when custom keys query is empty
+      expect(mockDatasource.metricFindQuery).toHaveBeenCalledWith(
+        expect.stringContaining('SELECT database, table, name, type FROM system.columns')
+      );
+    });
+
+    it('should prioritize custom filter maps over adHocKeysQuery', async () => {
+      const customFilterMaps: CustomFilterMap[] = [
+        {
+          id: 'priority',
+          label: 'Priority',
+          key: 'priority',
+          values: [{ label: 'High', value: 'high' }]
+        }
+      ];
+      
+      mockDatasource.useCustomFilterMaps = true;
+      mockDatasource.customFilterMaps = customFilterMaps;
+      mockDatasource.adHocKeysQuery = 'SELECT name as key FROM custom_table';
+
+      adHocFilter = new AdHocFilter(mockDatasource);
+
+      const result = await adHocFilter.GetTagKeys();
+
+      // Should use custom filter maps and not call metricFindQuery at all
+      expect(result).toEqual([{ text: 'Priority', value: 'priority' }]);
+      expect(mockDatasource.metricFindQuery).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ConfigEditor } from './ConfigEditor';
 
@@ -42,7 +42,7 @@ describe('ConfigEditor Maps vs Columns Integration', () => {
       url: 'http://localhost:8123',
       user: '',
       database: '',
-      basicAuth: '',
+      basicAuth: false,
       basicAuthUser: '',
       isDefault: false,
       jsonData: {},

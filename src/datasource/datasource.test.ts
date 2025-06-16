@@ -42,23 +42,26 @@ describe('CHDataSource Custom Filter Maps Integration', () => {
     uid: 'test-uid',
     name: 'Test ClickHouse',
     type: 'clickhouse',
-    typeName: 'ClickHouse',
     url: 'http://localhost:8123',
-    user: '',
-    database: '',
     basicAuth: '',
-    basicAuthUser: '',
     withCredentials: false,
     isDefault: false,
     readOnly: false,
     access: 'proxy',
-    orgId: 1,
-    typeLogoUrl: '',
     meta: {
       id: 'clickhouse',
       name: 'ClickHouse',
-      type: 'datasource',
-      info: { version: '1.0.0' },
+      type: 'datasource' as any,
+      baseUrl: '',
+      info: { 
+        version: '1.0.0',
+        author: { name: 'Test' },
+        description: 'Test',
+        links: [],
+        logos: { small: '', large: '' },
+        screenshots: [],
+        updated: ''
+      },
       module: 'test'
     },
     jsonData: {
@@ -135,7 +138,7 @@ describe('CHDataSource Custom Filter Maps Integration', () => {
         useCustomFilterMaps: true
       });
 
-      const dataSource = new CHDataSource(settings);
+      new CHDataSource(settings);
 
       expect(AdHocFilterMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -163,7 +166,7 @@ describe('CHDataSource Custom Filter Maps Integration', () => {
         customFilterMaps
       });
 
-      const dataSource = new CHDataSource(settings);
+      new CHDataSource(settings);
 
       expect(AdHocFilterMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -186,7 +189,7 @@ describe('CHDataSource Custom Filter Maps Integration', () => {
         adHocHideTableNames: true
       });
 
-      const dataSource = new CHDataSource(settings);
+      new CHDataSource(settings);
 
       expect(AdHocFilterMock).toHaveBeenCalledWith(
         expect.objectContaining({
