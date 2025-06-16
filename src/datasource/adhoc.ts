@@ -210,6 +210,10 @@ export default class AdHocFilter {
     let database: string, table: string, field: string;
     const buildQuery = (queryTemplate: string) =>
       queryTemplate.replace('{field}', field).replace('{database}', database).replace('{table}', table);
+    
+    // Function to build query with key placeholder (for custom queries)
+    const buildQueryWithKey = (queryTemplate: string, key: string) =>
+      queryTemplate.replace(/{key}/g, key);
 
     if (this.datasource.adHocHideTableNames) {
       // @todo could be very slow
@@ -252,6 +256,26 @@ export default class AdHocFilter {
     if (Object.prototype.hasOwnProperty.call(this.tagValues, options.key)) {
       return Promise.resolve(this.tagValues[options.key]);
     }
+    
+    // Check if we're using a custom values query with {key} placeholder
+    if (this.adHocValuesQuery && this.adHocValuesQuery.includes('{key}')) {
+      // Use custom key-based query
+      const customQuery = buildQueryWithKey(this.adHocValuesQuery, options.key);
+      return this.datasource
+        .metricFindQuery(customQuery)
+        .then((response: any) => {
+          // Process and cache the response
+          this.tagValues[options.key] = this.processTagValuesResponse(response);
+          return this.tagValues[options.key];
+        })
+        .catch((error: any) => {
+          this.tagValues[options.key] = [];
+          console.error(error);
+          return this.tagValues[options.key];
+        });
+    }
+    
+    // Original logic for traditional database.table.field format
     // Split the key to extract database, table, and field
     const keyItems = options.key.split('.');
     if (keyItems.length < 2 || (keyItems.length === 2 && !this.datasource.defaultDatabase) || keyItems.length > 3) {
@@ -265,7 +289,6 @@ export default class AdHocFilter {
       database = this.datasource.defaultDatabase;
       [table, field] = keyItems;
     }
-
 
     // Execute the initial query
     return this.datasource

@@ -49,6 +49,7 @@ export class CHDataSource
   useCompression: boolean;
   compressionType: string;
   adHocValuesQuery: string;
+  adHocKeysQuery: string;
   adHocHideTableNames: boolean;
   uid: string;
   datasourceMode?: DatasourceMode;
@@ -68,6 +69,7 @@ export class CHDataSource
     this.usePOST = jsonData.usePOST || false;
     this.useCompression = jsonData.useCompression || false;
     this.adHocValuesQuery = jsonData.adHocValuesQuery || '';
+    this.adHocKeysQuery = jsonData.adHocKeysQuery || '';
     this.adHocHideTableNames = jsonData.adHocHideTableNames || false;
     this.compressionType = jsonData.compressionType || '';
     this.defaultDatabase = jsonData.defaultDatabase || '';

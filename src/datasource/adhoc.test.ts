@@ -427,4 +427,70 @@ describe('AdHocFilter with Custom Filter Maps', () => {
       expect(mockDatasource.metricFindQuery).not.toHaveBeenCalled();
     });
   });
+
+  describe('Custom AdHoc Values Query with {key} placeholder', () => {
+    it('should use custom values query with {key} placeholder when provided', async () => {
+      const customValuesQuery = "SELECT DISTINCT ResourceAttributes['{key}'] as value FROM otel_logs WHERE has(mapKeys(ResourceAttributes), '{key}') LIMIT 50";
+      
+      mockDatasource.useCustomFilterMaps = false;
+      mockDatasource.customFilterMaps = [];
+      mockDatasource.adHocValuesQuery = customValuesQuery;
+      mockDatasource.metricFindQuery.mockResolvedValue([
+        { text: 'value1' },
+        { text: 'value2' }
+      ]);
+
+      adHocFilter = new AdHocFilter(mockDatasource);
+
+      await adHocFilter.GetTagValues({ key: 'service.name' });
+
+      // Should call metricFindQuery with the custom values query with key substituted
+      const expectedQuery = "SELECT DISTINCT ResourceAttributes['service.name'] as value FROM otel_logs WHERE has(mapKeys(ResourceAttributes), 'service.name') LIMIT 50";
+      expect(mockDatasource.metricFindQuery).toHaveBeenCalledWith(expectedQuery);
+    });
+
+    it('should fall back to traditional format when custom values query does not contain {key}', async () => {
+      const traditionalValuesQuery = 'SELECT DISTINCT {field} FROM {database}.{table} LIMIT 50';
+      
+      mockDatasource.useCustomFilterMaps = false;
+      mockDatasource.customFilterMaps = [];
+      mockDatasource.adHocValuesQuery = traditionalValuesQuery;
+      mockDatasource.defaultDatabase = 'test_db';
+      mockDatasource.metricFindQuery.mockResolvedValue([
+        { text: 'value1' },
+        { text: 'value2' }
+      ]);
+
+      adHocFilter = new AdHocFilter(mockDatasource);
+
+      await adHocFilter.GetTagValues({ key: 'table.field' });
+
+      // Should use traditional database.table.field format
+      const expectedQuery = 'SELECT DISTINCT field FROM test_db.table LIMIT 50';
+      expect(mockDatasource.metricFindQuery).toHaveBeenCalledWith(expectedQuery);
+    });
+
+    it('should cache values query results', async () => {
+      const customValuesQuery = "SELECT DISTINCT ResourceAttributes['{key}'] as value FROM otel_logs LIMIT 10";
+      
+      mockDatasource.useCustomFilterMaps = false;
+      mockDatasource.customFilterMaps = [];
+      mockDatasource.adHocValuesQuery = customValuesQuery;
+      mockDatasource.metricFindQuery.mockResolvedValue([
+        { text: 'cached_value' }
+      ]);
+
+      adHocFilter = new AdHocFilter(mockDatasource);
+
+      // First call
+      const result1 = await adHocFilter.GetTagValues({ key: 'test.key' });
+      // Second call should use cache
+      const result2 = await adHocFilter.GetTagValues({ key: 'test.key' });
+
+      // Should only call metricFindQuery once (first time)
+      expect(mockDatasource.metricFindQuery).toHaveBeenCalledTimes(1);
+      expect(result1).toEqual(result2);
+      expect(result1).toEqual([{ text: 'cached_value', value: 'cached_value' }]);
+    });
+  });
 });

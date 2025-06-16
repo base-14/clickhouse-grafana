@@ -1,7 +1,7 @@
 ﻿apiVersion: 1
 
 datasources:
-  - name: clickhouse
+  - name: scout-clickhouse-ds
     type: vertamedia-clickhouse-datasource
     access: proxy
     url: http://clickhouse:8123
@@ -15,3 +15,4 @@ datasources:
       usePOST: true
       useCompression: true
       compressionType: gzip
+      adHocKeysQuery: "SELECT DISTINCT 'CarrierName' as key UNION ALL SELECT DISTINCT 'OriginCityName' as key UNION ALL SELECT DISTINCT 'DestCityName' as key ORDER BY key LIMIT 10"
