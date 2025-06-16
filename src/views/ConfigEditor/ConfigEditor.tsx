@@ -1,9 +1,10 @@
 import React, { FormEvent, useEffect, useState } from 'react';
 import { CodeEditor, DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput, Select } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, SelectableValue } from '@grafana/data';
-import { CHDataSourceOptions } from '../../types/types';
+import { CHDataSourceOptions, CustomFilterMap } from '../../types/types';
 import _ from 'lodash';
 import { DefaultValues } from './FormParts/DefaultValues/DefaultValues';
+import { CustomFilterMapsEditor } from './components/CustomFilterMapsEditor';
 import { LANGUAGE_ID } from '../QueryEditor/components/QueryTextEditor/editor/initiateEditor';
 import { MONACO_EDITOR_OPTIONS } from '../constants';
 import { COMPRESSION_TYPE_OPTIONS } from './constants';
@@ -23,6 +24,7 @@ export function ConfigEditor(props: Props) {
   const secureJsonData = (options.secureJsonData || {}) as CHSecureJsonData;
   const [selectedCompressionType, setSelectedCompressionType] = useState(jsonData.compressionType);
   const [adHocValuesQuery, setAdHocValuesQuery] = useState(jsonData.adHocValuesQuery || DEFAULT_VALUES_QUERY);
+  const [customFilterMaps, setCustomFilterMaps] = useState<CustomFilterMap[]>(jsonData.customFilterMaps || []);
 
   useEffect(() => {
     jsonData.adHocValuesQuery = adHocValuesQuery;
@@ -35,6 +37,17 @@ export function ConfigEditor(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adHocValuesQuery]);
 
+  useEffect(() => {
+    jsonData.customFilterMaps = customFilterMaps;
+
+    onOptionsChange({
+      ...newOptions,
+      jsonData: { ...jsonData },
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customFilterMaps]);
+
   // @todo remove when merged https://github.com/grafana/grafana/pull/80858
   if (newOptions.url !== '') {
     jsonData.dataSourceUrl = newOptions.url;
@@ -42,7 +55,7 @@ export function ConfigEditor(props: Props) {
   const onSwitchToggle = (
     key: keyof Pick<
       CHDataSourceOptions,
-      'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST' | 'useCompression' | 'xClickHouseSSLCertificateAuth' | 'adHocHideTableNames'
+      'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST' | 'useCompression' | 'xClickHouseSSLCertificateAuth' | 'adHocHideTableNames' | 'useCustomFilterMaps'
     >,
     value: boolean
   ) => {
@@ -240,6 +253,26 @@ export function ConfigEditor(props: Props) {
             onChange={(e) => onSwitchToggle('adHocHideTableNames', e.currentTarget.checked)}
           />
         </InlineField>
+        <InlineField 
+          label="Use Custom Filter Maps" 
+          labelWidth={32}
+          tooltip="Enable custom filter maps instead of auto-discovering all database columns. This improves performance and provides better control over available filters."
+        >
+          <InlineSwitch
+            data-test-id="use-custom-filter-maps"
+            id="useCustomFilterMaps"
+            value={jsonData.useCustomFilterMaps || false}
+            onChange={(e) => onSwitchToggle('useCustomFilterMaps', e.currentTarget.checked)}
+          />
+        </InlineField>
+        {jsonData.useCustomFilterMaps && (
+          <div style={{ marginTop: '16px', padding: '16px', border: '1px solid #e3e3e3', borderRadius: '4px' }}>
+            <CustomFilterMapsEditor
+              customFilterMaps={customFilterMaps}
+              onChange={setCustomFilterMaps}
+            />
+          </div>
+        )}
       </div>
     </>
   );
