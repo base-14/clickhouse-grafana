@@ -30,6 +30,32 @@ export enum DatasourceMode {
   Annotation = 'Annotation'
 }
 
+/**
+ * Represents a single value option within a custom filter map
+ */
+export interface CustomFilterValue {
+  /** Display label shown to the user */
+  label: string;
+  /** Actual value used in the database query */
+  value: string;
+}
+
+/**
+ * Represents a custom filter map configuration for ad-hoc filters
+ */
+export interface CustomFilterMap {
+  /** Unique identifier for this filter map */
+  id: string;
+  /** Display label for the filter shown to users */
+  label: string;
+  /** Database field name to filter on */
+  key: string;
+  /** Array of available filter values */
+  values: CustomFilterValue[];
+  /** Optional description explaining the filter purpose */
+  description?: string;
+}
+
 export interface CHQuery extends DataQuery {
   query: string;
   format: string;
@@ -90,6 +116,10 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   contextWindowSize?: string;
   useWindowFuncForMacros?: boolean;
   nullifySparse?: boolean;
+  /** Enable custom filter maps instead of auto-discovering columns */
+  useCustomFilterMaps?: boolean;
+  /** Array of custom filter map configurations */
+  customFilterMaps?: CustomFilterMap[];
 }
 
 /**
