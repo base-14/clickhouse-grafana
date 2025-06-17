@@ -1,7 +1,6 @@
 import { CHDataSource } from '../datasource';
-import { CustomFilterMap } from '../../types/types';
+import { CustomFilterMap, CHDataSourceOptions } from '../../types/types';
 import { DataSourceInstanceSettings } from '@grafana/data';
-import { CHDataSourceOptions } from '../../types/types';
 
 // Mock Grafana runtime dependencies
 jest.mock('@grafana/runtime', () => ({
