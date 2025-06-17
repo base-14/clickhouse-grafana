@@ -1,16 +1,37 @@
 # base14 ClickHouse Datasource for Grafana - Changelog
 
+*Optimized for OpenTelemetry data visualization and observability workflows*
+
 ## Attribution
 This project is derivative work based on the original ClickHouse Grafana Plugin by Vertamedia (2017-2020) and Altinity (2020-2025).
 For complete attribution, see [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES).
 
 ---
 
-# 3.4.1 (2025-06-05)
-## Enhancements:
+# 1.0.0 (2025-06-17) - First base14 Release
+
+🎉 **Inaugural release optimized for OpenTelemetry observability workflows**
+
+## New Features (base14 OpenTelemetry Enhancements):
+* **Custom Ad-hoc Filter Maps** - Predefined filter options for consistent OpenTelemetry attribute filtering
+* **OpenTelemetry Map Column Support** - Native support for ResourceAttributes, SpanAttributes, and LogAttributes
+* **Custom Ad-hoc Queries** - Support for {key} placeholder in custom values queries for dynamic OTel data discovery
+* **Map-based Column Filtering** - Optimized filtering for ClickHouse Map columns commonly used in OpenTelemetry schemas
+* **Performance Optimization** - Eliminates slow system.columns queries for large OpenTelemetry datasets
+* **base14 Branding** - Professional branding and private distribution for enterprise OTel implementations
+
+## Technical Improvements:
+* Plugin rebranded from Altinity to base14 for focused OpenTelemetry use cases
+* Signed plugin distribution via GitHub releases
+* Comprehensive installation documentation for OTel-specific deployments
+* Enhanced testing coverage for custom filter functionality
+
+## Inherited from Altinity v3.4.1:
 * switch to gopherjs instead of wasm for process SQL with macros on browser
-* Custom ad-hoc filter maps functionality (base14 enhancement)
-* OpenTelemetry data support improvements (base14 enhancement)
+* All production-ready features including time series, logs, traces, flamegraphs
+* Advanced ClickHouse macros and template variable support
+* Comprehensive authentication and compression options
+* Full Grafana alerting support (legacy + unified)
 
 
 # 3.4.0 (2025-05-03)
