@@ -9,7 +9,7 @@
   "alerting": true,
   "logs": true,
   "executable": "base14-clickhouse-plugin",
-  "rootUrls": ["*"],
+  "rootUrls": ["https://base14.io", "https://base14.ai", "https://ts.net", "http://localhost:3000", "https://localhost:3000"],
   "info": {
     "description": "base14 ClickHouse datasource for Grafana",
     "author": {
