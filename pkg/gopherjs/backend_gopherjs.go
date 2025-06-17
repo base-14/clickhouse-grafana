@@ -16,43 +16,13 @@ type AdhocFilter struct {
   Value    interface{} `json:"value"`
 }
 
-type Target struct {
-  Database string
-  Table    string
-}
 
-func parseTargets(from string, defaultDatabase string, defaultTable string) (string, string) {
-  if len(from) == 0 {
-    return "", ""
-  }
-
-  var targetTable, targetDatabase string
-  parts := strings.Split(from, ".")
-
-  switch len(parts) {
-  case 1:
-    targetTable = parts[0]
-    targetDatabase = defaultDatabase
-  case 2:
-    targetDatabase = parts[0]
-    targetTable = parts[1]
-  default:
-    panic(fmt.Sprintf("FROM expression \"%s\" can't be parsed", from))
-  }
-
-  if targetTable == "$table" {
-    targetTable = defaultTable
-  }
-
-  return targetDatabase, targetTable
-}
 
 // applyAdhocFiltersGopherJS is the GopherJS-compatible function that processes adhoc filters
 func applyAdhocFiltersGopherJS(_ *js.Object, args []*js.Object) interface{} {
   jsObj := args[0]
   query := jsObj.Get("query").String()
   adhocFiltersJS := jsObj.Get("adhocFilters")
-  targetJS := jsObj.Get("target")
 
   adhocFilters := make([]AdhocFilter, adhocFiltersJS.Length())
   for i := 0; i < adhocFiltersJS.Length(); i++ {
@@ -64,11 +34,7 @@ func applyAdhocFiltersGopherJS(_ *js.Object, args []*js.Object) interface{} {
     }
   }
 
-  // Extract target
-  target := Target{
-    Database: targetJS.Get("database").String(),
-    Table:    targetJS.Get("table").String(),
-  }
+  // Target extraction not needed for ResourceAttributes syntax
 
   // Process the query
   adhocConditions := make([]string, 0)
@@ -99,32 +65,8 @@ func applyAdhocFiltersGopherJS(_ *js.Object, args []*js.Object) interface{} {
       }
     }
 
-    // Get target database and table
-    targetDatabase, targetTable := parseTargets(ast.Obj["from"].(*eval.EvalAST).Arr[0].(string), target.Database, target.Table)
-
-    // Process each adhoc filter
+    // Process each adhoc filter - always use ResourceAttributes map syntax
     for _, filter := range adhocFilters {
-      var parts []string
-      if strings.Contains(filter.Key, ".") {
-        parts = strings.Split(filter.Key, ".")
-      } else {
-        parts = []string{targetDatabase, targetTable, filter.Key}
-      }
-
-      // Add missing parts
-      if len(parts) == 1 {
-        parts = append([]string{targetTable}, parts...)
-      }
-      if len(parts) == 2 {
-        parts = append([]string{targetTable}, parts...)
-      }
-      if len(parts) < 3 {
-        continue
-      }
-
-      if targetDatabase != parts[0] || targetTable != parts[1] {
-        continue
-      }
 
       // Convert operator
       operator := filter.Operator
@@ -158,8 +100,8 @@ func applyAdhocFiltersGopherJS(_ *js.Object, args []*js.Object) interface{} {
         value = fmt.Sprintf("'%s'", escaped)
       }
 
-      // Build the condition with proper spacing
-      condition := fmt.Sprintf("%s %s %s", parts[2], operator, value)
+      // Build the condition using ResourceAttributes map syntax
+      condition := fmt.Sprintf("ResourceAttributes['%s'] %s %s", filter.Key, operator, value)
       adhocConditions = append(adhocConditions, condition)
     }
 

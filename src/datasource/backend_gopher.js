@@ -50494,7 +50494,7 @@ $packages["github.com/altinity/clickhouse-grafana/pkg/eval"] = (function() {
 	return $pkg;
 })();
 $packages["main"] = (function() {
-	var $pkg = {}, $init, fmt, eval$1, js, regexp, strings, time, AdhocFilter, Target, QueryRequest, sliceType, sliceType$1, sliceType$2, mapType, ptrType, structType, ptrType$1, parseTargets, applyAdhocFiltersGopherJS, findGroupByProperties, createQueryGopherJS, replaceTimeFiltersGopherJS, getAstPropertyGopherJS, main;
+	var $pkg = {}, $init, fmt, eval$1, js, regexp, strings, time, AdhocFilter, QueryRequest, sliceType, sliceType$1, mapType, sliceType$2, ptrType, structType, ptrType$1, applyAdhocFiltersGopherJS, findGroupByProperties, createQueryGopherJS, replaceTimeFiltersGopherJS, getAstPropertyGopherJS, main;
 	fmt = $packages["fmt"];
 	eval$1 = $packages["github.com/altinity/clickhouse-grafana/pkg/eval"];
 	js = $packages["github.com/gopherjs/gopherjs/js"];
@@ -50512,16 +50512,6 @@ $packages["main"] = (function() {
 		this.Key = Key_;
 		this.Operator = Operator_;
 		this.Value = Value_;
-	});
-	Target = $pkg.Target = $newType(0, $kindStruct, "main.Target", true, "main", true, function(Database_, Table_) {
-		this.$val = this;
-		if (arguments.length === 0) {
-			this.Database = "";
-			this.Table = "";
-			return;
-		}
-		this.Database = Database_;
-		this.Table = Table_;
 	});
 	QueryRequest = $pkg.QueryRequest = $newType(0, $kindStruct, "main.QueryRequest", true, "main", true, function(RefId_, RuleUid_, RawQuery_, Query_, DateTimeCol_, DateCol_, DateTimeType_, Extrapolate_, SkipComments_, AddMetadata_, Format_, Round_, IntervalFactor_, Interval_, Database_, Table_, MaxDataPoints_, FrontendDatasource_, UseWindowFuncForMacros_, TimeRange_) {
 		this.$val = this;
@@ -50569,55 +50559,20 @@ $packages["main"] = (function() {
 		this.UseWindowFuncForMacros = UseWindowFuncForMacros_;
 		this.TimeRange = TimeRange_;
 	});
-	sliceType = $sliceType($emptyInterface);
-	sliceType$1 = $sliceType(AdhocFilter);
-	sliceType$2 = $sliceType($String);
+	sliceType = $sliceType(AdhocFilter);
+	sliceType$1 = $sliceType($String);
 	mapType = $mapType($String, $emptyInterface);
+	sliceType$2 = $sliceType($emptyInterface);
 	ptrType = $ptrType(eval$1.EvalAST);
 	structType = $structType("", [{prop: "From", name: "From", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "To", name: "To", embedded: false, exported: true, typ: $String, tag: ""}]);
 	ptrType$1 = $ptrType(time.Location);
-	parseTargets = function(from, defaultDatabase, defaultTable) {
-		var {_1, _r, _tmp, _tmp$1, defaultDatabase, defaultTable, from, parts, targetDatabase, targetTable, $s, $r, $c} = $restore(this, {from, defaultDatabase, defaultTable});
-		/* */ $s = $s || 0; s: while (true) { switch ($s) { case 0:
-		if (from.length === 0) {
-			$s = -1; return ["", ""];
-		}
-		_tmp = "";
-		_tmp$1 = "";
-		targetTable = _tmp;
-		targetDatabase = _tmp$1;
-		parts = strings.Split(from, ".");
-			_1 = parts.$length;
-			/* */ if (_1 === (1)) { $s = 2; continue; }
-			/* */ if (_1 === (2)) { $s = 3; continue; }
-			/* */ $s = 4; continue;
-			/* if (_1 === (1)) { */ case 2:
-				targetTable = (0 >= parts.$length ? ($throwRuntimeError("index out of range"), undefined) : parts.$array[parts.$offset + 0]);
-				targetDatabase = defaultDatabase;
-				$s = 5; continue;
-			/* } else if (_1 === (2)) { */ case 3:
-				targetDatabase = (0 >= parts.$length ? ($throwRuntimeError("index out of range"), undefined) : parts.$array[parts.$offset + 0]);
-				targetTable = (1 >= parts.$length ? ($throwRuntimeError("index out of range"), undefined) : parts.$array[parts.$offset + 1]);
-				$s = 5; continue;
-			/* } else { */ case 4:
-				_r = fmt.Sprintf("FROM expression \"%s\" can't be parsed", new sliceType([new $String(from)])); /* */ $s = 6; case 6: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-				$panic(new $String(_r));
-			/* } */ case 5:
-		case 1:
-		if (targetTable === "$table") {
-			targetTable = defaultTable;
-		}
-		$s = -1; return [targetDatabase, targetTable];
-		/* */ } return; } var $f = {$blk: parseTargets, $c: true, $r, _1, _r, _tmp, _tmp$1, defaultDatabase, defaultTable, from, parts, targetDatabase, targetTable, $s};return $f;
-	};
 	applyAdhocFiltersGopherJS = function(param, args) {
-		var {$24r, _1, _entry, _entry$1, _entry$2, _entry$3, _i, _key, _r, _r$1, _r$10, _r$11, _r$12, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _r$8, _r$9, _ref, _ref$1, _tuple, _tuple$1, _tuple$2, adhocConditions, adhocFilters, adhocFiltersJS, args, ast, combinedCondition, condition, err, escaped, escaped$1, filter, filter$1, i, jsObj, nextAst, ok, operator, param, parts, query, renderedCondition, scanner, str, target, targetDatabase, targetJS, targetTable, topQueryAst, v, v$1, v$2, value, whereAst, x, $s, $r, $c} = $restore(this, {param, args});
+		var {$24r, _1, _entry, _entry$1, _entry$2, _i, _key, _r, _r$1, _r$10, _r$11, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _r$8, _r$9, _ref, _ref$1, _tuple, _tuple$1, adhocConditions, adhocFilters, adhocFiltersJS, args, ast, combinedCondition, condition, err, escaped, escaped$1, filter, filter$1, i, jsObj, nextAst, ok, operator, param, query, renderedCondition, scanner, str, topQueryAst, v, v$1, v$2, value, whereAst, $s, $r, $c} = $restore(this, {param, args});
 		/* */ $s = $s || 0; s: while (true) { switch ($s) { case 0:
 		jsObj = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]);
 		query = $internalize(jsObj.query, $String);
 		adhocFiltersJS = jsObj.adhocFilters;
-		targetJS = jsObj.target;
-		adhocFilters = $makeSlice(sliceType$1, $parseInt(adhocFiltersJS.length));
+		adhocFilters = $makeSlice(sliceType, $parseInt(adhocFiltersJS.length));
 		i = 0;
 		while (true) {
 			if (!(i < $parseInt(adhocFiltersJS.length))) { break; }
@@ -50625,8 +50580,7 @@ $packages["main"] = (function() {
 			AdhocFilter.copy(((i < 0 || i >= adhocFilters.$length) ? ($throwRuntimeError("index out of range"), undefined) : adhocFilters.$array[adhocFilters.$offset + i]), new AdhocFilter.ptr($internalize(filter.key, $String), $internalize(filter.operator, $String), new $String($internalize(filter.value, $String))));
 			i = i + (1) >> 0;
 		}
-		target = new Target.ptr($internalize(targetJS.database, $String), $internalize(targetJS.table, $String));
-		adhocConditions = $makeSlice(sliceType$2, 0);
+		adhocConditions = $makeSlice(sliceType$1, 0);
 		scanner = $clone(eval$1.NewScanner(query), eval$1.EvalQueryScanner);
 		_r = scanner.ToAST(); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		_tuple = _r;
@@ -50636,7 +50590,7 @@ $packages["main"] = (function() {
 		/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 2; continue; }
 		/* */ $s = 3; continue;
 		/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 2:
-			_r$1 = fmt.Sprintf("Failed to parse query: %v", new sliceType([err])); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			_r$1 = fmt.Sprintf("Failed to parse query: %v", new sliceType$2([err])); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 			$24r = new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String(_r$1) }]));
 			$s = 5; case 5: return $24r;
 		/* } */ case 3:
@@ -50644,7 +50598,7 @@ $packages["main"] = (function() {
 		/* */ $s = 7; continue;
 		/* if (adhocFilters.$length > 0) { */ case 6:
 			while (true) {
-				if (!(ast.HasOwnProperty("from") && $assertType((_entry = $mapIndex(ast.Obj,$String.keyFor("from")), _entry !== undefined ? _entry.v : $ifaceNil), ptrType).Arr === sliceType.nil)) { break; }
+				if (!(ast.HasOwnProperty("from") && $assertType((_entry = $mapIndex(ast.Obj,$String.keyFor("from")), _entry !== undefined ? _entry.v : $ifaceNil), ptrType).Arr === sliceType$2.nil)) { break; }
 				_tuple$1 = $assertType((_entry$1 = $mapIndex(ast.Obj,$String.keyFor("from")), _entry$1 !== undefined ? _entry$1.v : $ifaceNil), ptrType, true);
 				nextAst = _tuple$1[0];
 				ok = _tuple$1[1];
@@ -50654,37 +50608,13 @@ $packages["main"] = (function() {
 				ast = nextAst;
 			}
 			if (!ast.HasOwnProperty("where")) {
-				_key = "where"; (ast.Obj || $throwRuntimeError("assignment to entry in nil map")).set($String.keyFor(_key), { k: _key, v: new eval$1.EvalAST.ptr(new $global.Map(), $makeSlice(sliceType, 0)) });
+				_key = "where"; (ast.Obj || $throwRuntimeError("assignment to entry in nil map")).set($String.keyFor(_key), { k: _key, v: new eval$1.EvalAST.ptr(new $global.Map(), $makeSlice(sliceType$2, 0)) });
 			}
-			_r$2 = parseTargets($assertType((x = $assertType((_entry$2 = $mapIndex(ast.Obj,$String.keyFor("from")), _entry$2 !== undefined ? _entry$2.v : $ifaceNil), ptrType).Arr, (0 >= x.$length ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + 0])), $String), target.Database, target.Table); /* */ $s = 8; case 8: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
-			_tuple$2 = _r$2;
-			targetDatabase = _tuple$2[0];
-			targetTable = _tuple$2[1];
 			_ref = adhocFilters;
 			_i = 0;
-			/* while (true) { */ case 9:
-				/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 10; continue; }
+			/* while (true) { */ case 8:
+				/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 9; continue; }
 				filter$1 = $clone(((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]), AdhocFilter);
-				parts = sliceType$2.nil;
-				if (strings.Contains(filter$1.Key, ".")) {
-					parts = strings.Split(filter$1.Key, ".");
-				} else {
-					parts = new sliceType$2([targetDatabase, targetTable, filter$1.Key]);
-				}
-				if (parts.$length === 1) {
-					parts = $appendSlice(new sliceType$2([targetTable]), parts);
-				}
-				if (parts.$length === 2) {
-					parts = $appendSlice(new sliceType$2([targetTable]), parts);
-				}
-				if (parts.$length < 3) {
-					_i++;
-					/* continue; */ $s = 9; continue;
-				}
-				if (!(targetDatabase === (0 >= parts.$length ? ($throwRuntimeError("index out of range"), undefined) : parts.$array[parts.$offset + 0])) || !(targetTable === (1 >= parts.$length ? ($throwRuntimeError("index out of range"), undefined) : parts.$array[parts.$offset + 1]))) {
-					_i++;
-					/* continue; */ $s = 9; continue;
-				}
 				operator = filter$1.Operator;
 				_1 = operator;
 				if (_1 === ("=~")) {
@@ -50694,79 +50624,79 @@ $packages["main"] = (function() {
 				}
 				value = "";
 				_ref$1 = filter$1.Value;
-				/* */ if ($assertType(_ref$1, $Float64, true)[1]) { $s = 11; continue; }
-				/* */ if ($assertType(_ref$1, $String, true)[1]) { $s = 12; continue; }
-				/* */ $s = 13; continue;
-				/* if ($assertType(_ref$1, $Float64, true)[1]) { */ case 11:
+				/* */ if ($assertType(_ref$1, $Float64, true)[1]) { $s = 10; continue; }
+				/* */ if ($assertType(_ref$1, $String, true)[1]) { $s = 11; continue; }
+				/* */ $s = 12; continue;
+				/* if ($assertType(_ref$1, $Float64, true)[1]) { */ case 10:
 					v = _ref$1.$val;
-					_r$3 = fmt.Sprintf("%g", new sliceType([new $Float64(v)])); /* */ $s = 15; case 15: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
-					value = _r$3;
-					$s = 14; continue;
-				/* } else if ($assertType(_ref$1, $String, true)[1]) { */ case 12:
+					_r$2 = fmt.Sprintf("%g", new sliceType$2([new $Float64(v)])); /* */ $s = 14; case 14: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+					value = _r$2;
+					$s = 13; continue;
+				/* } else if ($assertType(_ref$1, $String, true)[1]) { */ case 11:
 					v$1 = _ref$1.$val;
-					_r$4 = regexp.MustCompile("^\\s*\\d+(\\.\\d+)?\\s*$"); /* */ $s = 19; case 19: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
-					_r$5 = _r$4.MatchString(v$1); /* */ $s = 20; case 20: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
-					/* */ if (_r$5 || strings.Contains(v$1, "'") || strings.Contains(v$1, ", ")) { $s = 16; continue; }
-					/* */ $s = 17; continue;
-					/* if (_r$5 || strings.Contains(v$1, "'") || strings.Contains(v$1, ", ")) { */ case 16:
+					_r$3 = regexp.MustCompile("^\\s*\\d+(\\.\\d+)?\\s*$"); /* */ $s = 18; case 18: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+					_r$4 = _r$3.MatchString(v$1); /* */ $s = 19; case 19: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
+					/* */ if (_r$4 || strings.Contains(v$1, "'") || strings.Contains(v$1, ", ")) { $s = 15; continue; }
+					/* */ $s = 16; continue;
+					/* if (_r$4 || strings.Contains(v$1, "'") || strings.Contains(v$1, ", ")) { */ case 15:
 						value = v$1;
-						$s = 18; continue;
-					/* } else { */ case 17:
+						$s = 17; continue;
+					/* } else { */ case 16:
 						escaped = strings.ReplaceAll(v$1, "'", "''");
-						_r$6 = fmt.Sprintf("'%s'", new sliceType([new $String(escaped)])); /* */ $s = 21; case 21: if($c) { $c = false; _r$6 = _r$6.$blk(); } if (_r$6 && _r$6.$blk !== undefined) { break s; }
-						value = _r$6;
-					/* } */ case 18:
-					$s = 14; continue;
-				/* } else { */ case 13:
+						_r$5 = fmt.Sprintf("'%s'", new sliceType$2([new $String(escaped)])); /* */ $s = 20; case 20: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
+						value = _r$5;
+					/* } */ case 17:
+					$s = 13; continue;
+				/* } else { */ case 12:
 					v$2 = _ref$1;
-					_r$7 = fmt.Sprintf("%v", new sliceType([v$2])); /* */ $s = 22; case 22: if($c) { $c = false; _r$7 = _r$7.$blk(); } if (_r$7 && _r$7.$blk !== undefined) { break s; }
-					str = _r$7;
+					_r$6 = fmt.Sprintf("%v", new sliceType$2([v$2])); /* */ $s = 21; case 21: if($c) { $c = false; _r$6 = _r$6.$blk(); } if (_r$6 && _r$6.$blk !== undefined) { break s; }
+					str = _r$6;
 					escaped$1 = strings.ReplaceAll(str, "'", "''");
-					_r$8 = fmt.Sprintf("'%s'", new sliceType([new $String(escaped$1)])); /* */ $s = 23; case 23: if($c) { $c = false; _r$8 = _r$8.$blk(); } if (_r$8 && _r$8.$blk !== undefined) { break s; }
-					value = _r$8;
-				/* } */ case 14:
-				_r$9 = fmt.Sprintf("%s %s %s", new sliceType([new $String((2 >= parts.$length ? ($throwRuntimeError("index out of range"), undefined) : parts.$array[parts.$offset + 2])), new $String(operator), new $String(value)])); /* */ $s = 24; case 24: if($c) { $c = false; _r$9 = _r$9.$blk(); } if (_r$9 && _r$9.$blk !== undefined) { break s; }
-				condition = _r$9;
+					_r$7 = fmt.Sprintf("'%s'", new sliceType$2([new $String(escaped$1)])); /* */ $s = 22; case 22: if($c) { $c = false; _r$7 = _r$7.$blk(); } if (_r$7 && _r$7.$blk !== undefined) { break s; }
+					value = _r$7;
+				/* } */ case 13:
+				_r$8 = fmt.Sprintf("ResourceAttributes['%s'] %s %s", new sliceType$2([new $String(filter$1.Key), new $String(operator), new $String(value)])); /* */ $s = 23; case 23: if($c) { $c = false; _r$8 = _r$8.$blk(); } if (_r$8 && _r$8.$blk !== undefined) { break s; }
+				condition = _r$8;
 				adhocConditions = $append(adhocConditions, condition);
 				_i++;
-			$s = 9; continue;
-			case 10:
-			/* */ if (!strings.Contains(query, "$adhoc")) { $s = 25; continue; }
-			/* */ $s = 26; continue;
-			/* if (!strings.Contains(query, "$adhoc")) { */ case 25:
-				whereAst = $assertType((_entry$3 = $mapIndex(ast.Obj,$String.keyFor("where")), _entry$3 !== undefined ? _entry$3.v : $ifaceNil), ptrType);
-				/* */ if (adhocConditions.$length > 0) { $s = 27; continue; }
-				/* */ $s = 28; continue;
-				/* if (adhocConditions.$length > 0) { */ case 27:
+			$s = 8; continue;
+			case 9:
+			/* */ if (!strings.Contains(query, "$adhoc")) { $s = 24; continue; }
+			/* */ $s = 25; continue;
+			/* if (!strings.Contains(query, "$adhoc")) { */ case 24:
+				whereAst = $assertType((_entry$2 = $mapIndex(ast.Obj,$String.keyFor("where")), _entry$2 !== undefined ? _entry$2.v : $ifaceNil), ptrType);
+				/* */ if (adhocConditions.$length > 0) { $s = 26; continue; }
+				/* */ $s = 27; continue;
+				/* if (adhocConditions.$length > 0) { */ case 26:
 					combinedCondition = strings.Join(adhocConditions, " AND ");
-					/* */ if (whereAst.Arr.$length > 0) { $s = 29; continue; }
-					/* */ $s = 30; continue;
-					/* if (whereAst.Arr.$length > 0) { */ case 29:
-						_r$10 = fmt.Sprintf("(%s)", new sliceType([new $String(combinedCondition)])); /* */ $s = 32; case 32: if($c) { $c = false; _r$10 = _r$10.$blk(); } if (_r$10 && _r$10.$blk !== undefined) { break s; }
-						whereAst.Arr = $append(whereAst.Arr, new $String("AND"), new $String(_r$10));
-						$s = 31; continue;
-					/* } else { */ case 30:
+					/* */ if (whereAst.Arr.$length > 0) { $s = 28; continue; }
+					/* */ $s = 29; continue;
+					/* if (whereAst.Arr.$length > 0) { */ case 28:
+						_r$9 = fmt.Sprintf("(%s)", new sliceType$2([new $String(combinedCondition)])); /* */ $s = 31; case 31: if($c) { $c = false; _r$9 = _r$9.$blk(); } if (_r$9 && _r$9.$blk !== undefined) { break s; }
+						whereAst.Arr = $append(whereAst.Arr, new $String("AND"), new $String(_r$9));
+						$s = 30; continue;
+					/* } else { */ case 29:
 						whereAst.Arr = $append(whereAst.Arr, new $String(combinedCondition));
-					/* } */ case 31:
-				/* } */ case 28:
-				_r$11 = eval$1.PrintAST(topQueryAst, " "); /* */ $s = 33; case 33: if($c) { $c = false; _r$11 = _r$11.$blk(); } if (_r$11 && _r$11.$blk !== undefined) { break s; }
-				query = _r$11;
-			/* } */ case 26:
+					/* } */ case 30:
+				/* } */ case 27:
+				_r$10 = eval$1.PrintAST(topQueryAst, " "); /* */ $s = 32; case 32: if($c) { $c = false; _r$10 = _r$10.$blk(); } if (_r$10 && _r$10.$blk !== undefined) { break s; }
+				query = _r$10;
+			/* } */ case 25:
 		/* } */ case 7:
-		/* */ if (strings.Contains(query, "$adhoc")) { $s = 34; continue; }
-		/* */ $s = 35; continue;
-		/* if (strings.Contains(query, "$adhoc")) { */ case 34:
+		/* */ if (strings.Contains(query, "$adhoc")) { $s = 33; continue; }
+		/* */ $s = 34; continue;
+		/* if (strings.Contains(query, "$adhoc")) { */ case 33:
 			renderedCondition = "1";
-			/* */ if (adhocConditions.$length > 0) { $s = 36; continue; }
-			/* */ $s = 37; continue;
-			/* if (adhocConditions.$length > 0) { */ case 36:
-				_r$12 = fmt.Sprintf("(%s)", new sliceType([new $String(strings.Join(adhocConditions, " AND "))])); /* */ $s = 38; case 38: if($c) { $c = false; _r$12 = _r$12.$blk(); } if (_r$12 && _r$12.$blk !== undefined) { break s; }
-				renderedCondition = _r$12;
-			/* } */ case 37:
+			/* */ if (adhocConditions.$length > 0) { $s = 35; continue; }
+			/* */ $s = 36; continue;
+			/* if (adhocConditions.$length > 0) { */ case 35:
+				_r$11 = fmt.Sprintf("(%s)", new sliceType$2([new $String(strings.Join(adhocConditions, " AND "))])); /* */ $s = 37; case 37: if($c) { $c = false; _r$11 = _r$11.$blk(); } if (_r$11 && _r$11.$blk !== undefined) { break s; }
+				renderedCondition = _r$11;
+			/* } */ case 36:
 			query = strings.ReplaceAll(query, "$adhoc", renderedCondition);
-		/* } */ case 35:
+		/* } */ case 34:
 		$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "query", v: new $String(query) }]));
-		/* */ } return; } var $f = {$blk: applyAdhocFiltersGopherJS, $c: true, $r, $24r, _1, _entry, _entry$1, _entry$2, _entry$3, _i, _key, _r, _r$1, _r$10, _r$11, _r$12, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _r$8, _r$9, _ref, _ref$1, _tuple, _tuple$1, _tuple$2, adhocConditions, adhocFilters, adhocFiltersJS, args, ast, combinedCondition, condition, err, escaped, escaped$1, filter, filter$1, i, jsObj, nextAst, ok, operator, param, parts, query, renderedCondition, scanner, str, target, targetDatabase, targetJS, targetTable, topQueryAst, v, v$1, v$2, value, whereAst, x, $s};return $f;
+		/* */ } return; } var $f = {$blk: applyAdhocFiltersGopherJS, $c: true, $r, $24r, _1, _entry, _entry$1, _entry$2, _i, _key, _r, _r$1, _r$10, _r$11, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _r$8, _r$9, _ref, _ref$1, _tuple, _tuple$1, adhocConditions, adhocFilters, adhocFiltersJS, args, ast, combinedCondition, condition, err, escaped, escaped$1, filter, filter$1, i, jsObj, nextAst, ok, operator, param, query, renderedCondition, scanner, str, topQueryAst, v, v$1, v$2, value, whereAst, $s};return $f;
 	};
 	findGroupByProperties = function(ast) {
 		var _entry, _entry$1, _entry$2, _i, _key, _keys, _ref, _ref$1, _ref$2, _size, _tuple, _tuple$1, _tuple$2, ast, exists, exists$1, from, obj, ok, prop, properties, subAST, subProperties, subProperties$1, v, v$1, v$2, v$3;
@@ -50777,15 +50707,15 @@ $packages["main"] = (function() {
 			_ref = prop;
 			if ($assertType(_ref, ptrType, true)[1]) {
 				v = _ref.$val;
-				properties = $makeSlice(sliceType, v.Arr.$length);
+				properties = $makeSlice(sliceType$2, v.Arr.$length);
 				$copySlice(properties, v.Arr);
 				return properties;
-			} else if ($assertType(_ref, sliceType, true)[1]) {
+			} else if ($assertType(_ref, sliceType$2, true)[1]) {
 				v$1 = _ref.$val;
 				return v$1;
 			} else {
 				v$2 = _ref;
-				return new sliceType([v$2]);
+				return new sliceType$2([v$2]);
 			}
 		}
 		_tuple$1 = (_entry$1 = $mapIndex(ast.Obj,$String.keyFor("from")), _entry$1 !== undefined ? [_entry$1.v, true] : [$ifaceNil, false]);
@@ -50825,7 +50755,7 @@ $packages["main"] = (function() {
 			}
 			_i++;
 		}
-		return new sliceType([]);
+		return new sliceType$2([]);
 	};
 	createQueryGopherJS = function(param, args) {
 		var {$24r, $24r$1, _r, _r$1, _r$2, _r$3, _r$4, _r$5, _tuple, _tuple$1, _tuple$2, _tuple$3, args, ast, err, evalQ, from, jsObj, param, properties, reqData, scanner, sql, timeRange, to, $s, $r, $c} = $restore(this, {param, args});
@@ -50860,7 +50790,7 @@ $packages["main"] = (function() {
 		/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 4; continue; }
 		/* */ $s = 5; continue;
 		/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 4:
-			_r$3 = fmt.Sprintf("Failed to apply macros: %v", new sliceType([err])); /* */ $s = 6; case 6: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+			_r$3 = fmt.Sprintf("Failed to apply macros: %v", new sliceType$2([err])); /* */ $s = 6; case 6: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
 			$24r = new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String(_r$3) }]));
 			$s = 7; case 7: return $24r;
 		/* } */ case 5:
@@ -50872,7 +50802,7 @@ $packages["main"] = (function() {
 		/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 9; continue; }
 		/* */ $s = 10; continue;
 		/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 9:
-			_r$5 = fmt.Sprintf("Failed to parse query: %v", new sliceType([err])); /* */ $s = 11; case 11: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
+			_r$5 = fmt.Sprintf("Failed to parse query: %v", new sliceType$2([err])); /* */ $s = 11; case 11: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
 			$24r$1 = new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String(_r$5) }]));
 			$s = 12; case 12: return $24r$1;
 		/* } */ case 10:
@@ -50928,7 +50858,7 @@ $packages["main"] = (function() {
 		/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 2; continue; }
 		/* */ $s = 3; continue;
 		/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 2:
-			_r$1 = fmt.Sprintf("Failed to parse query: %v", new sliceType([err])); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			_r$1 = fmt.Sprintf("Failed to parse query: %v", new sliceType$2([err])); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 			$24r = new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String(_r$1) }]));
 			$s = 5; case 5: return $24r;
 		/* } */ case 3:
@@ -50936,7 +50866,7 @@ $packages["main"] = (function() {
 			properties = findGroupByProperties(ast);
 			$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "properties", v: properties }]));
 		}
-		properties$1 = sliceType.nil;
+		properties$1 = sliceType$2.nil;
 		_tuple$1 = (_entry = $mapIndex(ast.Obj,$String.keyFor(propertyName)), _entry !== undefined ? [_entry.v, true] : [$ifaceNil, false]);
 		prop = _tuple$1[0];
 		exists = _tuple$1[1];
@@ -50944,17 +50874,17 @@ $packages["main"] = (function() {
 			_ref = prop;
 			if ($assertType(_ref, ptrType, true)[1]) {
 				v = _ref.$val;
-				properties$1 = $makeSlice(sliceType, v.Arr.$length);
+				properties$1 = $makeSlice(sliceType$2, v.Arr.$length);
 				$copySlice(properties$1, v.Arr);
-			} else if ($assertType(_ref, sliceType, true)[1]) {
+			} else if ($assertType(_ref, sliceType$2, true)[1]) {
 				v$1 = _ref.$val;
 				properties$1 = v$1;
 			} else if ($assertType(_ref, mapType, true)[1]) {
 				v$2 = _ref.$val;
-				properties$1 = new sliceType([new mapType(v$2)]);
+				properties$1 = new sliceType$2([new mapType(v$2)]);
 			} else {
 				v$3 = _ref;
-				properties$1 = new sliceType([v$3]);
+				properties$1 = new sliceType$2([v$3]);
 			}
 		}
 		$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "properties", v: properties$1 }]));
@@ -50967,7 +50897,6 @@ $packages["main"] = (function() {
 		$global.getAstProperty = js.MakeFunc(getAstPropertyGopherJS);
 	};
 	AdhocFilter.init("", [{prop: "Key", name: "Key", embedded: false, exported: true, typ: $String, tag: "json:\"key\""}, {prop: "Operator", name: "Operator", embedded: false, exported: true, typ: $String, tag: "json:\"operator\""}, {prop: "Value", name: "Value", embedded: false, exported: true, typ: $emptyInterface, tag: "json:\"value\""}]);
-	Target.init("", [{prop: "Database", name: "Database", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Table", name: "Table", embedded: false, exported: true, typ: $String, tag: ""}]);
 	QueryRequest.init("", [{prop: "RefId", name: "RefId", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "RuleUid", name: "RuleUid", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "RawQuery", name: "RawQuery", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "Query", name: "Query", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "DateTimeCol", name: "DateTimeCol", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "DateCol", name: "DateCol", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "DateTimeType", name: "DateTimeType", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Extrapolate", name: "Extrapolate", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "SkipComments", name: "SkipComments", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "AddMetadata", name: "AddMetadata", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "Format", name: "Format", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Round", name: "Round", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "IntervalFactor", name: "IntervalFactor", embedded: false, exported: true, typ: $Int, tag: ""}, {prop: "Interval", name: "Interval", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Database", name: "Database", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Table", name: "Table", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "MaxDataPoints", name: "MaxDataPoints", embedded: false, exported: true, typ: $Int64, tag: ""}, {prop: "FrontendDatasource", name: "FrontendDatasource", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "UseWindowFuncForMacros", name: "UseWindowFuncForMacros", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "TimeRange", name: "TimeRange", embedded: false, exported: true, typ: structType, tag: ""}]);
 	$init = function() {
 		$pkg.$init = function() {};
