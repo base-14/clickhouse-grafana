@@ -1,6 +1,6 @@
 {
   "name": "base14-clickhouse-grafana",
-  "version": "3.4.1",
+  "version": "1.0.0",
   "description": "base14 ClickHouse datasource for Grafana",
   "scripts": {
     "build": "npm run build:gopherjs && npm run build:frontend",
