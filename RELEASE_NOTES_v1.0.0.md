@@ -2,7 +2,7 @@
 
 ## 🎉 First Official Release
 
-This is the inaugural release of the **base14 ClickHouse Datasource**, a professionally maintained and enhanced version of the ClickHouse Grafana plugin for enterprise and production use.
+This is the inaugural release of the **base14 ClickHouse Datasource**, a professionally maintained and enhanced version of the ClickHouse Grafana plugin specifically optimized for OpenTelemetry observability workflows.
 
 ## 📝 Attribution
 
@@ -177,4 +177,4 @@ MIT License - Free for commercial and private use. See [LICENSE](LICENSE) for de
 
 ---
 
-**base14 ClickHouse Datasource v1.0.0** - Building on excellence, delivering enterprise-ready ClickHouse integration for Grafana.
+**base14 ClickHouse Datasource v1.0.0** - Building on excellence, optimized for OpenTelemetry data visualization in Grafana.
