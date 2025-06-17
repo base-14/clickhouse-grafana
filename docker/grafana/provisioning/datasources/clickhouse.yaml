@@ -1,7 +1,7 @@
 ﻿apiVersion: 1
 
 datasources:
-  - name: scout-clickhouse-ds
+  - name: clickhouse
     type: base14-clickhouse-datasource
     access: proxy
     url: http://clickhouse:8123
