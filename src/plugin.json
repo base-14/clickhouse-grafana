@@ -9,6 +9,7 @@
   "alerting": true,
   "logs": true,
   "executable": "base14-clickhouse-plugin",
+  "rootUrls": ["*"],
   "info": {
     "description": "base14 ClickHouse datasource for Grafana",
     "author": {
