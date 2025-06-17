@@ -1,0 +1,122 @@
+name: Build Unsigned
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag for the unsigned build'
+        required: true
+        default: 'v1.0.0-unsigned'
+
+jobs:
+  build-unsigned:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GOPHERJS_GOLANG_VERSION: 1.19
+      GOPHERJS_VERSION: 1.19.0-beta1
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Gopherjs environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GOPHERJS_GOLANG_VERSION }}
+
+      - name: Setup Gopherjs
+        run: |
+          go install -v github.com/gopherjs/gopherjs@v${GOPHERJS_VERSION}
+          go env > $HOME/go_env && . $HOME/go_env && \
+          sudo cp -l "$GOPATH/bin/gopherjs" /usr/bin/gopherjs
+
+      - name: Install nodejs dependencies
+        run: npm ci
+
+      - name: Build and test frontend
+        run: npm run build
+
+      - name: Verify plugin.json structure
+        run: |
+          echo "Verifying plugin.json structure..."
+          jq '.' dist/plugin.json > /dev/null
+          echo "Plugin JSON is valid"
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Check for backend
+        id: check-for-backend
+        run: |
+          if [ -f "Magefile.go" ]
+          then
+            echo "has-backend=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Test backend
+        if: steps.check-for-backend.outputs.has-backend == 'true'
+        uses: magefile/mage-action@v3
+        with:
+          version: latest
+          args: coverage
+
+      - name: Build backend
+        if: steps.check-for-backend.outputs.has-backend == 'true'
+        uses: magefile/mage-action@v3
+        with:
+          version: latest
+          args: buildAll
+
+      - name: Get plugin metadata
+        id: metadata
+        run: |
+          sudo apt-get install -y jq
+
+          export GRAFANA_PLUGIN_ID=$(cat dist/plugin.json | jq -r .id)
+          export GRAFANA_PLUGIN_VERSION=$(cat dist/plugin.json | jq -r .info.version)
+          export GRAFANA_PLUGIN_TYPE=$(cat dist/plugin.json | jq -r .type)
+          export GRAFANA_PLUGIN_ARTIFACT=${GRAFANA_PLUGIN_ID}-${GRAFANA_PLUGIN_VERSION}-unsigned.zip
+          export GRAFANA_PLUGIN_ARTIFACT_CHECKSUM=${GRAFANA_PLUGIN_ARTIFACT}.md5
+
+          echo "plugin-id=${GRAFANA_PLUGIN_ID}" >> $GITHUB_OUTPUT
+          echo "plugin-version=${GRAFANA_PLUGIN_VERSION}" >> $GITHUB_OUTPUT
+          echo "plugin-type=${GRAFANA_PLUGIN_TYPE}" >> $GITHUB_OUTPUT
+          echo "archive=${GRAFANA_PLUGIN_ARTIFACT}" >> $GITHUB_OUTPUT
+          echo "archive-checksum=${GRAFANA_PLUGIN_ARTIFACT_CHECKSUM}" >> $GITHUB_OUTPUT
+
+          echo "github-tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+
+      - name: Package plugin
+        id: package-plugin
+        run: |
+          mv dist ${{ steps.metadata.outputs.plugin-id }}
+          zip ${{ steps.metadata.outputs.archive }} ${{ steps.metadata.outputs.plugin-id }} -r
+          md5sum ${{ steps.metadata.outputs.archive }} > ${{ steps.metadata.outputs.archive-checksum }}
+          echo "checksum=$(cat ./${{ steps.metadata.outputs.archive-checksum }} | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+
+      - name: Create changelog
+        id: changelog
+        run: |
+          awk '/^# / {s++} s == 1 {print}' CHANGELOG.md > /tmp/release_notes.md
+          echo "path=/tmp/release_notes.md" >> $GITHUB_OUTPUT
+
+      - name: Create Github release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.metadata.outputs.github-tag }}
+          name: "${{ steps.metadata.outputs.github-tag }} (Unsigned)"
+          draft: false
+          prerelease: true
+          generate_release_notes: true
+          files: |
+            ./${{ steps.metadata.outputs.archive }}
+            ./${{ steps.metadata.outputs.archive-checksum }}
+          body_path: ${{ steps.changelog.outputs.path }}
