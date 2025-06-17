@@ -1,6 +1,16 @@
+# base14 ClickHouse Datasource for Grafana - Changelog
+
+## Attribution
+This project is derivative work based on the original ClickHouse Grafana Plugin by Vertamedia (2017-2020) and Altinity (2020-2025).
+For complete attribution, see [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES).
+
+---
+
 # 3.4.1 (2025-06-05)
 ## Enhancements:
 * switch to gopherjs instead of wasm for process SQL with macros on browser
+* Custom ad-hoc filter maps functionality (base14 enhancement)
+* OpenTelemetry data support improvements (base14 enhancement)
 
 
 # 3.4.0 (2025-05-03)

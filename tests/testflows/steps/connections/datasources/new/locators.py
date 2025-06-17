@@ -9,7 +9,7 @@ class Locators:
     @property
     def new_altinity_plugin_datasource(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Add new data source Altinity plugin for ClickHouse']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Add new data source base14 ClickHouse Datasource']")
 
 
 locators = Locators()

@@ -18,7 +18,7 @@ RQ_SRS_Plugin_ManualPluginInstallation = Requirement(
     description=(
         'The [Plugin] SHALL be available to be installed using grafana-cli with the following command:\n'
         '\n'
-        '`grafana-cli plugins install vertamedia-clickhouse-datasource`. \n'
+        '`grafana-cli plugins install base14-clickhouse-datasource`. \n'
         '\n'
         'For installation, user need to install [Grafana] first.\n'
         '\n'
@@ -39,7 +39,7 @@ RQ_SRS_Plugin_GrafanaCloudPluginInstallation = Requirement(
         'The [Plugin] SHALL be available to be installed in Grafana Cloud with the following steps:\n'
         '* Go to Grafana Cloud\n'
         '* Go to Administration `>` Plugins And Data `>` Plugins\n'
-        '* Find `Altinity plugin for ClickHouse`\n'
+        '* Find `base14 ClickHouse Datasource`\n'
         '* Click Install\n'
         '\n'
         '![configuration](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/configuration.png)\n'
