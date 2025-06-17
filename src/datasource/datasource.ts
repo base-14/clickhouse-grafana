@@ -728,7 +728,7 @@ export class CHDataSource
 
   getTagKeys() {
     // check whether variable `adhoc_query_filter` exists to apply additional filtering
-    // @see https://github.com/Altinity/clickhouse-grafana/issues/75
+    // @see https://github.com/base-14/clickhouse-grafana/issues/75
     // @see https://github.com/grafana/grafana/issues/13109
     let queryFilter = '';
     each(this.templateSrv.getVariables(), (v: TypedVariableModel) => {

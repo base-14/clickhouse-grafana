@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the **Altinity ClickHouse Grafana Datasource Plugin** - a production-ready Grafana plugin that enables visualization of data from ClickHouse databases. Originally developed by Vertamedia, maintained by Altinity since 2020.
+This is the **base14 ClickHouse Datasource** - a production-ready Grafana plugin that enables visualization of data from ClickHouse databases. Originally developed by Vertamedia, maintained by Altinity until 2025, now enhanced and maintained by base14.
 
 **Architecture**: Hybrid TypeScript (React frontend) + Go (backend service) plugin following Grafana's standard datasource plugin architecture.
 

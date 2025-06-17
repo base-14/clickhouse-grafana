@@ -2,7 +2,7 @@
 
 datasources:
  - name: clickhouse-ontime
-   type: vertamedia-clickhouse-datasource
+   type: base14-clickhouse-datasource
    access: proxy
    url: http://clickhouse-ontime:8123
    editable: true

@@ -1,6 +1,6 @@
-# Altinity Grafana datasource plugin for ClickHouse
+# base14 ClickHouse Datasource Plugin for Grafana
 
-This document is a starting point for building a Altinity Grafana datasource plugin for ClickHouse.
+This document is a starting point for building the base14 ClickHouse datasource plugin for Grafana.
 
 ## Requirements
 ```
@@ -49,7 +49,7 @@ To develop without build inside a docker, the development process for frontend p
 
 #### Backend Builder
 
-The backend builder is the docker container used to compile the golang source code into the `altinity-clickhouse-plugin_*` binaries in the `dist` dir. This will affect the grafana service used for running queries for alerting. The entrypoint for the go code is at `pkg/main.go`.
+The backend builder is the docker container used to compile the golang source code into the `base14-clickhouse-plugin_*` binaries in the `dist` dir. This will affect the grafana service used for running queries for alerting. The entrypoint for the go code is at `pkg/main.go`.
 
 To develop using docker, the development process for backend part of code looks like:
 1. change source files
@@ -156,8 +156,8 @@ Before signing a plugin please read the Grafana [plugin publishing and signing c
 Before signing a plugin for the first time please consult the Grafana [plugin signature levels](https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/#plugin-signature-levels) documentation to understand the differences between the types of signature level.
 
 1. Create a [Grafana Cloud account](https://grafana.com/signup).
-2. Make sure your account present in Vertamedia organization.
-   - _You can find the plugin ID in the `plugin.json` file inside your plugin directory. For example, if your account slug is `vertamedia`, you need to prefix the plugin ID with `vertamedia-`._
+2. Make sure your account present in base14 organization.
+   - _You can find the plugin ID in the `plugin.json` file inside your plugin directory. For example, if your account slug is `base14`, you need to prefix the plugin ID with `base14-`._
 3. Create a Grafana Cloud API key with the `PluginPublisher` role or create Grafana Access Policy Token with plugin scopes, look for details https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/#generate-a-token
 4. Keep a record of this API keys as it will be required for signing a plugin
 

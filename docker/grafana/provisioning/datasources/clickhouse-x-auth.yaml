@@ -2,7 +2,7 @@
 
 datasources:
   - name: clickhouse-x-auth
-    type: vertamedia-clickhouse-datasource
+    type: base14-clickhouse-datasource
     access: proxy
     url: https://clickhouse:8443
     basicAuth: false

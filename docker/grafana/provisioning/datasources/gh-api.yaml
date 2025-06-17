@@ -2,7 +2,7 @@ apiVersion: 1
 
 datasources:
   - name: gh-api
-    type: vertamedia-clickhouse-datasource
+    type: base14-clickhouse-datasource
     editable: true
     uid: gh-api
     access: proxy

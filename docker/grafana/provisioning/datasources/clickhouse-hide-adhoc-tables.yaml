@@ -2,7 +2,7 @@
 
 datasources:
   - name: clickhouse-hide-adhoc-tables
-    type: vertamedia-clickhouse-datasource
+    type: base14-clickhouse-datasource
     access: proxy
     url: http://clickhouse:8123
     basicAuth: true

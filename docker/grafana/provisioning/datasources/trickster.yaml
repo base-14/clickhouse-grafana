@@ -2,7 +2,7 @@
 
 datasources:
  - name: trickster
-   type: vertamedia-clickhouse-datasource
+   type: base14-clickhouse-datasource
    access: proxy
    url: http://trickster:8480/click1/
    editable: true

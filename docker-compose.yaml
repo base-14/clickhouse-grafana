@@ -60,7 +60,7 @@ services:
         grafana_image: ${GRAFANA_IMAGE:-grafana}
         grafana_version: ${GRAFANA_VERSION:-latest}
     volumes:
-      - ./dist/:/var/lib/grafana/plugins/vertamedia-clickhouse-datasource/
+      - ./dist/:/var/lib/grafana/plugins/base14-clickhouse-datasource/
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
@@ -73,7 +73,7 @@ services:
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: base14-clickhouse-datasource
     depends_on:
       - clickhouse
 
@@ -90,7 +90,7 @@ services:
         grafana_image: ${GRAFANA_IMAGE:-grafana}
         grafana_version: ${GRAFANA_VERSION:-latest}
     volumes:
-      - ./dist/:/var/lib/grafana/plugins/vertamedia-clickhouse-datasource/
+      - ./dist/:/var/lib/grafana/plugins/base14-clickhouse-datasource/
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
@@ -103,7 +103,7 @@ services:
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: base14-clickhouse-datasource
     depends_on:
       - clickhouse
 
@@ -117,7 +117,7 @@ services:
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
 
     environment:
-      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,https://github.com/Altinity/clickhouse-grafana/releases/download/v${CLICKHOUSE_PLUGIN_VERSION:-3.4.1}/vertamedia-clickhouse-datasource-${CLICKHOUSE_PLUGIN_VERSION:-3.4.1}.zip;vertamedia-clickhouse-datasource"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,https://github.com/base-14/clickhouse-grafana/releases/download/v${CLICKHOUSE_PLUGIN_VERSION:-3.4.1}/base14-clickhouse-datasource-${CLICKHOUSE_PLUGIN_VERSION:-3.4.1}.zip;base14-clickhouse-datasource"
       GF_LOG_LEVEL: debug
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
@@ -180,7 +180,7 @@ services:
         (command -v mage || go install -v github.com/magefile/mage@latest) &&
         go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/... &&
         mage -v && 
-        chmod +x ./dist/altinity-clickhouse-plugin*
+        chmod +x ./dist/base14-clickhouse-plugin*
       "
 
   frontend_coverage_builder:
@@ -242,8 +242,8 @@ services:
         mkdir -p /go/src/grafana-clickhouse/go_coverage/raw &&
         go env &&
         go test -timeout 1m -cover -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/... -test.gocoverdir="/go/src/grafana-clickhouse/go_coverage" &&
-        GOOS=linux GOARCH=amd64 go build -cover -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ &&
-        chmod +x dist/altinity-clickhouse-plugin*
+        GOOS=linux GOARCH=amd64 go build -cover -buildvcs=false -o ./dist/base14-clickhouse-plugin_linux_amd64 ./pkg/ &&
+        chmod +x dist/base14-clickhouse-plugin*
       "
 
   backend_coverage_generate:

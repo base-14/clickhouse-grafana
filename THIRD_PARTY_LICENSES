@@ -1,10 +1,20 @@
+THIRD PARTY LICENSES
+====================
+
+This project incorporates code from the following projects under the MIT License:
+
+Original ClickHouse Grafana Plugin
+-----------------------------------
+Originally developed by Vertamedia (2017-2020)
+Maintained by Altinity (2020-2025)
+
+Original Repository: https://github.com/Altinity/clickhouse-grafana
+This base14 version is derivative work based on the original codebase.
+
 MIT License
 
-This software is derivative work based on the original ClickHouse Grafana Plugin
-originally developed by Vertamedia (2017-2020) and maintained by Altinity (2020-2025).
-See THIRD_PARTY_LICENSES for complete attribution of the original work.
-
-Copyright (c) 2025 base14 (derivative work and enhancements)
+Copyright (c) 2017-2020 Vertamedia
+Copyright (c) after 2020 Altinity
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,3 +33,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+base14 Enhancements
+-------------------
+Additional features and enhancements developed by base14 (2025) are also 
+licensed under the MIT License. See the main LICENSE file for details.

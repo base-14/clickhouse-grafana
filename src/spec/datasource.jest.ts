@@ -297,7 +297,7 @@ describe('clickhouse sql series:', () => {
   });
 });
 
-// check https://github.com/Altinity/clickhouse-grafana/issues/281
+// check https://github.com/base-14/clickhouse-grafana/issues/281
 describe('When meta and data keys do not have the same index', () => {
   const response = {
     meta: [

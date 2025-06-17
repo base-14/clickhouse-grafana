@@ -1,7 +1,7 @@
 {
-  "name": "altinity-clickhouse-grafana",
+  "name": "base14-clickhouse-grafana",
   "version": "3.4.1",
-  "description": "Altinity grafana datasource for ClickHouse",
+  "description": "base14 ClickHouse datasource for Grafana",
   "scripts": {
     "build": "npm run build:gopherjs && npm run build:frontend",
     "dev": "npm run build:gopherjs && webpack -w -c ./.config/webpack/webpack.config.ts --env development",
@@ -21,7 +21,7 @@
     "build:backend": "docker compose run --rm backend_builder && chmod +rx ./dist",
     "build:gopherjs": "gopherjs build -o ./src/datasource/backend_gopher.js ./pkg/gopherjs/backend_gopherjs.go && sed -i '1s/^\"use strict\";//' ./src/datasource/backend_gopher.js"
   },
-  "author": "Altinity",
+  "author": "base14",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.21.4",
