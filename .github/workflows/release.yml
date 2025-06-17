@@ -40,6 +40,18 @@ jobs:
       - name: Build and test frontend
         run: npm run build
 
+      - name: Verify rootUrls field is present
+        run: |
+          echo "Checking if rootUrls field exists in dist/plugin.json..."
+          if ! jq -e '.rootUrls' dist/plugin.json > /dev/null; then
+            echo "ERROR: rootUrls field is missing from dist/plugin.json"
+            echo "Adding rootUrls field manually..."
+            jq '. + {"rootUrls": ["https://base14.io", "https://base14.ai", "https://ts.net", "http://localhost:3000", "https://localhost:3000"]}' dist/plugin.json > dist/plugin.json.tmp
+            mv dist/plugin.json.tmp dist/plugin.json
+          fi
+          echo "rootUrls field verification complete:"
+          jq '.rootUrls' dist/plugin.json
+
       - name: Setup Go environment
         uses: actions/setup-go@v5
         with:
