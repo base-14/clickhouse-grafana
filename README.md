@@ -23,7 +23,7 @@ We extend our sincere gratitude to the original developers and maintainers for c
 - Enhanced query customization features
 - Internal branding and distribution
 
-For complete license information and attribution, see [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES).
+For complete license information and attribution, see [THIRD_PARTY_LICENSES](https://github.com/base-14/clickhouse-grafana/blob/master/THIRD_PARTY_LICENSES).
 
 ## Quick start
 
@@ -425,7 +425,7 @@ ORDER BY
   t
 ```
 
-look [issue 386](https://github.com/base-14/clickhouse-grafana/issues/386) for reasons for implementation  
+see technical documentation for implementation details  
 
 ---
 
@@ -456,7 +456,7 @@ FROM
 )
 ```
 
-// see [issue 78](https://github.com/base-14/clickhouse-grafana/issues/78) for the background
+// historical implementation note
 
 ---
 
@@ -590,7 +590,7 @@ FROM
 )
 ```
 
-// see [issue 455](https://github.com/base-14/clickhouse-grafana/issues/455) for the background
+// see technical documentation for background
 
 ---
 
@@ -1144,7 +1144,7 @@ For better performance and control over available filters, you can now use **Cus
 ]
 ```
 
-For detailed documentation, see [Custom Filter Maps Guide](docs/CUSTOM_FILTER_MAPS.md).
+For detailed documentation, see [Custom Filter Maps Guide](https://github.com/base-14/clickhouse-grafana/blob/master/docs/CUSTOM_FILTER_MAPS.md).
 
 ## Template variable values via Query
 
