@@ -8,6 +8,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       # usage of GRAFANA_API_KEY is deprecated
       GRAFANA_API_KEY: ${{ secrets.GRAFANA_API_KEY }}
