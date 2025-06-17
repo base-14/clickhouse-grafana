@@ -11,6 +11,28 @@ LIMIT 100`;
 export const DEFAULT_ADHOC_VALUES_QUERY = `SELECT DISTINCT arrayJoin(mapValues(ResourceAttributes)) as values 
 FROM {table} 
 WHERE {timefilter} AND {key} = '{selectedkey}'`;
+
+/**
+ * AdHocFilter provides dynamic filtering capabilities for ClickHouse datasource.
+ * 
+ * Supports three modes of operation:
+ * 1. Custom Filter Maps - Predefined filter options for better performance and control
+ * 2. Custom Query Mode - User-defined queries for keys and values discovery
+ * 3. Auto-Discovery Mode - Automatic discovery from system.columns (default/fallback)
+ * 
+ * Features:
+ * - Caching for improved performance
+ * - Support for custom key/value queries with placeholders
+ * - Backward compatibility with existing configurations
+ * - Error handling and graceful fallbacks
+ * 
+ * @example
+ * ```typescript
+ * const adHocFilter = new AdHocFilter(datasource);
+ * const keys = await adHocFilter.GetTagKeys();
+ * const values = await adHocFilter.GetTagValues({ key: 'column_name' });
+ * ```
+ */
 export default class AdHocFilter {
   tagKeys: any[];
   tagValues: { [key: string]: any } = {};
@@ -21,6 +43,11 @@ export default class AdHocFilter {
   customFilterMaps: CustomFilterMap[];
   useCustomFilterMaps: boolean;
 
+  /**
+   * Creates a new AdHocFilter instance.
+   * 
+   * @param datasource The ClickHouse datasource instance containing configuration
+   */
   constructor(datasource: any) {
     const queryFilter = "database NOT IN ('system','INFORMATION_SCHEMA','information_schema')";
     const columnsQuery =
@@ -89,11 +116,17 @@ export default class AdHocFilter {
     }
   }
 
-  // GetTagKeys fetches columns from CH tables according to provided filters
-  // if no filters applied all tables from all databases will be fetched
-  // if datasource setting `defaultDatabase` is set only tables from that database will be fetched
-  // if query param passed it will be performed instead of default
-  // If custom filter maps are enabled and available, returns custom tag keys instead
+  /**
+   * Fetches available tag keys for ad-hoc filters.
+   * 
+   * Priority order:
+   * 1. Custom filter maps (if enabled and available)
+   * 2. Custom adhoc keys query (if configured)
+   * 3. Default system.columns query
+   * 
+   * @param query Optional custom query to override default behavior
+   * @returns Promise<any[]> Array of tag key objects with text and value properties
+   */
   GetTagKeys(query?: string) {
     let self = this;
     
@@ -123,6 +156,12 @@ export default class AdHocFilter {
     });
   }
 
+  /**
+   * Processes the response from system.columns query to extract tag keys.
+   * 
+   * @param response Raw response from ClickHouse system.columns query
+   * @returns Promise<any[]> Processed array of unique tag key objects
+   */
   processTagKeysResponse(response: any): Promise<any[]> {
     const columnNames: { [key: string]: boolean } = {};
 
@@ -159,6 +198,12 @@ export default class AdHocFilter {
     return Promise.resolve(this.tagKeys);
   }
 
+  /**
+   * Processes the response from custom adhoc keys query to extract tag keys.
+   * 
+   * @param response Raw response from custom adhoc keys query
+   * @returns Promise<any[]> Processed array of tag key objects
+   */
   processCustomTagKeysResponse(response: any): Promise<any[]> {
     // Clear existing tag keys for custom query
     this.tagKeys = [];
@@ -192,10 +237,20 @@ export default class AdHocFilter {
     return Promise.resolve(this.tagKeys);
   }
 
-  // GetTagValues returns column values according to passed options
-  // Values for fields with Enum type were already fetched in GetTagKeys func and stored in `tagValues`
-  // Values for fields which not represented on `tagValues` get from ClickHouse and cached on `tagValues`
-  // If custom filter maps are enabled, checks for matching custom filter map first
+  /**
+   * Fetches available tag values for a specific key in ad-hoc filters.
+   * 
+   * Priority order:
+   * 1. Custom filter maps (if enabled and key matches)
+   * 2. Custom adhoc values query with {key} placeholder
+   * 3. Default values query
+   * 
+   * Values are cached to improve performance on subsequent requests.
+   * 
+   * @param options Object containing the key to get values for
+   * @param options.key The field/column name to get values for
+   * @returns Promise<any[]> Array of tag value objects with text and value properties
+   */
   async GetTagValues(options: any) {
     // Check for custom filter maps first
     if (this.useCustomFilterMaps && this.customFilterMaps.length > 0) {
@@ -305,6 +360,12 @@ export default class AdHocFilter {
       });
   }
 
+  /**
+   * Processes the response from tag values query to standardize format.
+   * 
+   * @param response Raw response from ClickHouse values query
+   * @returns Promise<any[]> Processed array of tag value objects
+   */
   processTagValuesResponse(response: any) {
     const tagValues = response.map((item: any) => ({ text: item.text, value: item.text }));
     return Promise.resolve(tagValues);
