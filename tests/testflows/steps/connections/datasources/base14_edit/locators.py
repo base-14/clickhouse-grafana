@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By as SelectBy
 
 
 class Locators:
-    # Locators for connections/datasources/altinity_edit page
+    # Locators for connections/datasources/base14_edit page
 
     @property
     def name_field(self):

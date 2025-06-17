@@ -281,8 +281,8 @@ def check_red_into_green_alert(self):
 def feature(self):
     """Check that grafana plugin supports legacy alerts."""
 
-    with When("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='test_alerts_legacy', url="http://clickhouse:8123",)
+    with When("I create new base14 datasource"):
+        actions.create_new_base14_datasource(datasource_name='test_alerts_legacy', url="http://clickhouse:8123",)
 
     for scenario in loads(current_module(), Scenario):
         scenario()

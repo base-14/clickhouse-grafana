@@ -260,8 +260,8 @@ def feature(self):
     with Given("I define dashboard name for tests"):
         dashboard_name = define("dashboard_name", "query_options")
 
-    with When("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='query_options', url="http://clickhouse:8123",)
+    with When("I create new base14 datasource"):
+        actions.create_new_base14_datasource(datasource_name='query_options', url="http://clickhouse:8123",)
 
     with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name=dashboard_name)

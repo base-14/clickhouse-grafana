@@ -10,7 +10,7 @@ import steps.dashboards.view as dashboards
 import steps.panel.sql_editor.view as sql_editor
 import steps.connections.datasources.view as datasources
 import steps.connections.datasources.new.view as datasources_new
-import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
+import steps.connections.datasources.base14_edit.view as datasources_base14_edit
 
 from requirements.requirements import *
 
@@ -56,11 +56,11 @@ def check_queries(self):
 def mixed_data_sources(self):
     """Check that grafana plugin supports mixed data sources."""
 
-    with When("I create the first new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='mixed_1', url="http://clickhouse:8123")
+    with When("I create the first new base14 datasource"):
+        actions.create_new_base14_datasource(datasource_name='mixed_1', url="http://clickhouse:8123")
 
-    with When("I create the second new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='mixed_2', url="http://clickhouse:8123")
+    with When("I create the second new base14 datasource"):
+        actions.create_new_base14_datasource(datasource_name='mixed_2', url="http://clickhouse:8123")
 
     with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name="mixed")
@@ -140,31 +140,31 @@ def default_values_not_affect_url_textfield(self):
 
     with And("I click new altinity grafana plugin"):
         with delay():
-            datasources_new.click_new_altinity_plugin_datasource()
+            datasources_new.click_new_base14_plugin_datasource()
 
     with And("I enter url"):
         with delay():
-            datasources_altinity_edit.enter_url_into_url_field(url="http://clickhouse:8123")
+            datasources_base14_edit.enter_url_into_url_field(url="http://clickhouse:8123")
 
     with And("I enter datasource name"):
         with delay():
-            datasources_altinity_edit.enter_name_into_name_field(datasource_name="default_values_not_affect_url_textfield")
+            datasources_base14_edit.enter_name_into_name_field(datasource_name="default_values_not_affect_url_textfield")
 
     with And("I click save and test button"):
         with delay():
-            datasources_altinity_edit.click_save_and_test_button()
+            datasources_base14_edit.click_save_and_test_button()
 
     with And("I click `Use default values toggle`"):
         with delay():
-            datasources_altinity_edit.click_use_default_values_toggle()
+            datasources_base14_edit.click_use_default_values_toggle()
 
     with And("I click use post method toggle"):
         with delay():
-            datasources_altinity_edit.click_use_post_method_toggle()
+            datasources_base14_edit.click_use_post_method_toggle()
 
     with Then("I check that url textfield is not change after clicking on the toggle"):
         with delay():
-            assert datasources_altinity_edit.get_url_textfield_text() == "http://clickhouse:8123", error()
+            assert datasources_base14_edit.get_url_textfield_text() == "http://clickhouse:8123", error()
 
 
 @TestScenario

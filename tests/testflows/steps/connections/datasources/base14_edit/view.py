@@ -4,7 +4,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By as SelectBy
 from steps.delay import delay
-from steps.connections.datasources.altinity_edit.locators import locators
+from steps.connections.datasources.base14_edit.locators import locators
 
 import steps.ui as ui
 

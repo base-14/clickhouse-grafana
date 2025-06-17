@@ -16,7 +16,7 @@ import steps.panel.query_settings.view as query_settings
 import steps.connections.datasources.new.view as datasources_new
 import steps.alerting.alert_rules.new.view as alert_rules
 import steps.alerting.alert_rules_legacy.new.view as alert_rules_legacy
-import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
+import steps.connections.datasources.base14_edit.view as datasources_base14_edit
 
 
 @TestStep(Then)
@@ -139,7 +139,7 @@ def check_screenshot_contains_green(self, screenshot_name, expected_green_pixels
 
 
 @TestStep(Given)
-def create_new_altinity_datasource(
+def create_new_base14_datasource(
         self,
         datasource_name,
         url,
@@ -199,187 +199,187 @@ def create_new_altinity_datasource(
     :param use_post_method: use post method in http requests, default: False
     """
     try:
-        with Given("I create new Altinity datasource"):
+        with Given("I create new base14 datasource"):
             with delay():
                 with By("opening create new datasource view"):
                     datasources_new.open_add_new_datasource_endpoint()
 
             with delay():
-                with And("clicking new altinity grafana plugin"):
-                    datasources_new.click_new_altinity_plugin_datasource()
+                with And("clicking new base14 grafana plugin"):
+                    datasources_new.click_new_base14_plugin_datasource()
 
             with delay():
                 with By("entering url"):
-                    datasources_altinity_edit.enter_url_into_url_field(url=url)
+                    datasources_base14_edit.enter_url_into_url_field(url=url)
 
             if default:
                 with delay():
                     with By("clicking default toggle"):
-                        datasources_altinity_edit.click_default_toggle()
+                        datasources_base14_edit.click_default_toggle()
 
             if not (access_type is None):
                 with delay():
                     with And("choosing access type in dropdown"):
-                        datasources_altinity_edit.choose_access_type_in_access_dropdown(access_type=access_type)
+                        datasources_base14_edit.choose_access_type_in_access_dropdown(access_type=access_type)
 
             if basic_auth:
                 with delay():
                     with By("clicking basic auth toggle"):
-                        datasources_altinity_edit.click_basic_auth_toggle()
+                        datasources_base14_edit.click_basic_auth_toggle()
                 with delay():
                     with By("entering username"):
-                        datasources_altinity_edit.enter_clickhouse_username(username=username)
+                        datasources_base14_edit.enter_clickhouse_username(username=username)
                 with delay():
                     with By("entering password"):
-                        datasources_altinity_edit.enter_clickhouse_password(password=password)
+                        datasources_base14_edit.enter_clickhouse_password(password=password)
 
             if use_yandex_cloud_authorization:
                 with delay():
                     with By("clicking use Yandex.Cloud authorization toggle"):
-                        datasources_altinity_edit.click_use_yandex_cloud_authorization_toggle()
+                        datasources_base14_edit.click_use_yandex_cloud_authorization_toggle()
                 with delay():
                     with By("entering Yandex.Cloud username"):
-                        datasources_altinity_edit.enter_clickhouse_yandex_cloud_username(username=yandex_cloud_username)
+                        datasources_base14_edit.enter_clickhouse_yandex_cloud_username(username=yandex_cloud_username)
                 with delay():
                     with By("entering Yandex.Cloud password"):
-                        datasources_altinity_edit.enter_clickhouse_yandex_cloud_password(password=yandex_cloud_password)
+                        datasources_base14_edit.enter_clickhouse_yandex_cloud_password(password=yandex_cloud_password)
 
             if tls_client_auth:
                 with delay():
                     with By("clicking TLS Client Auth toggle"):
-                        datasources_altinity_edit.click_tls_client_auth_toggle()
+                        datasources_base14_edit.click_tls_client_auth_toggle()
                 with delay():
                     with By("entering server name"):
-                        datasources_altinity_edit.enter_server_name(server_name=server_name)
+                        datasources_base14_edit.enter_server_name(server_name=server_name)
                 with delay():
                     with By("entering Client Cert"):
-                        datasources_altinity_edit.enter_client_cert(client_cert=client_cert)
+                        datasources_base14_edit.enter_client_cert(client_cert=client_cert)
                 with delay():
                     with By("entering Client Key"):
-                        datasources_altinity_edit.enter_client_key(client_key=client_key)
+                        datasources_base14_edit.enter_client_key(client_key=client_key)
 
             if with_ca_cert:
                 with delay():
                     with By("clicking with CA Cert method"):
-                        datasources_altinity_edit.click_with_ca_cert_toggle()
+                        datasources_base14_edit.click_with_ca_cert_toggle()
                 with delay():
                     with By("entering CA Cert"):
-                        datasources_altinity_edit.enter_ca_cert(ca_cert=ca_cert)
+                        datasources_base14_edit.enter_ca_cert(ca_cert=ca_cert)
 
             if skip_tls_verify:
                 with delay():
                     with By("clicking skip TLS verify toggle"):
-                        datasources_altinity_edit.click_skip_tls_verify_toggle()
+                        datasources_base14_edit.click_skip_tls_verify_toggle()
 
             if use_post_method:
                 with delay():
                     with By("clicking use post method toggle"):
-                        datasources_altinity_edit.click_use_post_method_toggle()
+                        datasources_base14_edit.click_use_post_method_toggle()
 
             if add_cors_flag:
                 with delay():
                     with By("clicking add CORS flag toggle"):
-                        datasources_altinity_edit.click_add_cors_flag_to_request_toggle()
+                        datasources_base14_edit.click_add_cors_flag_to_request_toggle()
 
             if not(default_database is None):
                 with delay():
                     with By("entering default database"):
-                        datasources_altinity_edit.enter_default_database(database_name=default_database)
+                        datasources_base14_edit.enter_default_database(database_name=default_database)
 
             if use_compression:
                 with delay():
                     with By("clicking use compression toggle"):
-                        datasources_altinity_edit.click_use_compression_toggle()
+                        datasources_base14_edit.click_use_compression_toggle()
                 with delay():
                     with By("enter compression type"):
-                        datasources_altinity_edit.enter_compression_type(compression_type='gzip')
+                        datasources_base14_edit.enter_compression_type(compression_type='gzip')
 
             with delay(before=0.5):
                 with And("entering datasource name"):
-                    datasources_altinity_edit.enter_name_into_name_field(datasource_name=datasource_name)
+                    datasources_base14_edit.enter_name_into_name_field(datasource_name=datasource_name)
 
             if not (configure_adhoc_filter_request is None):
                 with delay():
                     with By("entering configure adhoc filter request"):
-                        datasources_altinity_edit.enter_configure_adhoc_filter_request(adhoc_request=configure_adhoc_filter_request)
+                        datasources_base14_edit.enter_configure_adhoc_filter_request(adhoc_request=configure_adhoc_filter_request)
 
             with delay():
                 with By("clicking save and test button"):
-                    datasources_altinity_edit.click_save_and_test_button()
+                    datasources_base14_edit.click_save_and_test_button()
 
             if use_default_values:
                 with delay():
                     with By("clicking use default values toggle"):
-                        datasources_altinity_edit.click_use_default_values_toggle()
+                        datasources_base14_edit.click_use_default_values_toggle()
 
                 with delay():
                     if not(default_column_timestamp_type is None):
                         with By("setting up default timestamp type"):
-                            datasources_altinity_edit.enter_column_timestamp_type(column_timestamp_type=default_column_timestamp_type)
+                            datasources_base14_edit.enter_column_timestamp_type(column_timestamp_type=default_column_timestamp_type)
 
                 with delay():
                     if not (default_datetime_field is None):
                         with By("setting up default datetime field"):
-                            datasources_altinity_edit.enter_datetime_field(
+                            datasources_base14_edit.enter_datetime_field(
                                 datetime=default_datetime_field)
 
                 with delay():
                     if not (default_timestamp_field is None):
                         with By("setting up default timestamp field"):
-                            datasources_altinity_edit.enter_timestamp_field(
+                            datasources_base14_edit.enter_timestamp_field(
                                 timestamp=default_timestamp_field)
 
                 with delay():
                     if not (default_datetime64_field is None):
                         with By("setting up default datetime64 field"):
-                            datasources_altinity_edit.enter_datetime64_field(
+                            datasources_base14_edit.enter_datetime64_field(
                                 datetime64=default_datetime64_field)
                 with delay():
                     if not (default_float_field is None):
                         with By("setting up default float field"):
-                            datasources_altinity_edit.enter_float_field(
+                            datasources_base14_edit.enter_float_field(
                                 float=default_float_field)
 
                 with delay():
                     if not (default_timestamp_64_3_field is None):
                         with By("setting up default Timestamp64(3) field"):
-                            datasources_altinity_edit.enter_timestamp_64_3_field(
+                            datasources_base14_edit.enter_timestamp_64_3_field(
                                 timestamp_64_3=default_timestamp_64_3_field)
 
                 with delay():
                     if not (default_timestamp_64_6_field is None):
                         with By("setting up default Timestamp64(6) field"):
-                            datasources_altinity_edit.enter_timestamp_64_6_field(
+                            datasources_base14_edit.enter_timestamp_64_6_field(
                                 timestamp_64_6=default_timestamp_64_6_field)
 
                 with delay():
                     if not (default_timestamp_64_9_field is None):
                         with By("setting up default Timestamp64(9) field"):
-                            datasources_altinity_edit.enter_timestamp_64_9_field(
+                            datasources_base14_edit.enter_timestamp_64_9_field(
                                 timestamp_64_9=default_timestamp_64_9_field)
 
                 with delay():
                     if not (default_date_field is None):
                         with By("setting up default date field"):
-                            datasources_altinity_edit.enter_date_field(
+                            datasources_base14_edit.enter_date_field(
                                 date=default_date_field)
 
                 with delay():
                     if not (default_context_window is None):
                         with By("setting up default context window"):
-                            datasources_altinity_edit.enter_context_window_field(
+                            datasources_base14_edit.enter_context_window_field(
                                 context_window=default_context_window)
 
                 with delay():
                     with By("clicking save and test button"):
-                        datasources_altinity_edit.click_save_and_test_button()
+                        datasources_base14_edit.click_save_and_test_button()
 
             if successful_connection:
                 with And("checking save and test button returns green alert"):
-                    assert datasources_altinity_edit.check_alert_success() is True, error()
+                    assert datasources_base14_edit.check_alert_success() is True, error()
             else:
                 with And("checking save and test button returns red alert"):
-                    assert datasources_altinity_edit.check_alert_not_success() is True, error()
+                    assert datasources_base14_edit.check_alert_not_success() is True, error()
         yield
     finally:
         with Finally("I delete datasource"):
@@ -391,10 +391,10 @@ def create_new_altinity_datasource(
                     datasources.click_datasource_in_datasources_view(datasource_name=datasource_name)
             with delay():
                 with And("clicking delete button"):
-                    datasources_altinity_edit.click_delete_datasource()
+                    datasources_base14_edit.click_delete_datasource()
             with delay():
                 with And("clicking delete button in confirmation modal dialog"):
-                    datasources_altinity_edit.click_confirm_delete_datasource()
+                    datasources_base14_edit.click_confirm_delete_datasource()
 
 
 @TestStep(When)

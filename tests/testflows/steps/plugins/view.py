@@ -16,6 +16,6 @@ def open_plugins_endpoint(self, endpoint=None):
 def open_grafana_plugin_endpoint(self, endpoint=None):
     """Open plugins view."""
     if endpoint is None:
-        endpoint = f"{self.context.endpoint}plugins/vertamedia-clickhouse-datasource"
+        endpoint = f"{self.context.endpoint}plugins/base14-clickhouse-datasource"
 
     ui.open_endpoint(endpoint=endpoint)

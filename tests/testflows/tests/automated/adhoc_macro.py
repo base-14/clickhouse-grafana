@@ -110,8 +110,8 @@ def adhoc_macro_outline(self, dashboard_name, expected_adhoc_values, adhoc_label
 def default_adhoc(self):
     """Check that grafana plugin supports setting up adhoc filter in datasource setup."""
 
-    with Given("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(
+    with Given("I create new base14 datasource"):
+        actions.create_new_base14_datasource(
             datasource_name="test_default_adhoc",
             url="http://clickhouse:8123",
             configure_adhoc_filter_request="SELECT DISTINCT {field} AS value FROM {database}.{table} WHERE value LIKE '%U%' LIMIT 300",

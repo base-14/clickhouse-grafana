@@ -8,7 +8,7 @@ import steps.panel.view as panel
 import steps.dashboard.view as dashboard
 import steps.panel.sql_editor.view as sql_editor
 import steps.connections.datasources.view as datasources
-import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
+import steps.connections.datasources.base14_edit.view as datasources_base14_edit
 
 from requirements.requirements import *
 
@@ -40,11 +40,11 @@ def check_existing_data_sources(self):
 
             with delay():
                 with When("I click save and test button"):
-                    datasources_altinity_edit.click_save_and_test_button()
+                    datasources_base14_edit.click_save_and_test_button()
 
             with Then("I check save and test button works correctly"):
                 with delay():
-                    assert datasources_altinity_edit.check_alert_success() is True, error()
+                    assert datasources_base14_edit.check_alert_success() is True, error()
 
 
 @TestOutline
@@ -80,7 +80,7 @@ def check_creating_datasource_and_panel(
         check_datasource_is_default=False,
         default_database=None,
 ):
-    """Check that Plugin supports creating altinity datasources and panels using altinity datasources.
+    """Check that Plugin supports creating base14 datasources and panels using base14 datasources.
 
     :param datasource_name: name of the datasource that we are creating
     :param url: url of the datasource that we are creating
@@ -105,8 +105,8 @@ def check_creating_datasource_and_panel(
     :param check_visualization_alert: check that visualization returns or not returns error, default: False
     """
 
-    with Given("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(
+    with Given("I create new base14 datasource"):
+        actions.create_new_base14_datasource(
             use_post_method=use_post_method,
             datasource_name=datasource_name,
             access_type=access_type,
@@ -213,7 +213,7 @@ def check_fail_basic_auth(self):
 @TestScenario
 @Requirements(RQ_SRS_Plugin_DataSourceSetupView_UsePostRequests("1.0"),)
 def check_success_use_post_method(self):
-    """Check that altinity datasources with `Use POST method` toggle turned on use post http requests."""
+    """Check that base14 datasources with `Use POST method` toggle turned on use post http requests."""
     check_creating_datasource_and_panel(
         datasource_name="test_post_method_success",
         successful_connection=True,
@@ -227,7 +227,7 @@ def check_success_use_post_method(self):
 @TestScenario
 @Requirements(RQ_SRS_Plugin_DataSourceSetupView_UsePostRequests("1.0"))
 def check_fail_use_post_method(self):
-    """Check that altinity datasources with `Use POST method` toggle turned off use get http requests."""
+    """Check that base14 datasources with `Use POST method` toggle turned off use get http requests."""
     check_creating_datasource_and_panel(
         datasource_name="test_post_method_not_success",
         successful_connection=True,
@@ -449,8 +449,8 @@ def check_default_values(
         check_reformatted_query="SELECT 'EventDate', 'EventTime'",
 ):
     """Check that plugin supports setting up default values."""
-    with Given("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(
+    with Given("I create new base14 datasource"):
+        actions.create_new_base14_datasource(
             datasource_name="default_values",
             url="http://clickhouse:8123",
             default=True,
@@ -610,8 +610,8 @@ def check_default_values_timestamp_64_9(self):
 def check_default_context_window(self, default_context_window):
     """Check default context window."""
 
-    with Given("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(
+    with Given("I create new base14 datasource"):
+        actions.create_new_base14_datasource(
             datasource_name="default_values_context_window",
             default=True,
             url="http://clickhouse:8123",

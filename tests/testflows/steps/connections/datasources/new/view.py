@@ -15,7 +15,7 @@ def open_add_new_datasource_endpoint(self, endpoint=None):
 
 
 @TestStep(When)
-def click_new_altinity_plugin_datasource(self):
+def click_new_base14_plugin_datasource(self):
     """Click new base14 ClickHouse Datasource."""
 
     locators.new_altinity_plugin_datasource.click()

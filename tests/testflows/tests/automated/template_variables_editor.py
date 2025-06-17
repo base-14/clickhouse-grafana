@@ -10,7 +10,7 @@ import steps.dashboards.view as dashboards
 import steps.panel.sql_editor.view as sql_editor
 import steps.connections.datasources.view as datasources
 import steps.connections.datasources.new.view as datasources_new
-import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
+import steps.connections.datasources.base14_edit.view as datasources_base14_edit
 
 from requirements.requirements import *
 
@@ -19,8 +19,8 @@ from requirements.requirements import *
 def preview_values(self):
     """Check that grafana plugin supports template variables editor and correctly display preview values."""
 
-    with Given("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='preview_variable_values', url="http://clickhouse:8123")
+    with Given("I create new base14 datasource"):
+        actions.create_new_base14_datasource(datasource_name='preview_variable_values', url="http://clickhouse:8123")
 
     with And("I create new dashboard"):
         actions.create_dashboard(dashboard_name="preview_variable_values")
@@ -48,8 +48,8 @@ def preview_values(self):
 def reformatted_query(self):
     """Check that grafana plugin supports template variables editor and correctly display reformatted query."""
 
-    with Given("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='reformatted_query_for_variable', url="http://clickhouse:8123")
+    with Given("I create new base14 datasource"):
+        actions.create_new_base14_datasource(datasource_name='reformatted_query_for_variable', url="http://clickhouse:8123")
 
     with And("I create new dashboard"):
         actions.create_dashboard(dashboard_name="reformatted_query_for_variable")
@@ -80,8 +80,8 @@ def reformatted_query(self):
 def variable_dropdown(self):
     """Check that grafana plugin supports template variables editor and variable dropdown perform correctly."""
     
-    with Given("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='dropdown_variable_values', url="http://clickhouse:8123")
+    with Given("I create new base14 datasource"):
+        actions.create_new_base14_datasource(datasource_name='dropdown_variable_values', url="http://clickhouse:8123")
 
     with And("I create new dashboard"):
         actions.create_dashboard(dashboard_name="variable_dropdown")
