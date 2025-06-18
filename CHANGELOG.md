@@ -8,6 +8,20 @@ For complete attribution, see [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES).
 
 ---
 
+# 1.0.1 (2025-06-18)
+
+## Bug Fixes:
+* **Fix Ad-hoc Filters** - Ad-hoc filters now correctly apply to all dashboard queries using ResourceAttributes map syntax
+* **Map-based Filtering** - Fixed issue where ad-hoc filters were not being applied despite showing in the variable dropdown
+* **Simplified Filter Logic** - Removed complex database/table matching in favor of consistent map-based syntax for OpenTelemetry data
+
+## Technical Details:
+* Changed ad-hoc filter SQL generation to always use `ResourceAttributes['key'] = 'value'` syntax
+* Removed unused parseTargets function and Target struct from gopherjs backend
+* Ensures consistent filtering behavior for all OpenTelemetry map columns
+
+---
+
 # 1.0.0 (2025-06-17) - First base14 Release
 
 🎉 **Inaugural release optimized for OpenTelemetry observability workflows**
