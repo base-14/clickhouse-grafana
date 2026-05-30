@@ -6,7 +6,7 @@ const Components = {
   QueryEditor: {
     EditorMode: {
       options: {
-        QuerySettings: 'Query Settings',
+        QuerySettings: 'Query Builder',
         SQLEditor: 'SQL Editor',
       },
     },

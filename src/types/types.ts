@@ -30,6 +30,12 @@ export enum DatasourceMode {
   Annotation = 'Annotation'
 }
 
+export enum SignalType {
+  Logs = 'logs',
+  Traces = 'traces',
+  Metrics = 'metrics',
+}
+
 export interface CHQuery extends DataQuery {
   query: string;
   format: string;
@@ -45,6 +51,10 @@ export interface CHQuery extends DataQuery {
   dateTimeType?: string;
   dateColDataType?: string;
   dateTimeColDataType?: string;
+  signalType?: SignalType;
+  serviceNames?: string[];
+  environments?: string[];
+  signalNames?: string[];
 
   skip_comments?: boolean;
   add_metadata?: boolean;
@@ -90,7 +100,40 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   contextWindowSize?: string;
   useWindowFuncForMacros?: boolean;
   nullifySparse?: boolean;
+  queryBuilderAutocompleteEnabled?: boolean;
+  queryBuilderMaxTimerange?: string;
+  queryBuilderEnvironmentKey?: string;
+  queryBuilderDefaultLogsTable?: string;
+  queryBuilderDefaultTracesTable?: string;
+  queryBuilderDefaultMetricsGaugeTable?: string;
+  queryBuilderDefaultMetricsSumTable?: string;
+  queryBuilderDefaultMetricsHistogramTable?: string;
+  queryBuilderDefaultMetricsSummaryTable?: string;
 }
+
+export interface QueryBuilderSettings {
+  autocompleteEnabled: boolean;
+  maxTimerange: string;
+  environmentKey: string;
+  logsTable: string;
+  tracesTable: string;
+  metricsGaugeTable: string;
+  metricsSumTable: string;
+  metricsHistogramTable: string;
+  metricsSummaryTable: string;
+}
+
+export const QUERY_BUILDER_DEFAULTS: QueryBuilderSettings = {
+  autocompleteEnabled: true,
+  maxTimerange: '5m',
+  environmentKey: 'environment',
+  logsTable: 'otel_logs',
+  tracesTable: 'otel_traces',
+  metricsGaugeTable: 'otel_metrics_gauge',
+  metricsSumTable: 'otel_metrics_sum',
+  metricsHistogramTable: 'otel_metrics_histogram',
+  metricsSummaryTable: 'otel_metrics_summary',
+};
 
 /**
  * Value that is used in the backend, but never sent over HTTP to the frontend

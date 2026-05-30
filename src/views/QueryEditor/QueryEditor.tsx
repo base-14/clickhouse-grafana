@@ -82,6 +82,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
           datasource={datasource}
           onChange={(items: CHQuery) => onChange({ ...items })}
           onRunQuery={onTriggerQuery}
+          range={data?.request?.range}
         />
       )}
       {editorMode === EditorMode.SQL && (
@@ -104,7 +105,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
 export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>): any {
 
-  const { datasource, query, onChange, onRunQuery } = props;
+  const { datasource, query, onChange, onRunQuery, data } = props;
   let processedQuery
   if (typeof props.query as string | CHQuery === 'string') {
     processedQuery = {query: query, datasourceMode: DatasourceMode.Variable }
@@ -176,6 +177,7 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
           datasource={datasource}
           onChange={(items: CHQuery) => onChange({ ...items })}
           onRunQuery={onTriggerQuery}
+          range={data?.request?.range}
         />
       )}
       {editorMode === EditorMode.SQL && (

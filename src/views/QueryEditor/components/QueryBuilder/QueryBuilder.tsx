@@ -1,204 +1,249 @@
-import React, { useEffect } from 'react';
-import { InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
-import { SelectableValue } from '@grafana/data';
-import { UniversalSelectField } from './components/UniversalSelectComponent';
-import { TimestampFormat } from '../../../../types/types';
-import { useConnectionData } from './hooks/useConnectionData';
+import React, { useEffect, useMemo } from 'react';
+import { Alert, InlineField, InlineFieldRow, InlineLabel, MultiSelect, Select } from '@grafana/ui';
+import { SelectableValue, TimeRange } from '@grafana/data';
+import { CHQuery, QueryBuilderSettings, SignalType } from '../../../../types/types';
+import { buildSignalPresets, SIGNAL_OPTIONS } from './presets';
+import {
+  buildEnvironmentQuery,
+  buildServiceNameQuery,
+  buildSignalNameQuery,
+  signalNameColumn,
+} from './discoveryQueries';
+import { computeEffectiveLookbackSeconds, formatLookback, useDiscovery } from './hooks/useDiscovery';
 
-const options = [
-  { label: 'DateTime', value: TimestampFormat.DateTime },
-  { label: 'DateTime64', value: TimestampFormat.DateTime64 },
-  { label: 'TimeStamp', value: TimestampFormat.TimeStamp },
-  { label: 'Float', value: TimestampFormat.Float },
-  { label: 'TimeStamp64(3)', value: TimestampFormat.TimeStamp64_3 },
-  { label: 'TimeStamp64(6)', value: TimestampFormat.TimeStamp64_6 },
-  { label: 'TimeStamp64(9)', value: TimestampFormat.TimeStamp64_9 },
-];
+type DatasourceForBuilder = {
+  defaultDatabase?: string;
+  queryBuilder: QueryBuilderSettings;
+  metricFindQuery: (q: string) => Promise<any[]>;
+};
 
-// eslint-disable-next-line
-export const QueryBuilder = ({ query, onChange, datasource }: any) => {
-  const [
-    databases,
-    tables,
-    dateColumns,
-    timestampColumns,
-    selectedColumnTimestampType,
-    selectedColumnDateType,
-    setSelectedDatabase,
-    setSelectedTable,
-    setSelectedColumnTimestampType,
-    setSelectedColumnDateType,
-    setSelectedDateTimeType,
-    selectedTable,
-    selectedDatabase,
-    selectedDateTimeType,
-  ] = useConnectionData(query, datasource);
+type QueryBuilderProps = {
+  query: CHQuery;
+  datasource: DatasourceForBuilder;
+  onChange: (query: CHQuery) => void;
+  onRunQuery?: () => void;
+  range?: TimeRange;
+};
+
+const toMulti = (values?: string[]): Array<SelectableValue<string>> =>
+  (values ?? []).map((v) => ({ label: v, value: v }));
+
+const fromMulti = (items: Array<SelectableValue<string>>): string[] =>
+  items.map((i) => i.value).filter((v): v is string => !!v);
+
+export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilderProps) => {
+  const defaultDatabase = datasource?.defaultDatabase || '';
+  const settings = datasource.queryBuilder;
+
+  const lookbackSeconds = useMemo(
+    () => computeEffectiveLookbackSeconds(settings.maxTimerange, range),
+    [settings.maxTimerange, range]
+  );
+  const lookback = formatLookback(lookbackSeconds);
 
   useEffect(() => {
-    setSelectedDatabase(query.database);
-    setSelectedTable(query.table);
-    setSelectedColumnTimestampType(query.dateTimeColDataType);
-    setSelectedColumnDateType(query.dateColDataType);
-    setSelectedDateTimeType(query.dateTimeType);
-  }, [
-    query.database,
-    query.dateColDataType,
-    query.dateTimeColDataType,
-    query.dateTimeType,
-    query.table,
-    setSelectedColumnDateType,
-    setSelectedColumnTimestampType,
-    setSelectedDatabase,
-    setSelectedDateTimeType,
-    setSelectedTable,
-  ]);
+    if (query.signalType && defaultDatabase && query.database !== defaultDatabase) {
+      onChange({ ...query, database: defaultDatabase });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultDatabase, query.signalType]);
 
-  const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
-    const value = dateTimeType?.value ? dateTimeType.value : undefined;
-    setSelectedDateTimeType(value);
-    onChange({ ...query, dateTimeType: value });
+  const onSignalChange = (item: SelectableValue<SignalType>) => {
+    const signalType = item?.value;
+    if (!signalType) {
+      onChange({
+        ...query,
+        signalType: undefined,
+        serviceNames: [],
+        environments: [],
+        signalNames: [],
+      });
+      return;
+    }
+
+    const preset = buildSignalPresets(settings)[signalType];
+    onChange({
+      ...query,
+      signalType,
+      database: defaultDatabase || query.database,
+      serviceNames: [],
+      environments: [],
+      signalNames: [],
+      ...(preset ?? {}),
+    });
   };
 
-  const onDatabaseChange = (database?: string) => {
-    setSelectedDatabase(database);
-    onChange({ ...query, database });
+  const onServiceNamesChange = (items: Array<SelectableValue<string>>) => {
+    onChange({ ...query, serviceNames: fromMulti(items), environments: [], signalNames: [] });
   };
 
-  const onTableChange = (table?: string) => {
-    setSelectedTable(table);
-    onChange({ ...query, table });
+  const onEnvironmentsChange = (items: Array<SelectableValue<string>>) => {
+    onChange({ ...query, environments: fromMulti(items), signalNames: [] });
   };
 
-  const onDateColDataTypeChange = (dateColDataType?: string) => {
-    // @ts-ignore
-    setSelectedColumnDateType((dateColDataType || '').trim());
-    onChange({ ...query, dateColDataType });
+  const onSignalNamesChange = (items: Array<SelectableValue<string>>) => {
+    onChange({ ...query, signalNames: fromMulti(items) });
   };
 
-  const onDateTimeColDataTypeChange = (dateTimeColDataType?: string) => {
-    // @ts-ignore
-    setSelectedColumnTimestampType((dateTimeColDataType || '').trim());
-    onChange({ ...query, dateTimeColDataType });
-  };
+  const selectedSignal = SIGNAL_OPTIONS.find((o) => o.value === query.signalType);
+  const isMetrics = query.signalType === SignalType.Metrics;
+  const isLogs = query.signalType === SignalType.Logs;
+  const autocomplete = settings.autocompleteEnabled;
+
+  const discoveryReady = !!query.signalType && !!defaultDatabase && autocomplete;
+  const discoveryDeps = query.signalType
+    ? { signalType: query.signalType, database: defaultDatabase, settings, lookback }
+    : null;
+
+  const hasServices = (query.serviceNames?.length ?? 0) > 0;
+  const hasEnvironments = (query.environments?.length ?? 0) > 0;
+
+  const serviceQuery = discoveryDeps ? buildServiceNameQuery(discoveryDeps) : null;
+  const services = useDiscovery({
+    datasource,
+    query: discoveryReady ? serviceQuery : null,
+    enabled: discoveryReady,
+  });
+
+  const envQuery =
+    discoveryDeps && hasServices
+      ? buildEnvironmentQuery({ ...discoveryDeps, serviceNames: query.serviceNames ?? [] })
+      : null;
+  const environments = useDiscovery({
+    datasource,
+    query: discoveryReady && hasServices ? envQuery : null,
+    enabled: discoveryReady && hasServices,
+  });
+
+  const signalNameQuery =
+    discoveryDeps && hasServices && hasEnvironments
+      ? buildSignalNameQuery({
+          ...discoveryDeps,
+          serviceNames: query.serviceNames ?? [],
+          environments: query.environments ?? [],
+        })
+      : null;
+  const signalNames = useDiscovery({
+    datasource,
+    query: discoveryReady && hasServices && hasEnvironments ? signalNameQuery : null,
+    enabled: discoveryReady && hasServices && hasEnvironments && !!signalNameQuery,
+  });
+
+  const signalNameCol = query.signalType ? signalNameColumn(query.signalType) : null;
 
   return (
     <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
-      <InlineFieldRow>
-        <UniversalSelectField
-          width={24}
-          label={
-            <InlineLabel width={24}>
-              <span style={{ color: '#6e9fff' }}>FROM</span>
-            </InlineLabel>
-          }
-          placeholder="Database"
-          value={selectedDatabase}
-          onChange={(item: SelectableValue<string>) => onDatabaseChange(item.value)}
-          options={databases}
-          testId={'database-select'}
-        />
-        <UniversalSelectField
-          width={24}
-          placeholder="Table"
-          value={selectedTable}
-          onChange={(selectedItem: SelectableValue<string>) => onTableChange(selectedItem.value)}
-          options={tables}
-          disabled={true}
-          testId={'table-select'}
-        />
-      </InlineFieldRow>
+      {!defaultDatabase && (
+        <Alert
+          severity="warning"
+          title="No default database set"
+          elevated
+          style={{ marginTop: '5px', marginBottom: '5px' }}
+        >
+          Set a default database in this datasource&apos;s settings — the Query Builder uses it as the
+          tenant for all queries.
+        </Alert>
+      )}
+
       <InlineFieldRow>
         <InlineField
           label={
-            <InlineLabel
-              width={24}
-              tooltip={
-                <div style={{ width: '200px', backgroundColor: 'black' }}>
-                  Select Type &nbsp;
-                  <a
-                    href="https://clickhouse.com/docs/en/sql-reference/data-types/datetime/"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    DateTime
-                  </a>
-                  ,&nbsp;
-                  <a
-                    href="https://clickhouse.com/docs/en/sql-reference/data-types/datetime64/"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    DateTime64
-                  </a>
-                  &nbsp; or{' '}
-                  <a
-                    href="https://clickhouse.com/docs/en/sql-reference/data-types/int-uint/"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    UInt32
-                  </a>{' '}
-                  column for binding with Grafana range selector
-                </div>
-              }
-            >
-              Column timestamp type
+            <InlineLabel width={24}>
+              <span style={{ color: '#6e9fff' }}>Signal type</span>
             </InlineLabel>
           }
         >
           <Select
-            width={24}
-            onChange={onDateTimeTypeChanged}
-            isClearable
-            placeholder={'Timestamp type'}
-            options={options}
-            value={selectedDateTimeType}
-            data-testid={'timestamp-type-select'}
+            width={40}
+            placeholder="Select signal"
+            options={SIGNAL_OPTIONS}
+            value={selectedSignal}
+            onChange={onSignalChange}
+            data-testid="signal-type-select"
           />
         </InlineField>
       </InlineFieldRow>
-      <InlineFieldRow>
-        <UniversalSelectField
-          width={24}
-          label={<InlineLabel width={24}>Timestamp Column</InlineLabel>}
-          placeholder="Timestamp column"
-          value={selectedColumnTimestampType}
-          onChange={({ value }) => onDateTimeColDataTypeChange(value as string)}
-          options={timestampColumns}
-          disabled={!timestampColumns.length}
-          testId={'timestamp-column-select'}
-        />
-      </InlineFieldRow>
-      <InlineFieldRow>
-        <UniversalSelectField
-          label={
-            <InlineLabel
-              width={24}
-              tooltip={
-                <div style={{ width: '200px', backgroundColor: 'black' }}>
-                  Select
-                  <a
-                    rel="noreferrer"
-                    href="https://clickhouse.tech/docs/en/sql-reference/data-types/date/"
-                    target="_blank"
-                  >
-                    Date
-                  </a>
-                  column for binding with Grafana range selector
-                </div>
-              }
-            >
-              Date column
-            </InlineLabel>
-          }
-          width={24}
-          placeholder="Date Column"
-          value={selectedColumnDateType}
-          onChange={(selectedItem) => onDateColDataTypeChange(selectedItem.value)}
-          options={dateColumns}
-          testId={'date-column-select'}
-        />
-      </InlineFieldRow>
+
+      {query.signalType && (
+        <InlineFieldRow>
+          <InlineField label={<InlineLabel width={24}>Service name</InlineLabel>} grow>
+            <MultiSelect
+              width={40}
+              placeholder={services.loading ? 'Loading…' : 'Select services'}
+              options={services.options}
+              value={toMulti(query.serviceNames)}
+              onChange={onServiceNamesChange}
+              allowCustomValue
+              isClearable
+              data-testid="qb-service-name-select"
+            />
+          </InlineField>
+        </InlineFieldRow>
+      )}
+      {services.error && (
+        <Alert severity="error" title="Service discovery failed" elevated>
+          {services.error}
+        </Alert>
+      )}
+
+      {query.signalType && hasServices && (
+        <InlineFieldRow>
+          <InlineField label={<InlineLabel width={24}>Environment</InlineLabel>} grow>
+            <MultiSelect
+              width={40}
+              placeholder={environments.loading ? 'Loading…' : `${settings.environmentKey}`}
+              options={environments.options}
+              value={toMulti(query.environments)}
+              onChange={onEnvironmentsChange}
+              allowCustomValue
+              isClearable
+              data-testid="qb-environment-select"
+            />
+          </InlineField>
+        </InlineFieldRow>
+      )}
+      {environments.error && (
+        <Alert severity="error" title="Environment discovery failed" elevated>
+          {environments.error}
+        </Alert>
+      )}
+
+      {query.signalType && !isLogs && hasServices && hasEnvironments && (
+        <InlineFieldRow>
+          <InlineField label={<InlineLabel width={24}>{signalNameCol ?? 'Signal name'}</InlineLabel>} grow>
+            <MultiSelect
+              width={40}
+              placeholder={signalNames.loading ? 'Loading…' : `Select ${signalNameCol ?? 'name'}`}
+              options={signalNames.options}
+              value={toMulti(query.signalNames)}
+              onChange={onSignalNamesChange}
+              allowCustomValue
+              isClearable
+              data-testid="qb-signal-name-select"
+            />
+          </InlineField>
+        </InlineFieldRow>
+      )}
+      {signalNames.error && (
+        <Alert severity="error" title="Signal-name discovery failed" elevated>
+          {signalNames.error}
+        </Alert>
+      )}
+
+      {!autocomplete && query.signalType && (
+        <Alert severity="info" title="Autocomplete is disabled" elevated>
+          Enable it in the datasource&apos;s Query Builder settings to populate the dropdowns. You can
+          still type values manually.
+        </Alert>
+      )}
+
+      {isMetrics && (
+        <Alert severity="info" title="Metrics table is chosen per-MetricName" elevated>
+          The MetricName picker scans all four metric tables (sum / gauge / histogram / summary).
+          The final query template will pick the right table based on the selected metric — coming
+          in a follow-up.
+        </Alert>
+      )}
     </div>
   );
 };

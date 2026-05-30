@@ -47,34 +47,21 @@ export const QueryHeader = ({
         value={editorMode}
         onChange={(e: EditorMode) => onEditorModeChange(e!)}
       />
-      {editorMode === EditorMode.SQL && !isAnnotationView ? (
+      {!isAnnotationView ? (
         <Button variant="primary" icon="play" size={'sm'} style={{ marginLeft: '10px' }} onClick={onTriggerQuery}>
           Run Query
         </Button>
       ) : null}
-      {editorMode === EditorMode.Builder ? (
-        <>
-          <Button
-            variant="primary"
-            size={'sm'}
-            icon="arrow-right"
-            style={{ marginLeft: '10px' }}
-            onClick={() => onEditorModeChange(EditorMode.SQL)}
-          >
-            Go to Query
-          </Button>
-          {differences.length ? (
-            <Button
-              variant="primary"
-              size={'sm'}
-              icon="sync"
-              style={{ marginLeft: '10px' }}
-              onClick={() => setModalOpen(true)}
-            >
-              Override settings
-            </Button>
-          ) : null}
-        </>
+      {editorMode === EditorMode.Builder && differences.length ? (
+        <Button
+          variant="primary"
+          size={'sm'}
+          icon="sync"
+          style={{ marginLeft: '10px' }}
+          onClick={() => setModalOpen(true)}
+        >
+          Override settings
+        </Button>
       ) : null}
       {hasAutocompleteError && editorMode === EditorMode.SQL && (
         <div style={{ marginLeft: '10px', display: 'flex', alignItems: 'center' }}>

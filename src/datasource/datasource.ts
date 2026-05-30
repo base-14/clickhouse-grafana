@@ -17,7 +17,7 @@ import {
 } from '@grafana/data';
 import { BackendSrv, config, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
-import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
+import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY, QUERY_BUILDER_DEFAULTS, QueryBuilderSettings} from '../types/types';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from } from 'rxjs';
@@ -53,6 +53,7 @@ export class CHDataSource
   adHocHideTableNames: boolean;
   uid: string;
   datasourceMode?: DatasourceMode;
+  queryBuilder: QueryBuilderSettings;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
@@ -74,6 +75,27 @@ export class CHDataSource
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
     this.xClickHouseSSLCertificateAuth = instanceSettings.jsonData.xClickHouseSSLCertificateAuth || false;
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
+    this.queryBuilder = {
+      autocompleteEnabled:
+        instanceSettings.jsonData.queryBuilderAutocompleteEnabled ?? QUERY_BUILDER_DEFAULTS.autocompleteEnabled,
+      maxTimerange: instanceSettings.jsonData.queryBuilderMaxTimerange || QUERY_BUILDER_DEFAULTS.maxTimerange,
+      environmentKey:
+        instanceSettings.jsonData.queryBuilderEnvironmentKey || QUERY_BUILDER_DEFAULTS.environmentKey,
+      logsTable: instanceSettings.jsonData.queryBuilderDefaultLogsTable || QUERY_BUILDER_DEFAULTS.logsTable,
+      tracesTable:
+        instanceSettings.jsonData.queryBuilderDefaultTracesTable || QUERY_BUILDER_DEFAULTS.tracesTable,
+      metricsGaugeTable:
+        instanceSettings.jsonData.queryBuilderDefaultMetricsGaugeTable ||
+        QUERY_BUILDER_DEFAULTS.metricsGaugeTable,
+      metricsSumTable:
+        instanceSettings.jsonData.queryBuilderDefaultMetricsSumTable || QUERY_BUILDER_DEFAULTS.metricsSumTable,
+      metricsHistogramTable:
+        instanceSettings.jsonData.queryBuilderDefaultMetricsHistogramTable ||
+        QUERY_BUILDER_DEFAULTS.metricsHistogramTable,
+      metricsSummaryTable:
+        instanceSettings.jsonData.queryBuilderDefaultMetricsSummaryTable ||
+        QUERY_BUILDER_DEFAULTS.metricsSummaryTable,
+    };
     if (instanceSettings.jsonData.useDefaultConfiguration) {
       this.defaultValues = {
         dateTime: {

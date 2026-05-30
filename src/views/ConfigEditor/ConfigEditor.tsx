@@ -1,7 +1,7 @@
 import React, { FormEvent, useEffect, useState } from 'react';
 import { CodeEditor, DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput, Select } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, SelectableValue } from '@grafana/data';
-import { CHDataSourceOptions } from '../../types/types';
+import { CHDataSourceOptions, QUERY_BUILDER_DEFAULTS } from '../../types/types';
 import _ from 'lodash';
 import { DefaultValues } from './FormParts/DefaultValues/DefaultValues';
 import { LANGUAGE_ID } from '../QueryEditor/components/QueryTextEditor/editor/initiateEditor';
@@ -42,7 +42,7 @@ export function ConfigEditor(props: Props) {
   const onSwitchToggle = (
     key: keyof Pick<
       CHDataSourceOptions,
-      'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST' | 'useCompression' | 'xClickHouseSSLCertificateAuth' | 'adHocHideTableNames'
+      'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST' | 'useCompression' | 'xClickHouseSSLCertificateAuth' | 'adHocHideTableNames' | 'queryBuilderAutocompleteEnabled'
     >,
     value: boolean
   ) => {
@@ -238,6 +238,93 @@ export function ConfigEditor(props: Props) {
             id="adhoc"
             value={jsonData.adHocHideTableNames || false}
             onChange={(e) => onSwitchToggle('adHocHideTableNames', e.currentTarget.checked)}
+          />
+        </InlineField>
+      </div>
+      <h3 className="page-heading">Query Builder</h3>
+      <div className="gf-form-group">
+        <InlineField
+          label="Autocomplete enabled"
+          labelWidth={36}
+          tooltip="When enabled, the Query Builder runs discovery queries to populate ServiceName/Environment/Signal name pickers."
+        >
+          <InlineSwitch
+            data-test-id="qb-autocomplete-switch"
+            id="queryBuilderAutocompleteEnabled"
+            value={jsonData.queryBuilderAutocompleteEnabled ?? QUERY_BUILDER_DEFAULTS.autocompleteEnabled}
+            onChange={(e) => onSwitchToggle('queryBuilderAutocompleteEnabled', e.currentTarget.checked)}
+          />
+        </InlineField>
+        <InlineField
+          label="Max autocomplete lookback"
+          labelWidth={36}
+          tooltip="Maximum window the Query Builder will scan when populating dropdowns. Grafana duration string (e.g. 5m, 1h). The effective window is min(this, dashboard time range)."
+        >
+          <Input
+            data-test-id="qb-max-timerange-input"
+            value={jsonData.queryBuilderMaxTimerange || ''}
+            placeholder={QUERY_BUILDER_DEFAULTS.maxTimerange}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderMaxTimerange')}
+          />
+        </InlineField>
+        <InlineField
+          label="Environment attribute key"
+          labelWidth={36}
+          tooltip="ResourceAttributes[...] key used to populate the Environment picker."
+        >
+          <Input
+            data-test-id="qb-env-key-input"
+            value={jsonData.queryBuilderEnvironmentKey || ''}
+            placeholder={QUERY_BUILDER_DEFAULTS.environmentKey}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderEnvironmentKey')}
+          />
+        </InlineField>
+        <InlineField label="Logs table" labelWidth={36}>
+          <Input
+            data-test-id="qb-logs-table-input"
+            value={jsonData.queryBuilderDefaultLogsTable || ''}
+            placeholder={QUERY_BUILDER_DEFAULTS.logsTable}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderDefaultLogsTable')}
+          />
+        </InlineField>
+        <InlineField label="Traces table" labelWidth={36}>
+          <Input
+            data-test-id="qb-traces-table-input"
+            value={jsonData.queryBuilderDefaultTracesTable || ''}
+            placeholder={QUERY_BUILDER_DEFAULTS.tracesTable}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderDefaultTracesTable')}
+          />
+        </InlineField>
+        <InlineField label="Metrics gauge table" labelWidth={36}>
+          <Input
+            data-test-id="qb-metrics-gauge-table-input"
+            value={jsonData.queryBuilderDefaultMetricsGaugeTable || ''}
+            placeholder={QUERY_BUILDER_DEFAULTS.metricsGaugeTable}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderDefaultMetricsGaugeTable')}
+          />
+        </InlineField>
+        <InlineField label="Metrics sum table" labelWidth={36}>
+          <Input
+            data-test-id="qb-metrics-sum-table-input"
+            value={jsonData.queryBuilderDefaultMetricsSumTable || ''}
+            placeholder={QUERY_BUILDER_DEFAULTS.metricsSumTable}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderDefaultMetricsSumTable')}
+          />
+        </InlineField>
+        <InlineField label="Metrics histogram table" labelWidth={36}>
+          <Input
+            data-test-id="qb-metrics-histogram-table-input"
+            value={jsonData.queryBuilderDefaultMetricsHistogramTable || ''}
+            placeholder={QUERY_BUILDER_DEFAULTS.metricsHistogramTable}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderDefaultMetricsHistogramTable')}
+          />
+        </InlineField>
+        <InlineField label="Metrics summary table" labelWidth={36}>
+          <Input
+            data-test-id="qb-metrics-summary-table-input"
+            value={jsonData.queryBuilderDefaultMetricsSummaryTable || ''}
+            placeholder={QUERY_BUILDER_DEFAULTS.metricsSummaryTable}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderDefaultMetricsSummaryTable')}
           />
         </InlineField>
       </div>
