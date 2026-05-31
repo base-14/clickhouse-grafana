@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { Alert, InlineField, InlineFieldRow, InlineLabel, MultiSelect, Select } from '@grafana/ui';
+import { Alert, InlineField, InlineFieldRow, InlineLabel, MultiSelect, RadioButtonGroup, Select } from '@grafana/ui';
 import { SelectableValue, TimeRange } from '@grafana/data';
 import {
   CHQuery,
@@ -117,6 +117,8 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
   const isMetrics = query.signalType === SignalType.Metrics;
   const isLogs = query.signalType === SignalType.Logs;
   const isTraces = query.signalType === SignalType.Traces;
+  const logsMode: 'raw' | 'timeseries' = query.logsMode ?? 'raw';
+  const isLogsTimeseries = isLogs && logsMode === 'timeseries';
   const autocomplete = settings.autocompleteEnabled;
 
   const discoveryReady = !!query.signalType && !!defaultDatabase && autocomplete;
@@ -340,6 +342,32 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </Alert>
       )}
 
+      {isLogs && filtersGateOpen && (
+        <div style={{ marginTop: 12 }}>
+          <div
+            style={{
+              color: '#6e9fff',
+              fontSize: 13,
+              fontWeight: 500,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+              marginBottom: 8,
+            }}
+          >
+            Output
+          </div>
+          <RadioButtonGroup<'raw' | 'timeseries'>
+            options={[
+              { label: 'Raw logs', value: 'raw' },
+              { label: 'Time series', value: 'timeseries' },
+            ]}
+            value={logsMode}
+            onChange={(v) => onChange({ ...query, logsMode: v ?? 'raw' })}
+            size="sm"
+          />
+        </div>
+      )}
+
       {filtersGateOpen && isTraces && (
         <div style={{ marginTop: 12 }}>
           <OperationsSection
@@ -369,7 +397,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
               value={query.bodySearch ?? ''}
               isRegex={!!query.bodySearchIsRegex}
               signal={query.signalType!}
-              discoveredKeys={keyDiscovery.keys}
+              discoveredKeys={keyDiscovery.keys.filter((k) => !(k.scope === 'column' && k.key === 'Body'))}
               onCommit={onBodySearchCommit}
               onAddFilter={onBodySearchAddFilter}
             />
@@ -378,7 +406,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
             group={filtersRoot}
             isRoot
             signal={query.signalType!}
-            discoveredKeys={keyDiscovery.keys}
+            discoveredKeys={isLogs ? keyDiscovery.keys.filter((k) => !(k.scope === 'column' && k.key === 'Body')) : keyDiscovery.keys}
             loadingKeys={keyDiscovery.loading}
             valueCache={valueDiscovery.cache}
             fetchValues={valueDiscovery.fetchValues}
@@ -396,7 +424,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </div>
       )}
 
-      {filtersGateOpen && isTraces && (
+      {filtersGateOpen && (isTraces || isLogsTimeseries) && (
         <div style={{ marginTop: 12 }}>
           <GroupBySection
             signal={query.signalType!}
@@ -406,8 +434,11 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
                 key: c.name,
                 scope: 'column',
               }));
-              const seen = new Set(keyDiscovery.keys.map((k) => k.key));
-              const merged = [...keyDiscovery.keys];
+              const baseKeys = isLogs
+                ? keyDiscovery.keys.filter((k) => !(k.scope === 'column' && k.key === 'Body'))
+                : keyDiscovery.keys;
+              const seen = new Set(baseKeys.map((k) => k.key));
+              const merged = [...baseKeys];
               for (const e of extras) {
                 if (!seen.has(e.key)) {
                   merged.push(e);

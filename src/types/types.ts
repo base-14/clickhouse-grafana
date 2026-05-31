@@ -126,6 +126,7 @@ export interface CHQuery extends DataQuery {
   bodySearchIsRegex?: boolean;
   operations?: QueryBuilderOperation[];
   groupBy?: QueryBuilderGroupBy[];
+  logsMode?: 'raw' | 'timeseries';
 
   skip_comments?: boolean;
   add_metadata?: boolean;
