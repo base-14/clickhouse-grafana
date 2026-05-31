@@ -268,6 +268,19 @@ export function ConfigEditor(props: Props) {
           />
         </InlineField>
         <InlineField
+          label="Autocomplete row limit"
+          labelWidth={36}
+          tooltip="LIMIT applied to every Query Builder discovery query (services, environments, signal names, filter keys, filter values)."
+        >
+          <Input
+            data-test-id="qb-autocomplete-limit-input"
+            type="number"
+            value={jsonData.queryBuilderAutocompleteLimit ?? ''}
+            placeholder={String(QUERY_BUILDER_DEFAULTS.autocompleteLimit)}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderAutocompleteLimit')}
+          />
+        </InlineField>
+        <InlineField
           label="Environment attribute key"
           labelWidth={36}
           tooltip="ResourceAttributes[...] key used to populate the Environment picker."

@@ -36,6 +36,50 @@ export enum SignalType {
   Metrics = 'metrics',
 }
 
+export type FilterConnector = 'AND' | 'OR';
+
+export type FilterScope = 'column' | 'resource' | 'scope' | 'log' | 'span' | 'attribute';
+
+export type FilterOp =
+  | 'eq'
+  | 'neq'
+  | 'in'
+  | 'nin'
+  | 'like'
+  | 'nlike'
+  | 'regex'
+  | 'nregex'
+  | 'exists'
+  | 'nexists'
+  | 'lt'
+  | 'lte'
+  | 'gt'
+  | 'gte';
+
+export type FilterValueType = 'string' | 'number';
+
+export type DurationUnit = 'ns' | 'us' | 'ms' | 's';
+
+export interface FilterCondition {
+  kind: 'condition';
+  id: string;
+  scope: FilterScope;
+  key: string;
+  type: FilterValueType;
+  op: FilterOp;
+  values: string[];
+  unit?: DurationUnit;
+}
+
+export interface FilterGroup {
+  kind: 'group';
+  id: string;
+  connector: FilterConnector;
+  children: FilterNode[];
+}
+
+export type FilterNode = FilterCondition | FilterGroup;
+
 export interface CHQuery extends DataQuery {
   query: string;
   format: string;
@@ -55,6 +99,9 @@ export interface CHQuery extends DataQuery {
   serviceNames?: string[];
   environments?: string[];
   signalNames?: string[];
+  filters?: FilterGroup;
+  bodySearch?: string;
+  bodySearchIsRegex?: boolean;
 
   skip_comments?: boolean;
   add_metadata?: boolean;
@@ -109,10 +156,12 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   queryBuilderDefaultMetricsSumTable?: string;
   queryBuilderDefaultMetricsHistogramTable?: string;
   queryBuilderDefaultMetricsSummaryTable?: string;
+  queryBuilderAutocompleteLimit?: number;
 }
 
 export interface QueryBuilderSettings {
   autocompleteEnabled: boolean;
+  autocompleteLimit: number;
   maxTimerange: string;
   environmentKey: string;
   logsTable: string;
@@ -125,6 +174,7 @@ export interface QueryBuilderSettings {
 
 export const QUERY_BUILDER_DEFAULTS: QueryBuilderSettings = {
   autocompleteEnabled: true,
+  autocompleteLimit: 100,
   maxTimerange: '5m',
   environmentKey: 'environment',
   logsTable: 'otel_logs',

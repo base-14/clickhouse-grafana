@@ -1,7 +1,14 @@
 import React, { useEffect, useMemo } from 'react';
 import { Alert, InlineField, InlineFieldRow, InlineLabel, MultiSelect, Select } from '@grafana/ui';
 import { SelectableValue, TimeRange } from '@grafana/data';
-import { CHQuery, QueryBuilderSettings, SignalType } from '../../../../types/types';
+import {
+  CHQuery,
+  FilterCondition,
+  FilterGroup,
+  FilterNode,
+  QueryBuilderSettings,
+  SignalType,
+} from '../../../../types/types';
 import { buildSignalPresets, SIGNAL_OPTIONS } from './presets';
 import {
   buildEnvironmentQuery,
@@ -10,6 +17,17 @@ import {
   signalNameColumn,
 } from './discoveryQueries';
 import { computeEffectiveLookbackSeconds, formatLookback, useDiscovery } from './hooks/useDiscovery';
+import { useKeyDiscovery, useValueDiscovery } from './hooks/useFilterDiscovery';
+import { BodySearchBar } from './filters/BodySearchBar';
+import { FilterGroupView } from './filters/FilterGroupView';
+import {
+  addChild,
+  emptyRoot,
+  ensureRoot,
+  removeChild,
+  toggleConnector,
+  updateCondition,
+} from './filters/tree';
 
 type DatasourceForBuilder = {
   defaultDatabase?: string;
@@ -57,6 +75,8 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         serviceNames: [],
         environments: [],
         signalNames: [],
+        filters: emptyRoot(),
+        bodySearch: '',
       });
       return;
     }
@@ -69,6 +89,8 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
       serviceNames: [],
       environments: [],
       signalNames: [],
+      filters: emptyRoot(),
+      bodySearch: '',
       ...(preset ?? {}),
     });
   };
@@ -97,6 +119,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
 
   const hasServices = (query.serviceNames?.length ?? 0) > 0;
   const hasEnvironments = (query.environments?.length ?? 0) > 0;
+  const hasSignalNames = (query.signalNames?.length ?? 0) > 0;
 
   const serviceQuery = discoveryDeps ? buildServiceNameQuery(discoveryDeps) : null;
   const services = useDiscovery({
@@ -130,6 +153,64 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
   });
 
   const signalNameCol = query.signalType ? signalNameColumn(query.signalType) : null;
+
+  const filtersGateOpen = !!query.signalType && hasServices && hasEnvironments && (isLogs || hasSignalNames);
+
+  const filterDeps =
+    discoveryDeps && filtersGateOpen
+      ? {
+          ...discoveryDeps,
+          serviceNames: query.serviceNames ?? [],
+          environments: query.environments ?? [],
+        }
+      : null;
+
+  const keyDiscovery = useKeyDiscovery({
+    datasource,
+    enabled: discoveryReady && filtersGateOpen,
+    deps: filterDeps,
+  });
+
+  const valueDiscovery = useValueDiscovery({
+    datasource,
+    enabled: discoveryReady && filtersGateOpen,
+    signal: query.signalType ?? SignalType.Logs,
+    database: defaultDatabase,
+    settings,
+    lookback,
+    serviceNames: query.serviceNames ?? [],
+    environments: query.environments ?? [],
+  });
+
+  const filtersRoot = ensureRoot(query.filters);
+
+  const updateFilters = (next: FilterGroup) => {
+    onChange({ ...query, filters: next });
+  };
+
+  const onAddChildToGroup = (groupId: string, child: FilterNode) => {
+    updateFilters(addChild(filtersRoot, groupId, child));
+  };
+
+  const onRemoveChildById = (childId: string) => {
+    updateFilters(removeChild(filtersRoot, childId));
+  };
+
+  const onUpdateConditionById = (conditionId: string, patch: Partial<FilterCondition>) => {
+    updateFilters(updateCondition(filtersRoot, conditionId, patch));
+  };
+
+  const onToggleConnectorById = (groupId: string) => {
+    updateFilters(toggleConnector(filtersRoot, groupId));
+  };
+
+  const onBodySearchCommit = (val: string, isRegex: boolean) => {
+    onChange({ ...query, bodySearch: val, bodySearchIsRegex: isRegex });
+  };
+
+  const onBodySearchAddFilter = (cond: FilterCondition) => {
+    updateFilters(addChild(filtersRoot, filtersRoot.id, cond));
+  };
 
   return (
     <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
@@ -228,6 +309,40 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         <Alert severity="error" title="Signal-name discovery failed" elevated>
           {signalNames.error}
         </Alert>
+      )}
+
+      {filtersGateOpen && (
+        <div style={{ marginTop: 12 }}>
+          {isLogs && (
+            <BodySearchBar
+              value={query.bodySearch ?? ''}
+              isRegex={!!query.bodySearchIsRegex}
+              signal={query.signalType!}
+              discoveredKeys={keyDiscovery.keys}
+              onCommit={onBodySearchCommit}
+              onAddFilter={onBodySearchAddFilter}
+            />
+          )}
+          <FilterGroupView
+            group={filtersRoot}
+            isRoot
+            signal={query.signalType!}
+            discoveredKeys={keyDiscovery.keys}
+            loadingKeys={keyDiscovery.loading}
+            valueCache={valueDiscovery.cache}
+            fetchValues={valueDiscovery.fetchValues}
+            onToggleConnector={onToggleConnectorById}
+            onAddChild={onAddChildToGroup}
+            onRemoveChild={onRemoveChildById}
+            onUpdateCondition={onUpdateConditionById}
+            depth={1}
+          />
+          {keyDiscovery.error && (
+            <Alert severity="error" title="Filter-key discovery failed" elevated>
+              {keyDiscovery.error}
+            </Alert>
+          )}
+        </div>
       )}
 
       {!autocomplete && query.signalType && (

@@ -78,6 +78,10 @@ export class CHDataSource
     this.queryBuilder = {
       autocompleteEnabled:
         instanceSettings.jsonData.queryBuilderAutocompleteEnabled ?? QUERY_BUILDER_DEFAULTS.autocompleteEnabled,
+      autocompleteLimit:
+        instanceSettings.jsonData.queryBuilderAutocompleteLimit && instanceSettings.jsonData.queryBuilderAutocompleteLimit > 0
+          ? instanceSettings.jsonData.queryBuilderAutocompleteLimit
+          : QUERY_BUILDER_DEFAULTS.autocompleteLimit,
       maxTimerange: instanceSettings.jsonData.queryBuilderMaxTimerange || QUERY_BUILDER_DEFAULTS.maxTimerange,
       environmentKey:
         instanceSettings.jsonData.queryBuilderEnvironmentKey || QUERY_BUILDER_DEFAULTS.environmentKey,
