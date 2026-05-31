@@ -20,6 +20,12 @@ import { computeEffectiveLookbackSeconds, formatLookback, useDiscovery } from '.
 import { useKeyDiscovery, useValueDiscovery } from './hooks/useFilterDiscovery';
 import { BodySearchBar } from './filters/BodySearchBar';
 import { FilterGroupView } from './filters/FilterGroupView';
+import { OperationsSection } from './operations/OperationsSection';
+import { GroupBySection } from './groupby/GroupBySection';
+import { buildPanelSql } from './sql';
+import { QueryBuilderGroupBy } from '../../../../types/types';
+import { extraGroupByColumns } from './filters/columns';
+import { DiscoveredKey } from './filters/resolveScope';
 import {
   addChild,
   emptyRoot,
@@ -110,6 +116,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
   const selectedSignal = SIGNAL_OPTIONS.find((o) => o.value === query.signalType);
   const isMetrics = query.signalType === SignalType.Metrics;
   const isLogs = query.signalType === SignalType.Logs;
+  const isTraces = query.signalType === SignalType.Traces;
   const autocomplete = settings.autocompleteEnabled;
 
   const discoveryReady = !!query.signalType && !!defaultDatabase && autocomplete;
@@ -212,6 +219,28 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
     updateFilters(addChild(filtersRoot, filtersRoot.id, cond));
   };
 
+  const onGroupByChange = (next: QueryBuilderGroupBy[]) => {
+    onChange({ ...query, groupBy: next });
+  };
+
+  const generatedSql = useMemo(() => {
+    if (!query.signalType || !defaultDatabase) {
+      return null;
+    }
+    return buildPanelSql({ query, database: defaultDatabase, settings });
+  }, [query, defaultDatabase, settings]);
+
+  useEffect(() => {
+    if (!generatedSql || !filtersGateOpen) {
+      return;
+    }
+    if (query.query === generatedSql) {
+      return;
+    }
+    onChange({ ...query, query: generatedSql });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generatedSql, filtersGateOpen]);
+
   return (
     <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
       {!defaultDatabase && (
@@ -311,8 +340,30 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </Alert>
       )}
 
+      {filtersGateOpen && isTraces && (
+        <div style={{ marginTop: 12 }}>
+          <OperationsSection
+            signal={query.signalType!}
+            operations={query.operations ?? []}
+            onChange={(operations) => onChange({ ...query, operations })}
+          />
+        </div>
+      )}
+
       {filtersGateOpen && (
         <div style={{ marginTop: 12 }}>
+          <div
+            style={{
+              color: '#6e9fff',
+              fontSize: 13,
+              fontWeight: 500,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+              marginBottom: 8,
+            }}
+          >
+            Filters
+          </div>
           {isLogs && (
             <BodySearchBar
               value={query.bodySearch ?? ''}
@@ -345,6 +396,31 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </div>
       )}
 
+      {filtersGateOpen && isTraces && (
+        <div style={{ marginTop: 12 }}>
+          <GroupBySection
+            signal={query.signalType!}
+            groupBy={query.groupBy ?? []}
+            discoveredKeys={(() => {
+              const extras: DiscoveredKey[] = extraGroupByColumns(query.signalType!).map((c) => ({
+                key: c.name,
+                scope: 'column',
+              }));
+              const seen = new Set(keyDiscovery.keys.map((k) => k.key));
+              const merged = [...keyDiscovery.keys];
+              for (const e of extras) {
+                if (!seen.has(e.key)) {
+                  merged.push(e);
+                }
+              }
+              return merged.sort((a, b) => a.key.localeCompare(b.key));
+            })()}
+            loadingKeys={keyDiscovery.loading}
+            onChange={onGroupByChange}
+          />
+        </div>
+      )}
+
       {!autocomplete && query.signalType && (
         <Alert severity="info" title="Autocomplete is disabled" elevated>
           Enable it in the datasource&apos;s Query Builder settings to populate the dropdowns. You can
@@ -359,6 +435,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
           in a follow-up.
         </Alert>
       )}
+
     </div>
   );
 };

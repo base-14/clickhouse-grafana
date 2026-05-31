@@ -80,6 +80,28 @@ export interface FilterGroup {
 
 export type FilterNode = FilterCondition | FilterGroup;
 
+export type OperationKind =
+  | 'count'
+  | 'count_distinct'
+  | 'min'
+  | 'max'
+  | 'avg'
+  | 'sum'
+  | 'percentile';
+
+export interface QueryBuilderOperation {
+  id: string;
+  kind: OperationKind;
+  column?: string;
+  percentile?: number;
+  unit?: DurationUnit;
+}
+
+export interface QueryBuilderGroupBy {
+  scope: FilterScope;
+  key: string;
+}
+
 export interface CHQuery extends DataQuery {
   query: string;
   format: string;
@@ -102,6 +124,8 @@ export interface CHQuery extends DataQuery {
   filters?: FilterGroup;
   bodySearch?: string;
   bodySearchIsRegex?: boolean;
+  operations?: QueryBuilderOperation[];
+  groupBy?: QueryBuilderGroupBy[];
 
   skip_comments?: boolean;
   add_metadata?: boolean;

@@ -49,3 +49,19 @@ export const columnsForSignal = (signal: SignalType): ColumnDef[] => {
 
 export const findColumn = (signal: SignalType, name: string): ColumnDef | undefined =>
   columnsForSignal(signal).find((c) => c.name === name);
+
+export const extraGroupByColumns = (signal: SignalType): ColumnDef[] => {
+  if (signal === SignalType.Logs) {
+    return [{ name: 'ServiceName', type: 'string' }];
+  }
+  if (signal === SignalType.Traces) {
+    return [
+      { name: 'ServiceName', type: 'string' },
+      { name: 'SpanName', type: 'string' },
+    ];
+  }
+  return [
+    { name: 'ServiceName', type: 'string' },
+    { name: 'MetricName', type: 'string' },
+  ];
+};
