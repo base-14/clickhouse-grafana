@@ -1,4 +1,9 @@
-import { interpolateQueryExpr, interpolateQueryExprWithContext, createContextAwareInterpolation, conditionalTest } from './index';
+import {
+  interpolateQueryExpr,
+  interpolateQueryExprWithContext,
+  createContextAwareInterpolation,
+  conditionalTest,
+} from './index';
 
 describe('Variable Interpolation', () => {
   describe('interpolateQueryExpr (original)', () => {
@@ -15,7 +20,12 @@ describe('Variable Interpolation', () => {
     });
 
     it('should handle multi-value variables', () => {
-      const variable = { name: 'test', multi: true, includeAll: false, options: [{ value: 'val1' }, { value: 'val2' }] };
+      const variable = {
+        name: 'test',
+        multi: true,
+        includeAll: false,
+        options: [{ value: 'val1' }, { value: 'val2' }],
+      };
       const result = interpolateQueryExpr(['val1', 'val2'], variable);
       expect(result).toBe("'val1','val2'");
     });
@@ -63,7 +73,7 @@ describe('Variable Interpolation', () => {
         const query = "AND JSON_VALUE(message, '$.service.host') = '$container.$selectednamespace.8090.svc'";
         const variables = [
           { name: 'container', current: { value: 'mycontainer' } },
-          { name: 'selectednamespace', current: { value: 'mynamespace' } }
+          { name: 'selectednamespace', current: { value: 'mynamespace' } },
         ];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
 
@@ -113,7 +123,7 @@ describe('Variable Interpolation', () => {
         const query = 'SELECT * FROM $container_name.$namespace_id.svc';
         const variables = [
           { name: 'container_name', current: { value: 'mycontainer' } },
-          { name: 'namespace_id', current: { value: 'mynamespace' } }
+          { name: 'namespace_id', current: { value: 'mynamespace' } },
         ];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable1 = { name: 'container_name', multi: undefined, includeAll: undefined };
@@ -126,7 +136,7 @@ describe('Variable Interpolation', () => {
         const query = 'SELECT * FROM $container1.$namespace2.svc';
         const variables = [
           { name: 'container1', current: { value: 'cont1' } },
-          { name: 'namespace2', current: { value: 'ns2' } }
+          { name: 'namespace2', current: { value: 'ns2' } },
         ];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable1 = { name: 'container1', multi: undefined, includeAll: undefined };
@@ -166,7 +176,7 @@ describe('Variable Interpolation', () => {
         const query = "SELECT * FROM table WHERE host = '$container.$namespace'";
         const variables = [
           { name: 'container', current: { value: 'cont' } },
-          { name: 'namespace', current: { value: 'ns' } }
+          { name: 'namespace', current: { value: 'ns' } },
         ];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable1 = { name: 'container', multi: undefined, includeAll: undefined };
@@ -183,7 +193,7 @@ describe('Variable Interpolation', () => {
           { name: 'table', current: { value: 'mytable' } },
           { name: 'service', current: { value: 'myservice' } },
           { name: 'host', current: { value: 'myhost' } },
-          { name: 'domain', current: { value: 'mydomain' } }
+          { name: 'domain', current: { value: 'mydomain' } },
         ];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
 
@@ -255,7 +265,7 @@ describe('Variable Interpolation', () => {
         const variables = [
           { name: 'schema', current: { value: 'public' } },
           { name: 'table', current: { value: 'users' } },
-          { name: 'column', current: { value: 'id' } }
+          { name: 'column', current: { value: 'id' } },
         ];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const schemaVar = { name: 'schema', multi: undefined, includeAll: undefined };
@@ -281,7 +291,7 @@ describe('Variable Interpolation', () => {
         const variables = [
           { name: 'var1', current: { value: 'a' } },
           { name: 'var2', current: { value: 'b' } },
-          { name: 'var3', current: { value: 'c' } }
+          { name: 'var3', current: { value: 'c' } },
         ];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const var1 = { name: 'var1', multi: undefined, includeAll: undefined };
@@ -306,25 +316,27 @@ describe('Variable Interpolation', () => {
 
       it('should handle $__all corner case with array value and options', () => {
         const query = 'SELECT * FROM table WHERE service IN ($service)';
-        const variables = [{ 
-          name: 'service', 
-          current: { 
-            text: ['$__all'], 
-            value: ['$__all'] 
-          }
-        }];
+        const variables = [
+          {
+            name: 'service',
+            current: {
+              text: ['$__all'],
+              value: ['$__all'],
+            },
+          },
+        ];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
-        const variable = { 
-          name: 'service', 
-          multi: true, 
+        const variable = {
+          name: 'service',
+          multi: true,
           includeAll: true,
           options: [
             { value: 'foo', text: 'foo', selected: false },
             { value: 'bar', text: 'bar', selected: false },
-            { value: 'baz', text: 'baz', selected: false }
-          ]
+            { value: 'baz', text: 'baz', selected: false },
+          ],
         };
-        
+
         // When $__all is selected, any individual value should be treated as repeated
         const result = interpolateFn('foo', variable);
         expect(result).toBe("'foo'"); // Should be quoted as it's different from all options
@@ -332,25 +344,27 @@ describe('Variable Interpolation', () => {
 
       it('should handle $__all corner case with string value and options', () => {
         const query = 'SELECT * FROM table WHERE service IN ($service)';
-        const variables = [{ 
-          name: 'service', 
-          current: { 
-            text: '$__all', 
-            value: '$__all' 
-          }
-        }];
+        const variables = [
+          {
+            name: 'service',
+            current: {
+              text: '$__all',
+              value: '$__all',
+            },
+          },
+        ];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
-        const variable = { 
-          name: 'service', 
-          multi: true, 
+        const variable = {
+          name: 'service',
+          multi: true,
           includeAll: true,
           options: [
             { value: 'foo', text: 'foo', selected: false },
             { value: 'bar', text: 'bar', selected: false },
-            { value: 'baz', text: 'baz', selected: false }
-          ]
+            { value: 'baz', text: 'baz', selected: false },
+          ],
         };
-        
+
         // When $__all is selected, any individual value should be treated as repeated
         const result = interpolateFn('foo', variable);
         expect(result).toBe("'foo'"); // Should be quoted as it's different from all options
@@ -358,24 +372,26 @@ describe('Variable Interpolation', () => {
 
       it('should handle $__all case when interpolated value matches all options', () => {
         const query = 'SELECT * FROM table WHERE service IN ($service)';
-        const variables = [{ 
-          name: 'service', 
-          current: { 
-            text: ['$__all'], 
-            value: ['$__all'] 
-          }
-        }];
+        const variables = [
+          {
+            name: 'service',
+            current: {
+              text: ['$__all'],
+              value: ['$__all'],
+            },
+          },
+        ];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
-        const variable = { 
-          name: 'service', 
-          multi: true, 
+        const variable = {
+          name: 'service',
+          multi: true,
           includeAll: true,
           options: [
             { value: 'foo', text: 'foo', selected: false },
-            { value: 'bar', text: 'bar', selected: false }
-          ]
+            { value: 'bar', text: 'bar', selected: false },
+          ],
         };
-        
+
         // When the interpolated value equals all option values, it should not be repeated
         const result = interpolateFn(['foo', 'bar'], variable);
         expect(result).toBe("'foo','bar'"); // Should use normal array handling
@@ -460,7 +476,7 @@ describe('Variable Interpolation', () => {
       const query = 'SELECT * FROM table WHERE name IN ($names) AND arrayIntersect($tags, col) = []';
       const variables = [
         { name: 'names', current: { value: ['alice', 'bob'] } },
-        { name: 'tags', current: { value: ['a', 'b'] } }
+        { name: 'tags', current: { value: ['a', 'b'] } },
       ];
       const interpolateFn = interpolateQueryExprWithContext(query, variables);
       const namesVar = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
@@ -481,7 +497,7 @@ describe('Variable Interpolation', () => {
       `;
       const variables = [
         { name: 'list_var', current: { value: ['k01', 'k02', 'k03'] } },
-        { name: 'host_list', current: { value: ['h01', 'h02'] } }
+        { name: 'host_list', current: { value: ['h01', 'h02'] } },
       ];
       const interpolateFn = interpolateQueryExprWithContext(query, variables);
       const listVar = { name: 'list_var', multi: true, includeAll: false, options: [{ value: 'k01' }] };
@@ -583,16 +599,22 @@ describe('Variable Interpolation', () => {
       const variables = [
         { name: 'ids', current: { value: [1, 2] } },
         { name: 'names', current: { value: ['a', 'b'] } },
-        { name: 'tags', current: { value: ['t1', 't2'] } }
+        { name: 'tags', current: { value: ['t1', 't2'] } },
       ];
       const interpolateFn = interpolateQueryExprWithContext(query, variables);
 
       // IN [$ids] - square brackets
-      expect(interpolateFn([1, 2], { name: 'ids', multi: true, includeAll: false, options: [{ value: 1 }] })).toBe('1,2');
+      expect(interpolateFn([1, 2], { name: 'ids', multi: true, includeAll: false, options: [{ value: 1 }] })).toBe(
+        '1,2'
+      );
       // IN ($names) - parentheses
-      expect(interpolateFn(['a', 'b'], { name: 'names', multi: true, includeAll: false, options: [{ value: 'a' }] })).toBe("'a','b'");
+      expect(
+        interpolateFn(['a', 'b'], { name: 'names', multi: true, includeAll: false, options: [{ value: 'a' }] })
+      ).toBe("'a','b'");
       // hasAny($tags) - array function
-      expect(interpolateFn(['t1', 't2'], { name: 'tags', multi: true, includeAll: false, options: [{ value: 't1' }] })).toBe("['t1', 't2']");
+      expect(
+        interpolateFn(['t1', 't2'], { name: 'tags', multi: true, includeAll: false, options: [{ value: 't1' }] })
+      ).toBe("['t1', 't2']");
     });
 
     it('should handle spaces around variable in square brackets', () => {
@@ -652,7 +674,12 @@ describe('Variable Interpolation', () => {
       const query = 'SELECT * FROM table WHERE name IN ($test)';
       const variables = [{ name: 'test', current: { value: ['val1', 'val2'] } }];
       const interpolateFn = interpolateQueryExprWithContext(query, variables);
-      const variable = { name: 'test', multi: true, includeAll: false, options: [{ value: 'val1' }, { value: 'val2' }] };
+      const variable = {
+        name: 'test',
+        multi: true,
+        includeAll: false,
+        options: [{ value: 'val1' }, { value: 'val2' }],
+      };
 
       // Should behave exactly like original
       const originalResult = interpolateQueryExpr(['val1', 'val2'], variable);
@@ -688,7 +715,7 @@ describe('Variable Interpolation', () => {
       const query = "AND JSON_VALUE(message, '$.service.host') = '$container.$selectednamespace.8090.svc'";
       const variables = [
         { name: 'container', current: { value: 'transcription' } },
-        { name: 'selectednamespace', current: { value: 'dev' } }
+        { name: 'selectednamespace', current: { value: 'dev' } },
       ];
       const interpolateFn = interpolateQueryExprWithContext(query, variables);
 
@@ -700,9 +727,7 @@ describe('Variable Interpolation', () => {
       expect(interpolateFn('dev', namespaceVar)).toBe('dev');
 
       // The resulting query should be valid SQL
-      const resultQuery = query
-        .replace('$container', 'transcription')
-        .replace('$selectednamespace', 'dev');
+      const resultQuery = query.replace('$container', 'transcription').replace('$selectednamespace', 'dev');
       expect(resultQuery).toBe("AND JSON_VALUE(message, '$.service.host') = 'transcription.dev.8090.svc'");
     });
 
@@ -719,15 +744,15 @@ describe('Variable Interpolation', () => {
 
     it('should handle partially replaced concatenation patterns', () => {
       // Simulate a scenario where one variable is already replaced
-      const partiallyReplacedQuery = "SELECT * FROM mydb.$table WHERE service = $service";
+      const partiallyReplacedQuery = 'SELECT * FROM mydb.$table WHERE service = $service';
       const interpolateFn = interpolateQueryExprWithContext(partiallyReplacedQuery);
-      
+
       const tableVar = { name: 'table', multi: undefined, includeAll: undefined };
       const serviceVar = { name: 'service', multi: undefined, includeAll: undefined };
-      
+
       // $table is in concatenation context (mydb.$table)
       expect(interpolateFn('users', tableVar)).toBe('users');
-      
+
       // $service is not in concatenation context
       expect(interpolateFn('api', serviceVar)).toBe("'api'");
     });
@@ -735,22 +760,22 @@ describe('Variable Interpolation', () => {
     it('should handle the exact issue #797 scenario with multi-pass replacement', () => {
       // This tests the exact scenario that was failing
       const originalQuery = "AND JSON_VALUE(message, '$.service.host') = '$container.$selectednamespace.8090.svc'";
-      
+
       // Our fix: Both variables should see the original query context and be unquoted
       const interpolateFn = interpolateQueryExprWithContext(originalQuery);
-      
+
       const containerVar = { name: 'container', multi: undefined, includeAll: undefined };
       const namespaceVar = { name: 'selectednamespace', multi: undefined, includeAll: undefined };
-      
+
       // Both variables should NOT be quoted because they're in concatenation context
       expect(interpolateFn('transcription', containerVar)).toBe('transcription');
       expect(interpolateFn('dev', namespaceVar)).toBe('dev');
-      
+
       // Simulate the complete replacement (what Grafana would do)
       let finalQuery = originalQuery;
       finalQuery = finalQuery.replace('$container', 'transcription');
       finalQuery = finalQuery.replace('$selectednamespace', 'dev');
-      
+
       expect(finalQuery).toBe("AND JSON_VALUE(message, '$.service.host') = 'transcription.dev.8090.svc'");
     });
 
@@ -758,12 +783,12 @@ describe('Variable Interpolation', () => {
       // Test that our context detection doesn't break backend macro processing
       const queryWithAdhoc = 'SELECT * FROM $table WHERE $timeFilter AND $adhoc';
       const interpolateFn = interpolateQueryExprWithContext(queryWithAdhoc);
-      
+
       // These aren't variables that should be processed by frontend interpolation
       // They should be handled by backend macro processing
       // Our context detection should not interfere with them
       const tableVar = { name: 'table', multi: undefined, includeAll: undefined };
-      
+
       // $table is in concatenation with $timeFilter, but they're macros, not user variables
       // A user variable in this context should work normally
       expect(interpolateFn('events', tableVar)).toBe("'events'"); // Should be quoted as normal variable
@@ -773,11 +798,11 @@ describe('Variable Interpolation', () => {
       // Test variables inside the same quoted string context
       const query = "WHERE host = '$container.$selectednamespace.$environment.cluster.local'";
       const interpolateFn = interpolateQueryExprWithContext(query);
-      
+
       const containerVar = { name: 'container', multi: undefined, includeAll: undefined };
       const namespaceVar = { name: 'selectednamespace', multi: undefined, includeAll: undefined };
       const envVar = { name: 'environment', multi: undefined, includeAll: undefined };
-      
+
       // All should be unquoted since they're building parts of a single string
       expect(interpolateFn('api', containerVar)).toBe('api');
       expect(interpolateFn('prod', namespaceVar)).toBe('prod');
@@ -787,14 +812,14 @@ describe('Variable Interpolation', () => {
     it('should handle complex multi-variable concatenation', () => {
       const query = "SELECT * FROM $db.$schema.$table WHERE host = '$host.$domain.svc.cluster.local'";
       const interpolateFn = interpolateQueryExprWithContext(query);
-      
+
       // All these are in concatenation context
       const dbVar = { name: 'db', multi: undefined, includeAll: undefined };
       const schemaVar = { name: 'schema', multi: undefined, includeAll: undefined };
       const tableVar = { name: 'table', multi: undefined, includeAll: undefined };
       const hostVar = { name: 'host', multi: undefined, includeAll: undefined };
       const domainVar = { name: 'domain', multi: undefined, includeAll: undefined };
-      
+
       expect(interpolateFn('production', dbVar)).toBe('production');
       expect(interpolateFn('public', schemaVar)).toBe('public');
       expect(interpolateFn('users', tableVar)).toBe('users');
@@ -875,7 +900,8 @@ describe('conditionalTest', () => {
 
   describe('2-parameter format: $conditionalTest(SQL_if, $var)', () => {
     it('should include SQL_if when variable has a value', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name = '$service_name', $service_name)";
+      const query =
+        "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name = '$service_name', $service_name)";
       const templateSrv = createTemplateSrv([
         { name: 'service_name', type: 'query', current: { value: 'postgresql' } },
       ]);
@@ -885,10 +911,9 @@ describe('conditionalTest', () => {
     });
 
     it('should remove macro when variable is $__all', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name = '$service_name', $service_name)";
-      const templateSrv = createTemplateSrv([
-        { name: 'service_name', type: 'query', current: { value: '$__all' } },
-      ]);
+      const query =
+        "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name = '$service_name', $service_name)";
+      const templateSrv = createTemplateSrv([{ name: 'service_name', type: 'query', current: { value: '$__all' } }]);
       const result = conditionalTest(query, templateSrv as any);
       expect(result).not.toContain('AND service_name');
       expect(result).not.toContain('$conditionalTest');
@@ -896,9 +921,7 @@ describe('conditionalTest', () => {
 
     it('should remove macro when textbox variable is empty', () => {
       const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND name = '$name', $name)";
-      const templateSrv = createTemplateSrv([
-        { name: 'name', type: 'textbox', current: { value: '' } },
-      ]);
+      const templateSrv = createTemplateSrv([{ name: 'name', type: 'textbox', current: { value: '' } }]);
       const result = conditionalTest(query, templateSrv as any);
       expect(result).not.toContain('AND name');
       expect(result).not.toContain('$conditionalTest');
@@ -907,21 +930,21 @@ describe('conditionalTest', () => {
 
   describe('3-parameter format: $conditionalTest(SQL_if, SQL_else, $var) - issue #869', () => {
     it('should use SQL_if when variable has a specific value', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN ($service_name), AND service_name IN ('mysql'), $service_name)";
+      const query =
+        "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN ($service_name), AND service_name IN ('mysql'), $service_name)";
       const templateSrv = createTemplateSrv([
         { name: 'service_name', type: 'query', current: { value: 'postgresql' } },
       ]);
       const result = conditionalTest(query, templateSrv as any);
-      expect(result).toContain("AND service_name IN ($service_name)");
+      expect(result).toContain('AND service_name IN ($service_name)');
       expect(result).not.toContain("AND service_name IN ('mysql')");
       expect(result).not.toContain('$conditionalTest');
     });
 
     it('should use SQL_else when variable is $__all', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN ($service_name), AND service_name IN ('mysql'), $service_name)";
-      const templateSrv = createTemplateSrv([
-        { name: 'service_name', type: 'query', current: { value: '$__all' } },
-      ]);
+      const query =
+        "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN ($service_name), AND service_name IN ('mysql'), $service_name)";
+      const templateSrv = createTemplateSrv([{ name: 'service_name', type: 'query', current: { value: '$__all' } }]);
       const result = conditionalTest(query, templateSrv as any);
       expect(result).toContain("AND service_name IN ('mysql')");
       expect(result).not.toContain('AND service_name IN ($service_name)');
@@ -929,47 +952,44 @@ describe('conditionalTest', () => {
     });
 
     it('should use SQL_else when variable is $__all as array', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN ($service_name), AND 1=1, $service_name)";
-      const templateSrv = createTemplateSrv([
-        { name: 'service_name', type: 'query', current: { value: ['$__all'] } },
-      ]);
+      const query =
+        'SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN ($service_name), AND 1=1, $service_name)';
+      const templateSrv = createTemplateSrv([{ name: 'service_name', type: 'query', current: { value: ['$__all'] } }]);
       const result = conditionalTest(query, templateSrv as any);
       expect(result).toContain('AND 1=1');
       expect(result).not.toContain('AND service_name IN ($service_name)');
     });
 
     it('should use SQL_else when textbox variable is empty', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND name = '$name', AND name IS NOT NULL, $name)";
-      const templateSrv = createTemplateSrv([
-        { name: 'name', type: 'textbox', current: { value: '' } },
-      ]);
+      const query =
+        "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND name = '$name', AND name IS NOT NULL, $name)";
+      const templateSrv = createTemplateSrv([{ name: 'name', type: 'textbox', current: { value: '' } }]);
       const result = conditionalTest(query, templateSrv as any);
       expect(result).toContain('AND name IS NOT NULL');
       expect(result).not.toContain("AND name = '$name'");
     });
 
     it('should use SQL_else when custom variable is null', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND status = $status, AND status > 0, $status)";
-      const templateSrv = createTemplateSrv([
-        { name: 'status', type: 'custom', current: { value: null } },
-      ]);
+      const query =
+        'SELECT * FROM table WHERE $timeFilter $conditionalTest(AND status = $status, AND status > 0, $status)';
+      const templateSrv = createTemplateSrv([{ name: 'status', type: 'custom', current: { value: null } }]);
       const result = conditionalTest(query, templateSrv as any);
       expect(result).toContain('AND status > 0');
       expect(result).not.toContain('AND status = $status');
     });
 
     it('should use SQL_else when multi-value variable is empty array', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND host IN ($hosts), AND host = 'default', $hosts)";
-      const templateSrv = createTemplateSrv([
-        { name: 'hosts', type: 'query', current: { value: [] } },
-      ]);
+      const query =
+        "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND host IN ($hosts), AND host = 'default', $hosts)";
+      const templateSrv = createTemplateSrv([{ name: 'hosts', type: 'query', current: { value: [] } }]);
       const result = conditionalTest(query, templateSrv as any);
       expect(result).toContain("AND host = 'default'");
       expect(result).not.toContain('AND host IN ($hosts)');
     });
 
     it('should handle nested parentheses in SQL_if expression', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN (toUpper($service_name)), AND 1=1, $service_name)";
+      const query =
+        'SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN (toUpper($service_name)), AND 1=1, $service_name)';
       const templateSrv = createTemplateSrv([
         { name: 'service_name', type: 'query', current: { value: 'postgresql' } },
       ]);
@@ -979,29 +999,29 @@ describe('conditionalTest', () => {
     });
 
     it('should handle nested parentheses in SQL_else expression', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND name = $name, AND name IN (SELECT name FROM defaults), $name)";
-      const templateSrv = createTemplateSrv([
-        { name: 'name', type: 'textbox', current: { value: '' } },
-      ]);
+      const query =
+        'SELECT * FROM table WHERE $timeFilter $conditionalTest(AND name = $name, AND name IN (SELECT name FROM defaults), $name)';
+      const templateSrv = createTemplateSrv([{ name: 'name', type: 'textbox', current: { value: '' } }]);
       const result = conditionalTest(query, templateSrv as any);
       expect(result).toContain('AND name IN (SELECT name FROM defaults)');
       expect(result).not.toContain('AND name = $name');
     });
 
     it('should throw error when last parameter is not a variable', () => {
-      const query = "SELECT * FROM table WHERE $conditionalTest(AND a=1, AND b=2, notavar)";
+      const query = 'SELECT * FROM table WHERE $conditionalTest(AND a=1, AND b=2, notavar)';
       const templateSrv = createTemplateSrv([]);
       expect(() => conditionalTest(query, templateSrv as any)).toThrow('last parameter must be a variable');
     });
 
     it('should throw error when variable is not found', () => {
-      const query = "SELECT * FROM table WHERE $conditionalTest(AND a=1, AND b=2, $nonexistent)";
+      const query = 'SELECT * FROM table WHERE $conditionalTest(AND a=1, AND b=2, $nonexistent)';
       const templateSrv = createTemplateSrv([]);
       expect(() => conditionalTest(query, templateSrv as any)).toThrow('cannot find referenced variable');
     });
 
     it('should handle multiple 3-param conditionalTest macros in one query', () => {
-      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND svc IN ($svc), AND 1=1, $svc) $conditionalTest(AND host = '$host', AND host IS NOT NULL, $host)";
+      const query =
+        "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND svc IN ($svc), AND 1=1, $svc) $conditionalTest(AND host = '$host', AND host IS NOT NULL, $host)";
       const templateSrv = createTemplateSrv([
         { name: 'svc', type: 'query', current: { value: 'postgresql' } },
         { name: 'host', type: 'textbox', current: { value: '' } },

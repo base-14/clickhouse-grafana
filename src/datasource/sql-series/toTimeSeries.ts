@@ -90,7 +90,14 @@ const extrapolateDataPoints = (datapoints: any, self) => {
   return datapoints;
 };
 
-const _pushDatapoint = (metrics: any, timestamp: number, key: string, value: number, nullifySparse: boolean, chType?: string) => {
+const _pushDatapoint = (
+  metrics: any,
+  timestamp: number,
+  key: string,
+  value: number,
+  nullifySparse: boolean,
+  chType?: string
+) => {
   if (!metrics[key]) {
     metrics[key] = [];
 
@@ -202,16 +209,18 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
 
   each(metrics, function (dataPoints, seriesName) {
     // Filter: allow numbers, strings (for big integers), and nulls
-    const processedDataPoints = (extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints).filter(item => (typeof item[0] === 'number' || typeof item[0] === 'string' || item[0] === null) && item[1]);
+    const processedDataPoints = (extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints).filter(
+      (item) => (typeof item[0] === 'number' || typeof item[0] === 'string' || item[0] === null) && item[1]
+    );
 
     timeSeries.push({
       length: processedDataPoints.length,
       fields: [
-        { config: { links: []}, name: 'time', type: 'time', values: processedDataPoints.map((v: any) => v[1])},
-        { config: { links: []}, name: seriesName, values: processedDataPoints.map((v: any) => v[0])},
+        { config: { links: [] }, name: 'time', type: 'time', values: processedDataPoints.map((v: any) => v[1]) },
+        { config: { links: [] }, name: seriesName, values: processedDataPoints.map((v: any) => v[0]) },
       ],
-      refId: seriesName && self.refId ? `${self.refId} - ${seriesName}` : undefined
-    })
+      refId: seriesName && self.refId ? `${self.refId} - ${seriesName}` : undefined,
+    });
   });
 
   return timeSeries;

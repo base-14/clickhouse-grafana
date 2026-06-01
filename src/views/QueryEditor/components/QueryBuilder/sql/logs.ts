@@ -10,11 +10,7 @@ type Args = {
   settings: QueryBuilderSettings;
 };
 
-const baseWhere = (
-  query: CHQuery,
-  settings: QueryBuilderSettings,
-  _timeCol: string
-): string[] => {
+const baseWhere = (query: CHQuery, settings: QueryBuilderSettings, _timeCol: string): string[] => {
   const wheres: string[] = ['$timeFilter'];
   if ((query.serviceNames ?? []).length > 0) {
     wheres.push(`ServiceName IN (${inList(query.serviceNames!)})`);

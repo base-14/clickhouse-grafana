@@ -1,12 +1,8 @@
 import { CHQuery, QueryBuilderSettings, SignalType, TimestampFormat } from '../../../../types/types';
 
-type SignalPreset = Partial<
-  Pick<CHQuery, 'table' | 'dateTimeType' | 'dateTimeColDataType' | 'dateColDataType'>
->;
+type SignalPreset = Partial<Pick<CHQuery, 'table' | 'dateTimeType' | 'dateTimeColDataType' | 'dateColDataType'>>;
 
-export const buildSignalPresets = (
-  settings: QueryBuilderSettings
-): Record<SignalType, SignalPreset | null> => ({
+export const buildSignalPresets = (settings: QueryBuilderSettings): Record<SignalType, SignalPreset | null> => ({
   [SignalType.Logs]: {
     table: settings.logsTable,
     dateTimeType: TimestampFormat.DateTime,
@@ -36,8 +32,7 @@ export const SIGNAL_OPTIONS = [
 export const SIGNAL_NAME_ALL = '__all__';
 export const ENVIRONMENT_ALL = SIGNAL_NAME_ALL;
 
-export const isSignalNameAll = (names: string[] | undefined): boolean =>
-  !!names && names.includes(SIGNAL_NAME_ALL);
+export const isSignalNameAll = (names: string[] | undefined): boolean => !!names && names.includes(SIGNAL_NAME_ALL);
 
 export const effectiveSignalNames = (names: string[] | undefined): string[] =>
   (names ?? []).filter((n) => n !== SIGNAL_NAME_ALL);

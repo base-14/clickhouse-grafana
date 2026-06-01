@@ -17,11 +17,11 @@ func ParseTimeRange(timeRange TimeRangeStruct) (time.Time, time.Time, error) {
 	if err != nil {
 		return time.Time{}, time.Time{}, err
 	}
-	
+
 	to, err := time.Parse(time.RFC3339, timeRange.To)
 	if err != nil {
 		return time.Time{}, time.Time{}, err
 	}
-	
+
 	return from, to, nil
 }

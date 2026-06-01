@@ -1,7 +1,11 @@
 {
-  "name": "altinity-clickhouse-grafana",
+  "name": "base14-clickhouse-grafana",
   "version": "3.4.11",
-  "description": "Altinity grafana datasource for ClickHouse",
+  "description": "Base14 fork of the Altinity ClickHouse Grafana datasource",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/base-14/clickhouse-grafana.git"
+  },
   "scripts": {
     "build": "npm run build:frontend",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
@@ -20,7 +24,7 @@
     "build:frontend": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "build:backend": "docker compose run --rm backend_builder && chmod +rx ./dist"
   },
-  "author": "Altinity",
+  "author": "Base14",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.29.0",
@@ -85,6 +89,7 @@
     "serialize-javascript": "^7.0.5",
     "immutable": "^5.1.5",
     "react": "$react",
-    "react-dom": "$react-dom"
+    "react-dom": "$react-dom",
+    "js-cookie": "^3.0.6"
   }
 }

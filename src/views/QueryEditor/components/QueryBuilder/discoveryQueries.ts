@@ -43,8 +43,7 @@ const unionSelect = (
   const whereExtra = extraWhere ? ` AND ${extraWhere}` : '';
   return tables
     .map(
-      (t) =>
-        `SELECT ${selectExpr} FROM ${database}.${t} WHERE ${timeCol} > now() - INTERVAL ${lookback}${whereExtra}`
+      (t) => `SELECT ${selectExpr} FROM ${database}.${t} WHERE ${timeCol} > now() - INTERVAL ${lookback}${whereExtra}`
     )
     .join('\nUNION ALL\n');
 };
@@ -68,9 +67,7 @@ export const buildServiceNameQuery = (deps: DiscoveryDeps): string => {
   return `SELECT DISTINCT ServiceName FROM (\n${inner}\n) ORDER BY ServiceName ASC LIMIT ${limit}`;
 };
 
-export const buildEnvironmentQuery = (
-  deps: DiscoveryDeps & { serviceNames: string[] }
-): string => {
+export const buildEnvironmentQuery = (deps: DiscoveryDeps & { serviceNames: string[] }): string => {
   const { signalType, database, settings, lookback, serviceNames } = deps;
   const envKey = settings.environmentKey;
   const tables = tablesForSignal(signalType, settings);
@@ -155,8 +152,7 @@ export const buildMetricNameDiscoveryQuery = (
   const whereSql = wheres.join(' AND ');
 
   const branches = tables.map(
-    (t) =>
-      `SELECT DISTINCT MetricName, ${quote(t)} AS TableName FROM ${database}.${t} WHERE ${whereSql}`
+    (t) => `SELECT DISTINCT MetricName, ${quote(t)} AS TableName FROM ${database}.${t} WHERE ${whereSql}`
   );
 
   return [
@@ -233,10 +229,12 @@ export const buildKeyDiscoveryQuery = (deps: FilterDiscoveryDeps): KeyDiscoveryR
   const selects: string[] = [];
   for (const { col, scope } of maps) {
     const selectExpr = `arrayJoin(mapKeys(${col})) AS k, ${quote(scope)} AS s`;
-    selects.push(...tables.map((t) => {
-      const tail = scopeWhere ? ` AND ${scopeWhere}` : '';
-      return `SELECT DISTINCT ${selectExpr} FROM ${database}.${t} WHERE ${timeCol} > now() - INTERVAL ${lookback}${tail}`;
-    }));
+    selects.push(
+      ...tables.map((t) => {
+        const tail = scopeWhere ? ` AND ${scopeWhere}` : '';
+        return `SELECT DISTINCT ${selectExpr} FROM ${database}.${t} WHERE ${timeCol} > now() - INTERVAL ${lookback}${tail}`;
+      })
+    );
   }
 
   const inner = selects.join('\nUNION ALL\n');

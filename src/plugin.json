@@ -1,24 +1,24 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
-  "id": "vertamedia-clickhouse-datasource",
+  "id": "base14-clickhouse-datasource",
   "type": "datasource",
-  "name": "Altinity plugin for ClickHouse",
+  "name": "Base14 ClickHouse datasource",
   "metrics": true,
   "annotations": true,
   "backend": true,
   "alerting": true,
   "logs": true,
-  "executable": "altinity-clickhouse-plugin",
+  "executable": "base14-clickhouse-plugin",
   "info": {
-    "description": "Altinity Grafana datasource for ClickHouse",
+    "description": "Base14 fork of the Altinity ClickHouse Grafana datasource",
     "author": {
-      "name": "Altinity",
-      "url": "https://altinity.com/"
+      "name": "Base14",
+      "url": "https://base14.io/"
     },
-    "keywords": ["clickhouse", "datasource", "analytics", "timeseries"],
+    "keywords": ["clickhouse", "datasource", "analytics", "timeseries", "otel"],
     "logos": {
-      "small": "img/altinity_logo.svg",
-      "large": "img/altinity_logo.svg"
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
     },
     "screenshots": [
       {
@@ -41,7 +41,7 @@
     "links": [
       {
         "name": "GitHub",
-        "url": "https://github.com/Altinity/clickhouse-grafana"
+        "url": "https://github.com/base-14/clickhouse-grafana"
       }
     ],
     "version": "%VERSION%",

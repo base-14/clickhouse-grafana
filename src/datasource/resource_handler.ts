@@ -26,18 +26,20 @@ export class ClickHouseResourceClient {
     }
 
     return new Promise((resolve, reject) => {
-      this.backendSrv.fetch({
-        url: `/api/datasources/uid/${this.datasourceUid}/resources/${path}`,
-        method: 'POST',
-        data: data,
-      }).subscribe(
-        (response) => {
-          resolve(response.data);
-        },
-        (error) => {
-          reject(error);
-        }
-      );
+      this.backendSrv
+        .fetch({
+          url: `/api/datasources/uid/${this.datasourceUid}/resources/${path}`,
+          method: 'POST',
+          data: data,
+        })
+        .subscribe(
+          (response) => {
+            resolve(response.data);
+          },
+          (error) => {
+            reject(error);
+          }
+        );
     });
   }
 
@@ -49,7 +51,7 @@ export class ClickHouseResourceClient {
     const response = await this.callResource('applyAdhocFilters', {
       query,
       adhocFilters,
-      target
+      target,
     });
     return response.query;
   }
@@ -57,7 +59,7 @@ export class ClickHouseResourceClient {
   async getAstProperty(query: string, propertyName: string): Promise<any> {
     return this.callResource('getAstProperty', {
       query,
-      propertyName
+      propertyName,
     });
   }
 
@@ -68,7 +70,7 @@ export class ClickHouseResourceClient {
         from: range.from.toISOString(),
         to: range.to.toISOString(),
       },
-      dateTimeType
+      dateTimeType,
     });
     return response.sql;
   }
@@ -76,18 +78,25 @@ export class ClickHouseResourceClient {
   // OPTIMIZED BATCHED METHODS
 
   // SAFER: Only batches createQuery + applyAdhocFilters (no property extraction)
-  async createQueryWithAdhoc(queryData: any, adhocFilters: any[]): Promise<{
+  async createQueryWithAdhoc(
+    queryData: any,
+    adhocFilters: any[]
+  ): Promise<{
     sql: string;
     error?: string;
   }> {
     return this.callResource('createQueryWithAdhoc', {
       ...queryData,
-      adhocFilters: adhocFilters || []
+      adhocFilters: adhocFilters || [],
     });
   }
 
   // AGGRESSIVE: Full batching including property extraction (use with caution due to template variable timing)
-  async processQueryBatch(queryData: any, adhocFilters: any[], extractProperties: string[] = []): Promise<{
+  async processQueryBatch(
+    queryData: any,
+    adhocFilters: any[],
+    extractProperties: string[] = []
+  ): Promise<{
     sql: string;
     keys: any[];
     properties: { [key: string]: any[] };
@@ -96,16 +105,19 @@ export class ClickHouseResourceClient {
     return this.callResource('processQueryBatch', {
       ...queryData,
       adhocFilters: adhocFilters || [],
-      extractProperties: extractProperties || []
+      extractProperties: extractProperties || [],
     });
   }
 
-  async getMultipleAstProperties(query: string, properties: string[]): Promise<{
+  async getMultipleAstProperties(
+    query: string,
+    properties: string[]
+  ): Promise<{
     properties: { [property: string]: any[] };
   }> {
     return this.callResource('getMultipleAstProperties', {
       query,
-      properties
+      properties,
     });
   }
 }

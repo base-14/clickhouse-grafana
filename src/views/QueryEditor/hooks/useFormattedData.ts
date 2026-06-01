@@ -12,19 +12,22 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource, optio
 
   useEffect(() => {
     // Determine if we're in a context where template replacement is possible
-    const hasExecutionContext = (datasource.options?.range || options?.range);
+    const hasExecutionContext = datasource.options?.range || options?.range;
     const hasTemplateService = !!datasource.templateSrv;
 
     if (hasExecutionContext && hasTemplateService) {
       // Normal dashboard mode - perform replacement
-      datasource.replace(datasource.options || options, query).then((replaced) => {
-        setFormattedData(replaced.stmt);
-        setError(null);
-      }).catch((e) => {
-        setFormattedData(query.query);
-        const errorStr = e.data?.error || e.toString();
-        setError(errorStr);
-      });
+      datasource
+        .replace(datasource.options || options, query)
+        .then((replaced) => {
+          setFormattedData(replaced.stmt);
+          setError(null);
+        })
+        .catch((e) => {
+          setFormattedData(query.query);
+          const errorStr = e.data?.error || e.toString();
+          setError(errorStr);
+        });
     } else if (hasTemplateService) {
       // Alerts/Explore mode - no execution context yet
       // This is EXPECTED behavior, not an error

@@ -27,7 +27,7 @@ export enum TimestampFormat {
 export enum DatasourceMode {
   Variable = 'Variable',
   Datasource = 'Datasource',
-  Annotation = 'Annotation'
+  Annotation = 'Annotation',
 }
 
 export enum SignalType {

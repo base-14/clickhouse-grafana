@@ -240,17 +240,22 @@ export const clickhouseEscape = (value: any, variable: any): any => {
 export const interpolateQueryExprWithContext = (query: string, variables: any[] = []) => {
   return (value: any, variable: any) => {
     // Check if this variable is part of a concatenation pattern
-    const currentVariableValue = variables.find(v => v.name === variable.name)
+    const currentVariableValue = variables.find((v) => v.name === variable.name);
 
     const isInConcatenation = detectConcatenationContext(query, variable.name);
     const needsComma = needsCommaFormat(query, variable.name);
 
     let isRepeated = false;
-    if (currentVariableValue && "current" in currentVariableValue) {
+    if (currentVariableValue && 'current' in currentVariableValue) {
       let currentValue = currentVariableValue.current.value;
 
       // Handle $__all case: when current.value is ["$__all"], extract all values from options
-      if (Array.isArray(currentValue) && currentValue.length === 1 && currentValue[0] === '$__all' && variable.options) {
+      if (
+        Array.isArray(currentValue) &&
+        currentValue.length === 1 &&
+        currentValue[0] === '$__all' &&
+        variable.options
+      ) {
         currentValue = variable.options.map((opt: any) => opt.value);
       } else if (typeof currentValue === 'string' && currentValue === '$__all' && variable.options) {
         currentValue = variable.options.map((opt: any) => opt.value);
@@ -268,17 +273,17 @@ export const interpolateQueryExprWithContext = (query: string, variables: any[] 
 
     // Priority 2: Arrays in IN clause / tuple() - use comma format without brackets
     if (needsComma && Array.isArray(value)) {
-      return interpolateQueryExpr(value, variable, isRepeated);  // Returns: 'val1','val2'
+      return interpolateQueryExpr(value, variable, isRepeated); // Returns: 'val1','val2'
     }
 
     // Priority 3: Single values in IN clause / tuple() - need quotes (fix for issue #847)
     if (needsComma && !Array.isArray(value)) {
-      return clickhouseEscape(value, variable);  // Returns: 'val1'
+      return clickhouseEscape(value, variable); // Returns: 'val1'
     }
 
     // Priority 4: Arrays in any other context (array functions) - use ClickHouse array literal
     if (Array.isArray(value)) {
-      return clickhouseEscape(value, variable);  // Returns: ['val1','val2']
+      return clickhouseEscape(value, variable); // Returns: ['val1','val2']
     }
 
     // Default: use original logic for single values
@@ -331,10 +336,10 @@ const needsCommaFormat = (query: string, variableName: string): boolean => {
   const pattern = new RegExp(
     // IN with parentheses: IN ($var), NOT IN ($var), GLOBAL IN ($var)
     `(?:NOT\\s+)?(?:GLOBAL\\s+)?IN\\s*\\(\\s*\\$\\{?${variableName}\\}?\\s*\\)|` +
-    // IN with square brackets: IN [$var], NOT IN [$var], GLOBAL IN [$var]
-    `(?:NOT\\s+)?(?:GLOBAL\\s+)?IN\\s*\\[\\s*\\$\\{?${variableName}\\}?\\s*\\]|` +
-    // tuple function
-    `\\btuple\\s*\\(\\s*\\$\\{?${variableName}\\}?`,
+      // IN with square brackets: IN [$var], NOT IN [$var], GLOBAL IN [$var]
+      `(?:NOT\\s+)?(?:GLOBAL\\s+)?IN\\s*\\[\\s*\\$\\{?${variableName}\\}?\\s*\\]|` +
+      // tuple function
+      `\\btuple\\s*\\(\\s*\\$\\{?${variableName}\\}?`,
     'i'
   );
 
@@ -379,8 +384,8 @@ const detectConcatenationContext = (query: string, variableName: string): boolea
 
   // Look for patterns like: $variable. or .$variable or $variable1.$variable2
   const patterns = [
-    new RegExp(`\\$\\{?${variableName}\\}?\\.`, 'g'),  // $variable. or ${variable}.
-    new RegExp(`\\.\\$\\{?${variableName}\\}?`, 'g'),  // .$variable or .${variable}
+    new RegExp(`\\$\\{?${variableName}\\}?\\.`, 'g'), // $variable. or ${variable}.
+    new RegExp(`\\.\\$\\{?${variableName}\\}?`, 'g'), // .$variable or .${variable}
     new RegExp(`\\$\\{?${variableName}\\}?\\.\\$`, 'g'), // $variable1.$variable2
     // More precise patterns for partially replaced queries
     new RegExp(`'[^']*'\\.\\$\\{?${variableName}\\}?`, 'g'), // 'quoted'.$variable (for issue #797)
@@ -475,35 +480,35 @@ export const interpolateQueryExpr = (value: any, variable: any, isRepeated?: boo
 
 /**
  * Creates a context-aware interpolation function for a specific query.
- * 
+ *
  * This is a convenience wrapper around `interpolateQueryExprWithContext` that
  * creates a function compatible with Grafana's `templateSrv.replace()` method.
- * 
+ *
  * @param query - The SQL query string that provides context for variable interpolation
  * @returns Function compatible with Grafana's template service
- * 
+ *
  * **USAGE:**
  * ```typescript
  * // Create interpolation function for a specific query
  * const interpolateFn = createContextAwareInterpolation(
  *   'SELECT * FROM $database.$table WHERE service = $service'
  * );
- * 
+ *
  * // Use with Grafana's template service
  * this.templateSrv.replace(query, scopedVars, interpolateFn);
  * ```
- * 
+ *
  * **BEHAVIOR:**
  * - Variables in concatenation patterns (like `$database.$table`) won't be quoted
  * - Variables in SQL contexts (like `service = $service`) will be quoted appropriately
  * - Maintains all backward compatibility with existing variable configurations
- * 
+ *
  * **RECOMMENDED USAGE:**
  * Replace all instances of `interpolateQueryExpr` with this context-aware version:
  * ```typescript
  * // OLD (can cause concatenation issues):
  * templateSrv.replace(query, scopedVars, interpolateQueryExpr)
- * 
+ *
  * // NEW (context-aware, fixes concatenation):
  * templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query))
  * ```
@@ -516,7 +521,7 @@ export const createContextAwareInterpolation = (query: string, variables: any[] 
 
 /**
  * Converts various date formats to Unix timestamp.
- * 
+ *
  * @param date - Date in various formats (string, Date object, etc.)
  * @returns Unix timestamp in seconds
  */

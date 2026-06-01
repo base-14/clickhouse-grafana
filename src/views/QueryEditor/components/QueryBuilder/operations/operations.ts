@@ -1,10 +1,5 @@
 import { SelectableValue } from '@grafana/data';
-import {
-  DurationUnit,
-  OperationKind,
-  QueryBuilderOperation,
-  SignalType,
-} from '../../../../../types/types';
+import { DurationUnit, OperationKind, QueryBuilderOperation, SignalType } from '../../../../../types/types';
 
 let counter = 0;
 const nextId = () => `op-${Date.now()}-${counter++}`;
@@ -71,10 +66,7 @@ export const kindOptionsForSignal = (
   return TRACES_KIND_OPTIONS;
 };
 
-export const defaultKindForSignal = (
-  signal: SignalType,
-  metricKind?: MetricKindArg
-): OperationKind => {
+export const defaultKindForSignal = (signal: SignalType, metricKind?: MetricKindArg): OperationKind => {
   if (signal === SignalType.Metrics) {
     if (metricKind === 'sum') {
       return 'rate';
@@ -130,10 +122,7 @@ export const columnsForSignal = (signal: SignalType): string[] => {
   return [];
 };
 
-export const newOperation = (
-  signal: SignalType,
-  metricKind?: MetricKindArg
-): QueryBuilderOperation => {
+export const newOperation = (signal: SignalType, metricKind?: MetricKindArg): QueryBuilderOperation => {
   const column = columnsForSignal(signal)[0];
   const kind = defaultKindForSignal(signal, metricKind);
   return {
@@ -151,10 +140,8 @@ export const updateOperation = (
   patch: Partial<QueryBuilderOperation>
 ): QueryBuilderOperation[] => ops.map((o) => (o.id === id ? { ...o, ...patch } : o));
 
-export const removeOperation = (
-  ops: QueryBuilderOperation[],
-  id: string
-): QueryBuilderOperation[] => ops.filter((o) => o.id !== id);
+export const removeOperation = (ops: QueryBuilderOperation[], id: string): QueryBuilderOperation[] =>
+  ops.filter((o) => o.id !== id);
 
 export const appendOperation = (
   ops: QueryBuilderOperation[],

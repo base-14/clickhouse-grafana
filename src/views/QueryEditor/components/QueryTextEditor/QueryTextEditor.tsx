@@ -19,7 +19,7 @@ import {
   ContextWindowSizeSelect,
   ToolbarButtons,
 } from './components';
-import {DatasourceMode} from "../../../../types/types";
+import { DatasourceMode } from '../../../../types/types';
 
 export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
   query,
@@ -57,53 +57,26 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
       />
       <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
         <InlineFieldRow>
-          <ExtrapolationSwitch
-            query={query}
-            onChange={() => handlers.handleToggleField('extrapolate')}
-          />
-          <StepInput
-            query={query}
-            handleStepChange={handlers.handleStepChange}
-          />
-          <ResolutionsInput
-            query={query}
-            handleResolutionChange={handlers.handleResolutionChange}
-          />
-          <RoundInput
-            query={query}
-            handleRoundChange={handlers.handleRoundChange}
-          />
+          <ExtrapolationSwitch query={query} onChange={() => handlers.handleToggleField('extrapolate')} />
+          <StepInput query={query} handleStepChange={handlers.handleStepChange} />
+          <ResolutionsInput query={query} handleResolutionChange={handlers.handleResolutionChange} />
+          <RoundInput query={query} handleRoundChange={handlers.handleRoundChange} />
         </InlineFieldRow>
         <InlineFieldRow>
-          <MetadataSwitch
-            query={query}
-            onChange={() => handlers.handleToggleField('add_metadata')}
-          />
-          <SkipCommentsSwitch
-            query={query}
-            onChange={() => handlers.handleToggleField('skip_comments')}
-          />
-          <NullifySparseSwitch
-            query={query}
-            onChange={() => handlers.handleToggleField('nullifySparse')}
-          />
+          <MetadataSwitch query={query} onChange={() => handlers.handleToggleField('add_metadata')} />
+          <SkipCommentsSwitch query={query} onChange={() => handlers.handleToggleField('skip_comments')} />
+          <NullifySparseSwitch query={query} onChange={() => handlers.handleToggleField('nullifySparse')} />
           <UseWindowFunctionSwitch
             query={query}
             onChange={() => handlers.handleToggleField('useWindowFuncForMacros')}
           />
         </InlineFieldRow>
         <InlineFieldRow>
-          {(!isAnnotationView && query.datasourceMode !== DatasourceMode.Variable) && (
-            <FormatAsSelect
-              query={query}
-              onChange={(e: any) => handlers.handleFormatChange(e.value)}
-            />
+          {!isAnnotationView && query.datasourceMode !== DatasourceMode.Variable && (
+            <FormatAsSelect query={query} onChange={(e: any) => handlers.handleFormatChange(e.value)} />
           )}
           {query.format === 'logs' && (
-            <ContextWindowSizeSelect
-              query={query}
-              onChange={(e: any) => handlers.handleContextWindowChange(e.value)}
-            />
+            <ContextWindowSizeSelect query={query} onChange={(e: any) => handlers.handleContextWindowChange(e.value)} />
           )}
           <ToolbarButtons
             showHelp={query.showHelp}

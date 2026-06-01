@@ -1,5 +1,15 @@
 import React, { useEffect, useMemo } from 'react';
-import { Alert, IconButton, InlineField, InlineFieldRow, InlineLabel, InlineSwitch, MultiSelect, RadioButtonGroup, Select } from '@grafana/ui';
+import {
+  Alert,
+  IconButton,
+  InlineField,
+  InlineFieldRow,
+  InlineLabel,
+  InlineSwitch,
+  MultiSelect,
+  RadioButtonGroup,
+  Select,
+} from '@grafana/ui';
 import { rangeUtil, SelectableValue, TimeRange } from '@grafana/data';
 import {
   CHQuery,
@@ -35,14 +45,7 @@ import { buildPanelSql } from './sql';
 import { QueryBuilderGroupBy } from '../../../../types/types';
 import { extraGroupByColumns } from './filters/columns';
 import { DiscoveredKey } from './filters/resolveScope';
-import {
-  addChild,
-  emptyRoot,
-  ensureRoot,
-  removeChild,
-  toggleConnector,
-  updateCondition,
-} from './filters/tree';
+import { addChild, emptyRoot, ensureRoot, removeChild, toggleConnector, updateCondition } from './filters/tree';
 
 type DatasourceForBuilder = {
   defaultDatabase?: string;
@@ -61,13 +64,7 @@ type QueryBuilderProps = {
 const toMulti = (values?: string[]): Array<SelectableValue<string>> =>
   (values ?? []).map((v) => ({ label: v, value: v }));
 
-const DiscoveryErrorAlert = ({
-  label,
-  onRetry,
-}: {
-  label: string;
-  onRetry: () => void;
-}) => (
+const DiscoveryErrorAlert = ({ label, onRetry }: { label: string; onRetry: () => void }) => (
   <div
     style={{
       display: 'flex',
@@ -251,9 +248,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
     }
     let candidates: MetricKind[] | null = null;
     for (const entry of pickedMetricEntries) {
-      const kinds = entry.tables
-        .map((t) => KIND_BY_TABLE[t])
-        .filter((k): k is MetricKind => !!k);
+      const kinds = entry.tables.map((t) => KIND_BY_TABLE[t]).filter((k): k is MetricKind => !!k);
       if (candidates === null) {
         candidates = kinds;
       } else {
@@ -264,8 +259,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
   })();
 
   const needsKindSelector = availableKinds.length > 1;
-  const autoResolvedKind: MetricKind | null =
-    availableKinds.length === 1 ? availableKinds[0] : null;
+  const autoResolvedKind: MetricKind | null = availableKinds.length === 1 ? availableKinds[0] : null;
 
   const effectiveMetricKind: MetricKind = query.metricKind ?? autoResolvedKind ?? 'gauge';
 
@@ -382,8 +376,8 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
           elevated
           style={{ marginTop: '5px', marginBottom: '5px' }}
         >
-          Set a default database in this datasource&apos;s settings — the Query Builder uses it as the
-          tenant for all queries.
+          Set a default database in this datasource&apos;s settings — the Query Builder uses it as the tenant for all
+          queries.
         </Alert>
       )}
 
@@ -422,9 +416,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
           </InlineField>
         </InlineFieldRow>
       )}
-      {services.error && (
-        <DiscoveryErrorAlert label="Service" onRetry={services.retry} />
-      )}
+      {services.error && <DiscoveryErrorAlert label="Service" onRetry={services.retry} />}
 
       {query.signalType && (hasServices || isVariable) && (
         <InlineFieldRow>
@@ -444,9 +436,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
           </InlineField>
         </InlineFieldRow>
       )}
-      {environments.error && (
-        <DiscoveryErrorAlert label="Environment" onRetry={environments.retry} />
-      )}
+      {environments.error && <DiscoveryErrorAlert label="Environment" onRetry={environments.retry} />}
 
       {query.signalType && !isLogs && !isMetrics && (isVariable || (hasServices && hasEnvironments)) && (
         <InlineFieldRow>
@@ -466,9 +456,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
           </InlineField>
         </InlineFieldRow>
       )}
-      {signalNames.error && (
-        <DiscoveryErrorAlert label="Signal name" onRetry={signalNames.retry} />
-      )}
+      {signalNames.error && <DiscoveryErrorAlert label="Signal name" onRetry={signalNames.retry} />}
 
       {isMetrics && (isVariable || (hasServices && hasEnvironments)) && (
         <InlineFieldRow>
@@ -496,9 +484,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
           </InlineField>
         </InlineFieldRow>
       )}
-      {metricNames.error && (
-        <DiscoveryErrorAlert label="Metric name" onRetry={metricNames.retry} />
-      )}
+      {metricNames.error && <DiscoveryErrorAlert label="Metric name" onRetry={metricNames.retry} />}
 
       {isLogs && filtersGateOpen && !isVariable && (
         <div style={{ marginTop: 12 }}>
@@ -534,10 +520,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
           >
             <RadioButtonGroup<MetricKind>
               options={availableKinds.map((k) => ({
-                label:
-                  k === 'gauge' ? 'Gauge' :
-                  k === 'sum' ? 'Sum' :
-                  k === 'histogram' ? 'Histogram' : 'Summary',
+                label: k === 'gauge' ? 'Gauge' : k === 'sum' ? 'Sum' : k === 'histogram' ? 'Histogram' : 'Summary',
                 value: k,
               }))}
               value={effectiveMetricKind}
@@ -598,11 +581,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
                   description: k.scope === 'column' ? undefined : k.scope,
                 }));
             })()}
-            value={
-              query.variableReturn
-                ? { label: query.variableReturn.key, value: query.variableReturn.key }
-                : null
-            }
+            value={query.variableReturn ? { label: query.variableReturn.key, value: query.variableReturn.key } : null}
             onChange={(item) => {
               if (!item?.value) {
                 onChange({ ...query, variableReturn: undefined });
@@ -653,7 +632,9 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
             group={filtersRoot}
             isRoot
             signal={query.signalType!}
-            discoveredKeys={isLogs ? keyDiscovery.keys.filter((k) => !(k.scope === 'column' && k.key === 'Body')) : keyDiscovery.keys}
+            discoveredKeys={
+              isLogs ? keyDiscovery.keys.filter((k) => !(k.scope === 'column' && k.key === 'Body')) : keyDiscovery.keys
+            }
             loadingKeys={keyDiscovery.loading}
             valueCache={valueDiscovery.cache}
             fetchValues={valueDiscovery.fetchValues}
@@ -663,9 +644,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
             onUpdateCondition={onUpdateConditionById}
             depth={1}
           />
-          {keyDiscovery.error && (
-            <DiscoveryErrorAlert label="Filter key" onRetry={keyDiscovery.retry} />
-          )}
+          {keyDiscovery.error && <DiscoveryErrorAlert label="Filter key" onRetry={keyDiscovery.retry} />}
         </div>
       )}
 
@@ -723,94 +702,91 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </div>
       )}
 
-      {isVariable && query.signalType && (() => {
-        const allDurations: Array<{ label: string; value: string }> = [
-          { label: '5m', value: '5m' },
-          { label: '10m', value: '10m' },
-          { label: '15m', value: '15m' },
-          { label: '30m', value: '30m' },
-          { label: '1h', value: '1h' },
-          { label: '6h', value: '6h' },
-          { label: '24h', value: '24h' },
-        ];
-        const maxMs = (() => {
-          try {
-            return rangeUtil.intervalToMs(settings.variableMaxLookback);
-          } catch {
-            return rangeUtil.intervalToMs('15m');
-          }
-        })();
-        const filtered = allDurations.filter((d) => {
-          try {
-            return rangeUtil.intervalToMs(d.value) <= maxMs;
-          } catch {
-            return false;
-          }
-        });
-        const timeMode: 'fixed' | 'dashboard' = query.variableTimeMode ?? 'fixed';
-        const currentLookback = query.variableLookback ?? settings.variableMaxLookback;
-        return (
-          <div style={{ marginTop: 12 }}>
-            <div
-              style={{
-                color: '#6e9fff',
-                fontSize: 13,
-                fontWeight: 500,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                marginBottom: 8,
-              }}
-            >
-              Time range
-            </div>
-            <InlineFieldRow>
-              <InlineField label={<InlineLabel width={16}>Mode</InlineLabel>}>
-                <RadioButtonGroup<'fixed' | 'dashboard'>
-                  options={[
-                    { label: 'Fixed lookback', value: 'fixed' },
-                    { label: 'Dashboard range', value: 'dashboard' },
-                  ]}
-                  value={timeMode}
-                  onChange={(v) =>
-                    onChange({ ...query, variableTimeMode: v ?? 'fixed' })
-                  }
-                  size="sm"
-                />
-              </InlineField>
-              {timeMode === 'fixed' && (
-                <InlineField
-                  label={<InlineLabel width={16}>Lookback</InlineLabel>}
-                  tooltip={`Capped at ${settings.variableMaxLookback} by datasource settings.`}
-                >
-                  <Select<string>
-                    width={16}
-                    options={filtered}
-                    value={filtered.find((d) => d.value === currentLookback) ?? filtered[filtered.length - 1]}
-                    onChange={(item) =>
-                      onChange({ ...query, variableLookback: item?.value })
-                    }
+      {isVariable &&
+        query.signalType &&
+        (() => {
+          const allDurations: Array<{ label: string; value: string }> = [
+            { label: '5m', value: '5m' },
+            { label: '10m', value: '10m' },
+            { label: '15m', value: '15m' },
+            { label: '30m', value: '30m' },
+            { label: '1h', value: '1h' },
+            { label: '6h', value: '6h' },
+            { label: '24h', value: '24h' },
+          ];
+          const maxMs = (() => {
+            try {
+              return rangeUtil.intervalToMs(settings.variableMaxLookback);
+            } catch {
+              return rangeUtil.intervalToMs('15m');
+            }
+          })();
+          const filtered = allDurations.filter((d) => {
+            try {
+              return rangeUtil.intervalToMs(d.value) <= maxMs;
+            } catch {
+              return false;
+            }
+          });
+          const timeMode: 'fixed' | 'dashboard' = query.variableTimeMode ?? 'fixed';
+          const currentLookback = query.variableLookback ?? settings.variableMaxLookback;
+          return (
+            <div style={{ marginTop: 12 }}>
+              <div
+                style={{
+                  color: '#6e9fff',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                  marginBottom: 8,
+                }}
+              >
+                Time range
+              </div>
+              <InlineFieldRow>
+                <InlineField label={<InlineLabel width={16}>Mode</InlineLabel>}>
+                  <RadioButtonGroup<'fixed' | 'dashboard'>
+                    options={[
+                      { label: 'Fixed lookback', value: 'fixed' },
+                      { label: 'Dashboard range', value: 'dashboard' },
+                    ]}
+                    value={timeMode}
+                    onChange={(v) => onChange({ ...query, variableTimeMode: v ?? 'fixed' })}
+                    size="sm"
                   />
                 </InlineField>
-              )}
-            </InlineFieldRow>
-          </div>
-        );
-      })()}
+                {timeMode === 'fixed' && (
+                  <InlineField
+                    label={<InlineLabel width={16}>Lookback</InlineLabel>}
+                    tooltip={`Capped at ${settings.variableMaxLookback} by datasource settings.`}
+                  >
+                    <Select<string>
+                      width={16}
+                      options={filtered}
+                      value={filtered.find((d) => d.value === currentLookback) ?? filtered[filtered.length - 1]}
+                      onChange={(item) => onChange({ ...query, variableLookback: item?.value })}
+                    />
+                  </InlineField>
+                )}
+              </InlineFieldRow>
+            </div>
+          );
+        })()}
 
       {!autocomplete && query.signalType && (
         <Alert severity="info" title="Autocomplete is disabled" elevated>
-          Enable it in the datasource&apos;s Query Builder settings to populate the dropdowns. You can
-          still type values manually.
+          Enable it in the datasource&apos;s Query Builder settings to populate the dropdowns. You can still type values
+          manually.
         </Alert>
       )}
 
       {filtersGateOpen && !isVariable && isMetrics && (query.groupBy?.length ?? 0) === 0 && (
         <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12, marginTop: 4 }}>
-          No dimensions selected — values are averaged across all attributes. Pick a Group By
-          dimension (e.g. <code>ServiceName</code> or <code>host.name</code>) to split per series.
+          No dimensions selected — values are averaged across all attributes. Pick a Group By dimension (e.g.{' '}
+          <code>ServiceName</code> or <code>host.name</code>) to split per series.
         </div>
       )}
-
     </div>
   );
 };

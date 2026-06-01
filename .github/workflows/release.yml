@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - v*.*.*
+      - 'v*.*.*'
 
 permissions:
   contents: write
@@ -12,118 +12,100 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      # usage of GRAFANA_API_KEY is deprecated
-      GRAFANA_API_KEY: ${{ secrets.GRAFANA_API_KEY }}
       GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js environment
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
-
-      - name: Install nodejs dependencies
-        run: npm ci
-
-      - name: Build and test frontend
-        run: npm run build
-
-      - name: Setup Go environment
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.26'
 
-      - name: Check for backend
-        id: check-for-backend
-        run: |
-          if [ -f "Magefile.go" ]
-          then
-            echo "has-backend=true" >> $GITHUB_OUTPUT
-          fi
+      - name: Install npm dependencies
+        run: npm ci
 
-      - name: Test backend
-        if: steps.check-for-backend.outputs.has-backend == 'true'
-        uses: magefile/mage-action@v3
-        with:
-          version: latest
-          args: coverage
+      - name: Typecheck
+        run: npm run typecheck
 
-      - name: Build backend
-        if: steps.check-for-backend.outputs.has-backend == 'true'
+      - name: Frontend tests
+        run: npm run test:ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Build backend binaries
         uses: magefile/mage-action@v3
         with:
           version: latest
           args: buildAll
 
-      - name: Warn missing Grafana access policy token
-        run: |
-          echo Please generate a Grafana access policy token: https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/#generate-a-token
-          echo "Once done please follow the instructions found here: https://github.com/${GITHUB_REPO}/blob/master/CONTRIBUTING.md#using-github-actions-release-workflow"
-        env:
-          GITHUB_REPO: ${{ github.repository }}
-        if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN == '' }}
-
-      - name: Sign plugin
-        run: npx --yes @grafana/sign-plugin@latest
+      - name: Sign plugin (if token present)
         if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN != '' }}
+        run: npx --yes @grafana/sign-plugin@latest
 
-      - name: Get plugin metadata
+      - name: Read plugin metadata
         id: metadata
         run: |
           sudo apt-get install -y jq
+          PLUGIN_ID=$(jq -r .id dist/plugin.json)
+          PLUGIN_VERSION=$(jq -r .info.version dist/plugin.json)
+          ARCHIVE=${PLUGIN_ID}-${PLUGIN_VERSION}.zip
+          CHECKSUM=${ARCHIVE}.md5
+          echo "plugin-id=${PLUGIN_ID}"       >> $GITHUB_OUTPUT
+          echo "plugin-version=${PLUGIN_VERSION}" >> $GITHUB_OUTPUT
+          echo "archive=${ARCHIVE}"            >> $GITHUB_OUTPUT
+          echo "checksum=${CHECKSUM}"          >> $GITHUB_OUTPUT
+          echo "github-tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-          export GRAFANA_PLUGIN_ID=$(cat dist/plugin.json | jq -r .id)
-          export GRAFANA_PLUGIN_VERSION=$(cat dist/plugin.json | jq -r .info.version)
-          export GRAFANA_PLUGIN_TYPE=$(cat dist/plugin.json | jq -r .type)
-          export GRAFANA_PLUGIN_ARTIFACT=${GRAFANA_PLUGIN_ID}-${GRAFANA_PLUGIN_VERSION}.zip
-          export GRAFANA_PLUGIN_ARTIFACT_CHECKSUM=${GRAFANA_PLUGIN_ARTIFACT}.md5
-
-          echo "plugin-id=${GRAFANA_PLUGIN_ID}" >> $GITHUB_OUTPUT
-          echo "plugin-version=${GRAFANA_PLUGIN_VERSION}" >> $GITHUB_OUTPUT
-          echo "plugin-type=${GRAFANA_PLUGIN_TYPE}" >> $GITHUB_OUTPUT
-          echo "archive=${GRAFANA_PLUGIN_ARTIFACT}" >> $GITHUB_OUTPUT
-          echo "archive-checksum=${GRAFANA_PLUGIN_ARTIFACT_CHECKSUM}" >> $GITHUB_OUTPUT
-
-          echo "github-tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
-
-      - name: Check package version
-        run: if [ "v${{ steps.metadata.outputs.plugin-version }}" != "${{ steps.metadata.outputs.github-tag }}" ]; then printf "\033[0;31mPlugin version doesn't match tag name\033[0m\n"; exit 1; fi
+      - name: Verify package.json version matches tag
+        run: |
+          if [ "v${{ steps.metadata.outputs.plugin-version }}" != "${{ steps.metadata.outputs.github-tag }}" ]; then
+            echo "Plugin version (v${{ steps.metadata.outputs.plugin-version }}) doesn't match tag ${{ steps.metadata.outputs.github-tag }}"
+            exit 1
+          fi
 
       - name: Package plugin
-        id: package-plugin
         run: |
           mv dist ${{ steps.metadata.outputs.plugin-id }}
           zip ${{ steps.metadata.outputs.archive }} ${{ steps.metadata.outputs.plugin-id }} -r
-          md5sum ${{ steps.metadata.outputs.archive }} > ${{ steps.metadata.outputs.archive-checksum }}
-          echo "checksum=$(cat ./${{ steps.metadata.outputs.archive-checksum }} | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+          md5sum ${{ steps.metadata.outputs.archive }} > ${{ steps.metadata.outputs.checksum }}
 
-      - name: Validate plugin
-        run: |
-          VALIDATOR_VERSION=$(curl -sL https://github.com/grafana/plugin-validator/releases/latest -H "Accept: application/json" | jq -r .tag_name)
-          VALIDATOR_ARCH=$(dpkg --print-architecture)
-          mkdir -p ./plugin-validator/
-          pushd ./plugin-validator/
-          curl -L https://github.com/grafana/plugin-validator/releases/download/${VALIDATOR_VERSION}/plugin-validator_${VALIDATOR_VERSION//v/}_linux_${VALIDATOR_ARCH}.tar.gz | tar -xz -C .
-          curl -L https://github.com/grafana/plugin-validator/raw/main/config/strict.yaml -o strict.yaml
-          popd
-          ./plugin-validator/plugincheck2 -config ./plugin-validator/strict.yaml ${{ steps.metadata.outputs.archive }}
-#          ./plugin-validator/plugincheck2 -config ./plugin-validator/strict.yaml -strict ${{ steps.metadata.outputs.archive }}
-
-      - name: Create changelog
-        id: changelog
-        run: |
-          awk '/^# / {s++} s == 1 {print}' CHANGELOG.md > /tmp/release_notes.md
-          echo "path=/tmp/release_notes.md" >> $GITHUB_OUTPUT
-
-      - name: Create Github release
-        uses: softprops/action-gh-release@v1
+      - name: Create draft GitHub release
+        uses: softprops/action-gh-release@v2
         with:
           draft: true
           generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             ./${{ steps.metadata.outputs.archive }}
-            ./${{ steps.metadata.outputs.archive-checksum }}
-          body_path: ${{ steps.changelog.outputs.path }}
+            ./${{ steps.metadata.outputs.checksum }}
+          body: |
+            **Base14 ClickHouse datasource — release ${{ steps.metadata.outputs.github-tag }}**
+
+            ## Installation
+
+            This is an unsigned plugin. Allow it in your Grafana instance:
+
+            ```bash
+            export GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=${{ steps.metadata.outputs.plugin-id }}
+            ```
+
+            or in `grafana.ini`:
+
+            ```ini
+            [plugins]
+            allow_loading_unsigned_plugins = ${{ steps.metadata.outputs.plugin-id }}
+            ```
+
+            ## Requirements
+
+            - Grafana >= 10.0.3

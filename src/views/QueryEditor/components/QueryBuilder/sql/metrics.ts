@@ -16,11 +16,7 @@ type Args = {
   settings: QueryBuilderSettings;
 };
 
-const baseWheres = (
-  query: CHQuery,
-  settings: QueryBuilderSettings,
-  metricColumn: string
-): string[] => {
+const baseWheres = (query: CHQuery, settings: QueryBuilderSettings, metricColumn: string): string[] => {
   const wheres: string[] = ['$timeFilter'];
   if ((query.serviceNames ?? []).length > 0) {
     wheres.push(`ServiceName IN (${inList(query.serviceNames!)})`);
@@ -40,9 +36,7 @@ const baseWheres = (
   return wheres;
 };
 
-const dimExpressions = (
-  groupBy: QueryBuilderGroupBy[] | undefined
-): Array<{ expr: string; alias: string }> => {
+const dimExpressions = (groupBy: QueryBuilderGroupBy[] | undefined): Array<{ expr: string; alias: string }> => {
   const out: Array<{ expr: string; alias: string }> = [];
   for (const gb of groupBy ?? []) {
     const expr = accessExpr(SignalType.Metrics, gb.scope, gb.key);
@@ -86,8 +80,7 @@ const buildGaugeSql = ({ query, database, settings }: Args): string => {
   ].join('\n');
 };
 
-const isRateOp = (op: QueryBuilderOperation): boolean =>
-  op.kind === 'rate' || op.kind === 'increase';
+const isRateOp = (op: QueryBuilderOperation): boolean => op.kind === 'rate' || op.kind === 'increase';
 
 const buildSumKindKey = (dims: Array<{ expr: string; alias: string }>): { key: string; alias: string } | null => {
   if (dims.length === 0) {
@@ -125,10 +118,7 @@ const buildSumMacroSql = ({
 
   const macroWheres = baseWheres(query, settings, 'MetricName').filter((w) => w !== '$timeFilter');
 
-  const parts: string[] = [
-    inner,
-    `FROM ${database}.${table}`,
-  ];
+  const parts: string[] = [inner, `FROM ${database}.${table}`];
   if (macroWheres.length > 0) {
     parts.push('WHERE ' + macroWheres.join('\n  AND '));
   }
@@ -191,8 +181,7 @@ const isHistRateOp = (op: QueryBuilderOperation): boolean => HIST_RATE_KINDS.has
 const histRateColumn = (kind: string): 'Count' | 'Sum' =>
   kind === 'rate_sum' || kind === 'increase_sum' ? 'Sum' : 'Count';
 
-const histRateIsIncrease = (kind: string): boolean =>
-  kind === 'increase_count' || kind === 'increase_sum';
+const histRateIsIncrease = (kind: string): boolean => kind === 'increase_count' || kind === 'increase_sum';
 
 const buildHistMacroSql = (args: Args, op: QueryBuilderOperation, table: string): string => {
   const dims = dimExpressions(args.query.groupBy);
@@ -223,9 +212,7 @@ const buildHistogramPercentileSql = (args: Args, op: QueryBuilderOperation): str
   const wheres = baseWheres(args.query, args.settings, 'MetricName');
 
   const dims = dimExpressions(args.query.groupBy);
-  const seriesPartition = ['ServiceName', 'MetricName', 'Attributes'].concat(
-    dims.map((d) => d.alias)
-  );
+  const seriesPartition = ['ServiceName', 'MetricName', 'Attributes'].concat(dims.map((d) => d.alias));
   const innerSeriesDims = dims.map((d) => `${d.expr} AS ${d.alias}`).join(', ');
   const innerSeriesDimList = dims.length > 0 ? `,\n    ${innerSeriesDims}` : '';
   const seriesGroupBy = ['ServiceName', 'MetricName', 'Attributes', 't', 'ExplicitBounds']

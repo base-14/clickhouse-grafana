@@ -1,4 +1,4 @@
-module github.com/altinity/clickhouse-grafana
+module github.com/base-14/clickhouse-grafana
 
 go 1.26.0
 

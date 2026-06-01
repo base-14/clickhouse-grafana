@@ -41,11 +41,7 @@ const parseRows = (rows: any[]): number[] => {
   return Array.from(out).sort((a, b) => a - b);
 };
 
-export const useSummaryQuantilesDiscovery = ({
-  datasource,
-  query,
-  enabled,
-}: Args): SummaryQuantilesResult => {
+export const useSummaryQuantilesDiscovery = ({ datasource, query, enabled }: Args): SummaryQuantilesResult => {
   const [state, setState] = useState<{ loading: boolean; error: string | null; quantiles: number[] }>({
     loading: false,
     error: null,

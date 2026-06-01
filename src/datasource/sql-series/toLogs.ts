@@ -1,6 +1,6 @@
-import {createDataFrame, DataFrame, DataFrameType, FieldType} from '@grafana/data';
-import {each, find, omitBy, pickBy} from 'lodash';
-import {convertTimezonedDateToUTC} from './sql_series';
+import { createDataFrame, DataFrame, DataFrameType, FieldType } from '@grafana/data';
+import { each, find, omitBy, pickBy } from 'lodash';
+import { convertTimezonedDateToUTC } from './sql_series';
 
 export const transformObject = (obj) => {
   // Check if the input is an object and not null
@@ -24,7 +24,7 @@ export const transformObject = (obj) => {
                 const nestedValue = value[nestedKey];
                 // Create a new key in the format `key[nestedKey]`
                 const newKey = `${key}['${nestedKey}']`;
-                
+
                 // If nested value is still an object, stringify it
                 if (nestedValue && typeof nestedValue === 'object') {
                   result[newKey] = JSON.stringify(nestedValue);
@@ -46,7 +46,7 @@ export const transformObject = (obj) => {
   }
   // Return the original value if it's not an object
   return obj;
-}
+};
 
 const _toFieldType = (type: string, index?: number): FieldType | Object => {
   if (type.startsWith('Nullable(')) {
@@ -92,7 +92,7 @@ export const toLogs = (self: any): DataFrame[] => {
 
   let types: { [key: string]: any } = {};
   let labelFields: any[] = [];
-  const labelFieldsList: any[] = []
+  const labelFieldsList: any[] = [];
   let timestampKey;
   // Trying to find message field, If we have a "content" field - take it, If not - take the first string field
   let messageField = find(self.meta, ['name', 'content'])?.name;
@@ -108,7 +108,11 @@ export const toLogs = (self: any): DataFrame[] => {
   each(self.meta, function (col: any, index: number) {
     let type = _toFieldType(col.type, index);
 
-    if ((type === FieldType.number || type === FieldType.string) && col.name !== messageField && !reservedFields.includes(col.name)) {
+    if (
+      (type === FieldType.number || type === FieldType.string) &&
+      col.name !== messageField &&
+      !reservedFields.includes(col.name)
+    ) {
       labelFields.push(col.name);
     }
 
@@ -123,21 +127,21 @@ export const toLogs = (self: any): DataFrame[] => {
     };
 
     return acc;
-  },{});
+  }, {});
 
   each(self.series, function (ser: any) {
     const labels = pickBy(ser, (_value: any, key: string) => labelFields.includes(key));
 
     if (Object.keys(labels).length > 0) {
-      labelFieldsList.push(transformObject(labels))
+      labelFieldsList.push(transformObject(labels));
     }
 
     const data = omitBy(ser, (_value: any, key: string) => {
       labelFields.includes(key);
     });
 
-    const timestampObject = Object.entries(types)?.find(object => object[1] === 'time')
-    timestampKey = timestampObject? timestampObject[0] : null;
+    const timestampObject = Object.entries(types)?.find((object) => object[1] === 'time');
+    timestampKey = timestampObject ? timestampObject[0] : null;
 
     Object.entries(data)?.forEach(([key, value]) => {
       if (
@@ -151,7 +155,6 @@ export const toLogs = (self: any): DataFrame[] => {
       } else {
         dataObjectValues[key].values.push(value);
       }
-
     });
   });
 
@@ -171,26 +174,25 @@ export const toLogs = (self: any): DataFrame[] => {
         name: 'body',
         type: dataObjectValues[messageField].type,
         values: dataObjectValues[messageField].values,
-        config: { filterable: false }
+        config: { filterable: false },
       },
       labelFieldsList.length && {
         name: 'labels',
         values: labelFieldsList,
         type: FieldType.other,
       },
-      dataObjectValues['id']?.values?.length &&
-      {
+      dataObjectValues['id']?.values?.length && {
         name: 'id',
-        type: (dataObjectValues['id'])?.type,
-        values: (dataObjectValues['id'])?.values,
+        type: dataObjectValues['id']?.type,
+        values: dataObjectValues['id']?.values,
       },
     ].filter(Boolean),
     meta: {
       type: DataFrameType.LogLines,
-      preferredVisualisationType: 'logs'
+      preferredVisualisationType: 'logs',
     },
     refId: self.refId,
   });
 
-  return [result]
+  return [result];
 };

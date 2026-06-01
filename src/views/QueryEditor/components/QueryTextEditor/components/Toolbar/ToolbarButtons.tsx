@@ -10,22 +10,12 @@ export const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
 }) => (
   <>
     <InlineField>
-      <ToolbarButton
-        type="button"
-        variant="primary"
-        onClick={onToggleHelp}
-        isOpen={showHelp}
-      >
+      <ToolbarButton type="button" variant="primary" onClick={onToggleHelp} isOpen={showHelp}>
         Show help
       </ToolbarButton>
     </InlineField>
     <InlineField>
-      <ToolbarButton
-        type="button"
-        variant="primary"
-        onClick={onToggleSQL}
-        isOpen={showFormattedSQL}
-      >
+      <ToolbarButton type="button" variant="primary" onClick={onToggleSQL} isOpen={showFormattedSQL}>
         Show generated SQL
       </ToolbarButton>
     </InlineField>

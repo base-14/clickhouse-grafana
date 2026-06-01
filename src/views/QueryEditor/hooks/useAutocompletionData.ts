@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { IndexedDBManager } from '../../../utils/indexedDBManager';
-import { isPermissionError, getPermissionErrorMessage, PermissionErrorContext } from '../../../utils/clickhouseErrorHandling';
+import {
+  isPermissionError,
+  getPermissionErrorMessage,
+  PermissionErrorContext,
+} from '../../../utils/clickhouseErrorHandling';
 
 // SQL query for autocompletion data
 const AUTOCOMPLETION_QUERY = `
@@ -47,7 +51,7 @@ export const useAutocompleteData = (datasource) => {
     const fetchData = async () => {
       const storageKey = `altinity_autocomplete_${datasource.uid}`;
       const permissionErrorKey = `altinity_autocomplete_permission_error_${datasource.uid}`;
-      
+
       try {
         // Check if we have a cached permission error
         const cachedPermissionError = await IndexedDBManager.getItem<boolean>(permissionErrorKey);
@@ -56,7 +60,7 @@ export const useAutocompleteData = (datasource) => {
           setData({});
           return;
         }
-        
+
         // Try to get cached data using the IndexedDBManager
         const cachedData = await IndexedDBManager.getItem<any>(storageKey);
         if (cachedData) {
@@ -80,7 +84,7 @@ export const useAutocompleteData = (datasource) => {
         };
 
         const groupedResult = groupByColor(result);
-        
+
         // Store with 10 minute TTL using IndexedDBManager
         await IndexedDBManager.setItem(storageKey, groupedResult, 10);
 
@@ -111,10 +115,10 @@ export const useAutocompleteData = (datasource) => {
       } catch (error) {
         console.error('Failed to cleanup expired autocomplete data:', error);
       }
-      
+
       await fetchData();
     };
-    
+
     initializeData();
   }, [datasource]);
 

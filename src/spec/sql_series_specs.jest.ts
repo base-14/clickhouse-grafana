@@ -321,11 +321,7 @@ describe('sql-series. toTable unit tests', () => {
 
   it('should preserve precision for Nullable(UInt64) values', () => {
     const input = {
-      series: [
-        { id: '11189782786942380395' },
-        { id: null },
-        { id: '123' },
-      ],
+      series: [{ id: '11189782786942380395' }, { id: null }, { id: '123' }],
       meta: [{ name: 'id', type: 'Nullable(UInt64)' }],
     };
 
@@ -374,7 +370,16 @@ describe('sql-series. toTimeSeries unit tests', () => {
     selfMock.keys = [];
 
     const result = toTimeSeries(true, true, selfMock);
-    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000]}, {"config": {"links": []}, "name": "value", "values": [10]}], "length": 1, "refId": undefined}]);
+    expect(result).toEqual([
+      {
+        fields: [
+          { config: { links: [] }, name: 'time', type: 'time', values: [1000] },
+          { config: { links: [] }, name: 'value', values: [10] },
+        ],
+        length: 1,
+        refId: undefined,
+      },
+    ]);
   });
 
   it('should handle multiple data points correctly', () => {
@@ -389,17 +394,87 @@ describe('sql-series. toTimeSeries unit tests', () => {
     selfMock.keys = [];
 
     const result = toTimeSeries(true, true, selfMock);
-    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 2000]}, {"config": {"links": []}, "name": "value", "values": [10, 20]}], "length": 2, "refId": undefined}]);
+    expect(result).toEqual([
+      {
+        fields: [
+          { config: { links: [] }, name: 'time', type: 'time', values: [1000, 2000] },
+          { config: { links: [] }, name: 'value', values: [10, 20] },
+        ],
+        length: 2,
+        refId: undefined,
+      },
+    ]);
   });
 
   it('should extrapolate data points when required', () => {
-    let selfMock = {"from": 0, "keys": [], "meta": [{"name": "time", "type": "UInt32"}, {"name": "value", "type": "UInt64"}], "series": [{"time": 1736332351828, "value": 32}, {"time": 1736332336828, "value": 34}, {"time": 1736332321828, "value": 36}, {"time": 1736332306828, "value": 38}, {"time": 1736332291828, "value": 40}, {"time": 1736332276828, "value": 42}, {"time": 1736332261828, "value": 44}, {"time": 1736332246828, "value": 46}, {"time": 1736332231828, "value": 48}, {"time": 1736332216828, "value": 50}], "tillNow": true, "to": 1000}
+    let selfMock = {
+      from: 0,
+      keys: [],
+      meta: [
+        { name: 'time', type: 'UInt32' },
+        { name: 'value', type: 'UInt64' },
+      ],
+      series: [
+        { time: 1736332351828, value: 32 },
+        { time: 1736332336828, value: 34 },
+        { time: 1736332321828, value: 36 },
+        { time: 1736332306828, value: 38 },
+        { time: 1736332291828, value: 40 },
+        { time: 1736332276828, value: 42 },
+        { time: 1736332261828, value: 44 },
+        { time: 1736332246828, value: 46 },
+        { time: 1736332231828, value: 48 },
+        { time: 1736332216828, value: 50 },
+      ],
+      tillNow: true,
+      to: 1000,
+    };
     const result = toTimeSeries(true, true, selfMock);
-    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1736332351828, 1736332336828, 1736332321828, 1736332306828, 1736332291828, 1736332276828, 1736332261828, 1736332246828, 1736332231828, 1736332216828]}, {"config": {"links": []}, "name": "value", "values": [32, 34, 36, 38, 40, 42, 44, 46, 48, 48.2]}], "length": 10, "refId": undefined}]);
+    expect(result).toEqual([
+      {
+        fields: [
+          {
+            config: { links: [] },
+            name: 'time',
+            type: 'time',
+            values: [
+              1736332351828, 1736332336828, 1736332321828, 1736332306828, 1736332291828, 1736332276828, 1736332261828,
+              1736332246828, 1736332231828, 1736332216828,
+            ],
+          },
+          { config: { links: [] }, name: 'value', values: [32, 34, 36, 38, 40, 42, 44, 46, 48, 48.2] },
+        ],
+        length: 10,
+        refId: undefined,
+      },
+    ]);
 
-    selfMock = {"from": 0, "keys": [], "meta": [{"name": "time", "type": "UInt32"}, {"name": "value", "type": "UInt64"}], "series": [{"time": 1736332580592, "value": 52}, {"time": 1736332550592, "value": 54}, {"time": 1736332520592, "value": 56}], "tillNow": true, "to": 1000}
+    selfMock = {
+      from: 0,
+      keys: [],
+      meta: [
+        { name: 'time', type: 'UInt32' },
+        { name: 'value', type: 'UInt64' },
+      ],
+      series: [
+        { time: 1736332580592, value: 52 },
+        { time: 1736332550592, value: 54 },
+        { time: 1736332520592, value: 56 },
+      ],
+      tillNow: true,
+      to: 1000,
+    };
     const resultNonExtrapolated = toTimeSeries(true, true, selfMock);
-    expect(resultNonExtrapolated).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1736332580592, 1736332550592, 1736332520592]}, {"config": {"links": []}, "name": "value", "values": [52, 54, 56]}], "length": 3, "refId": undefined}]);
+    expect(resultNonExtrapolated).toEqual([
+      {
+        fields: [
+          { config: { links: [] }, name: 'time', type: 'time', values: [1736332580592, 1736332550592, 1736332520592] },
+          { config: { links: [] }, name: 'value', values: [52, 54, 56] },
+        ],
+        length: 3,
+        refId: undefined,
+      },
+    ]);
   });
 
   it('should handle composite keys correctly with nullifySparse=true', () => {
@@ -416,9 +491,25 @@ describe('sql-series. toTimeSeries unit tests', () => {
     selfMock.tillNow = false;
 
     const result = toTimeSeries(true, true, selfMock);
-    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000]}, {"config": {"links": []}, "name": "A", "values": [10]}], "length": 1, "refId": undefined}, {"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 2000]}, {"config": {"links": []}, "name": "B", "values": [null, 20]}], "length": 2, "refId": undefined}])
+    expect(result).toEqual([
+      {
+        fields: [
+          { config: { links: [] }, name: 'time', type: 'time', values: [1000] },
+          { config: { links: [] }, name: 'A', values: [10] },
+        ],
+        length: 1,
+        refId: undefined,
+      },
+      {
+        fields: [
+          { config: { links: [] }, name: 'time', type: 'time', values: [1000, 2000] },
+          { config: { links: [] }, name: 'B', values: [null, 20] },
+        ],
+        length: 2,
+        refId: undefined,
+      },
+    ]);
   });
-
 
   it('should handle null values correctly', () => {
     selfMock.series = [
@@ -432,7 +523,16 @@ describe('sql-series. toTimeSeries unit tests', () => {
     selfMock.keys = [];
 
     const result = toTimeSeries(false, true, selfMock);
-    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 2000]}, {"config": {"links": []}, "name": "value", "values": [null, 20]}], "length": 2, "refId": undefined}]);
+    expect(result).toEqual([
+      {
+        fields: [
+          { config: { links: [] }, name: 'time', type: 'time', values: [1000, 2000] },
+          { config: { links: [] }, name: 'value', values: [null, 20] },
+        ],
+        length: 2,
+        refId: undefined,
+      },
+    ]);
   });
 
   // Issue #832: UInt64 precision tests for time series
@@ -482,8 +582,20 @@ describe('sql-series. toTimeSeries unit tests', () => {
   it('should handle Array(Tuple(String, UInt64)) from $columns macro', () => {
     const input = {
       series: [
-        { time: 1000, requests: [['Chrome', '11189782786942380395'], ['Firefox', '123']] },
-        { time: 2000, requests: [['Chrome', '9007199254740992'], ['Firefox', '456']] },
+        {
+          time: 1000,
+          requests: [
+            ['Chrome', '11189782786942380395'],
+            ['Firefox', '123'],
+          ],
+        },
+        {
+          time: 2000,
+          requests: [
+            ['Chrome', '9007199254740992'],
+            ['Firefox', '456'],
+          ],
+        },
       ],
       meta: [
         { name: 'time', type: 'UInt32' },

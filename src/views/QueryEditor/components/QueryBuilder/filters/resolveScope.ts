@@ -8,16 +8,7 @@ export type DiscoveredKey = {
 
 const SCOPE_PRIORITY: FilterScope[] = ['column', 'resource', 'scope', 'log', 'span', 'attribute'];
 
-const OTEL_RESOURCE_PREFIXES = [
-  'service.',
-  'host.',
-  'k8s.',
-  'container.',
-  'cloud.',
-  'deployment.',
-  'os.',
-  'process.',
-];
+const OTEL_RESOURCE_PREFIXES = ['service.', 'host.', 'k8s.', 'container.', 'cloud.', 'deployment.', 'os.', 'process.'];
 
 export const defaultMapScopeForSignal = (signal: SignalType): FilterScope => {
   switch (signal) {
@@ -30,10 +21,7 @@ export const defaultMapScopeForSignal = (signal: SignalType): FilterScope => {
   }
 };
 
-export const mergeKeysByPriority = (
-  signal: SignalType,
-  discovered: DiscoveredKey[]
-): DiscoveredKey[] => {
+export const mergeKeysByPriority = (signal: SignalType, discovered: DiscoveredKey[]): DiscoveredKey[] => {
   const byKey = new Map<string, DiscoveredKey>();
 
   for (const col of columnsForSignal(signal)) {

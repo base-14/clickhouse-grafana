@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { IndexedDBManager } from '../../../utils/indexedDBManager';
-import { isPermissionError, getPermissionErrorMessage, PermissionErrorContext } from '../../../utils/clickhouseErrorHandling';
+import {
+  isPermissionError,
+  getPermissionErrorMessage,
+  PermissionErrorContext,
+} from '../../../utils/clickhouseErrorHandling';
 
 const GET_DATABASES_QUERY =
   'SELECT name FROM system.tables\n' +
@@ -16,7 +20,7 @@ export const useSystemDatabases = (datasource) => {
   useEffect(() => {
     const fetchData = async () => {
       const storageKey = `altinity_systemDatabases_${datasource.uid}`;
-      
+
       try {
         // Try to get cached data using the IndexedDBManager
         const cachedData = await IndexedDBManager.getItem<string[]>(storageKey);
@@ -27,10 +31,10 @@ export const useSystemDatabases = (datasource) => {
 
         const result = await datasource.metricFindQuery(GET_DATABASES_QUERY);
         const processedResult = result.map((item) => item.text);
-        
+
         // Store with 10 minute TTL using IndexedDBManager
         await IndexedDBManager.setItem(storageKey, processedResult, 10);
-        
+
         setData(processedResult);
       } catch (error: any) {
         if (isPermissionError(error)) {
@@ -54,10 +58,10 @@ export const useSystemDatabases = (datasource) => {
       } catch (error) {
         console.error('Failed to cleanup expired system databases data:', error);
       }
-      
+
       await fetchData();
     };
-    
+
     initializeData();
   }, [datasource]);
 

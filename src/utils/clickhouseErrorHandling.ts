@@ -5,16 +5,16 @@
 
 // Known ClickHouse permission-related error codes
 const PERMISSION_ERROR_CODES = [
-  497,  // ACCESS_DENIED
-  516,  // AUTHENTICATION_FAILED
-  192,  // UNKNOWN_USER
-  193,  // WRONG_PASSWORD
-  194,  // REQUIRED_PASSWORD
-  195,  // IP_ADDRESS_NOT_ALLOWED
-  291,  // DATABASE_ACCESS_DENIED
-  482,  // DICTIONARY_ACCESS_DENIED
-  673,  // RESOURCE_ACCESS_DENIED
-  711,  // FILECACHE_ACCESS_DENIED
+  497, // ACCESS_DENIED
+  516, // AUTHENTICATION_FAILED
+  192, // UNKNOWN_USER
+  193, // WRONG_PASSWORD
+  194, // REQUIRED_PASSWORD
+  195, // IP_ADDRESS_NOT_ALLOWED
+  291, // DATABASE_ACCESS_DENIED
+  482, // DICTIONARY_ACCESS_DENIED
+  673, // RESOURCE_ACCESS_DENIED
+  711, // FILECACHE_ACCESS_DENIED
 ];
 
 // Text patterns that indicate permission errors
@@ -55,14 +55,10 @@ export function isPermissionError(error: any): boolean {
   }
 
   // Check if message contains any permission error patterns
-  const messageContainsPattern = PERMISSION_ERROR_PATTERNS.some(pattern => 
-    errorMessage.includes(pattern)
-  );
+  const messageContainsPattern = PERMISSION_ERROR_PATTERNS.some((pattern) => errorMessage.includes(pattern));
 
   // Also check for "Code: XXX" format in error messages
-  const containsErrorCode = PERMISSION_ERROR_CODES.some(code => 
-    errorMessage.includes(`Code: ${code}`)
-  );
+  const containsErrorCode = PERMISSION_ERROR_CODES.some((code) => errorMessage.includes(`Code: ${code}`));
 
   return messageContainsPattern || containsErrorCode;
 }
@@ -81,7 +77,7 @@ export const PermissionErrorContext = {
   SYSTEM_DATABASES: 'system-databases',
 } as const;
 
-export type PermissionErrorContextType = typeof PermissionErrorContext[keyof typeof PermissionErrorContext];
+export type PermissionErrorContextType = (typeof PermissionErrorContext)[keyof typeof PermissionErrorContext];
 
 /**
  * Gets an appropriate log message for a permission error based on context
@@ -89,27 +85,25 @@ export type PermissionErrorContextType = typeof PermissionErrorContext[keyof typ
  * @param datasourceId - Optional datasource identifier for more specific logging
  * @returns A user-friendly log message
  */
-export function getPermissionErrorMessage(
-  context: PermissionErrorContextType,
-  datasourceId?: string
-): string {
+export function getPermissionErrorMessage(context: PermissionErrorContextType, datasourceId?: string): string {
   const messages: Record<PermissionErrorContextType, string> = {
     [PermissionErrorContext.ADHOC_KEYS]: 'ClickHouse system.columns table inaccessible - ad-hoc filters disabled',
     [PermissionErrorContext.ADHOC_VALUES]: 'ClickHouse system.columns table inaccessible - cannot fetch tag values',
     [PermissionErrorContext.AUTOCOMPLETE]: 'ClickHouse system tables inaccessible - autocomplete disabled',
-    [PermissionErrorContext.DATABASES]: 'ClickHouse system table access denied for DATABASES query - returning empty result',
+    [PermissionErrorContext.DATABASES]:
+      'ClickHouse system table access denied for DATABASES query - returning empty result',
     [PermissionErrorContext.TABLES]: 'ClickHouse system table access denied for TABLES query - returning empty result',
-    [PermissionErrorContext.COLUMNS]: 'ClickHouse system table access denied for COLUMNS query - returning empty result',
+    [PermissionErrorContext.COLUMNS]:
+      'ClickHouse system table access denied for COLUMNS query - returning empty result',
     [PermissionErrorContext.QUERY_BUILDER]: 'ClickHouse system table access denied - returning empty result',
     [PermissionErrorContext.SYSTEM_DATABASES]: 'ClickHouse system tables inaccessible - system database list disabled',
   };
 
   const baseMessage = messages[context] || 'Permission denied - returning empty result';
-  
+
   if (datasourceId) {
     return `${baseMessage} for datasource: ${datasourceId}`;
   }
-  
+
   return baseMessage;
 }
-

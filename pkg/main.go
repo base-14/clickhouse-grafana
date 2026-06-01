@@ -8,7 +8,7 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend/tracing"
 )
 
-const pluginID = "vertamedia-clickhouse-datasource"
+const pluginID = "base14-clickhouse-datasource"
 
 func main() {
 	backend.Logger.Info("Starting ClickHouse datasource backend...")

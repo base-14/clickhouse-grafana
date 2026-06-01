@@ -15,10 +15,7 @@ const parseDurationMs = (raw: string | undefined, fallbackMs: number): number =>
   }
 };
 
-export const computeEffectiveLookbackSeconds = (
-  pluginSetting: string,
-  dashboardRange?: TimeRange
-): number => {
+export const computeEffectiveLookbackSeconds = (pluginSetting: string, dashboardRange?: TimeRange): number => {
   const settingMs = parseDurationMs(pluginSetting, DEFAULT_LOOKBACK_FALLBACK_MS);
   if (!dashboardRange) {
     return Math.max(1, Math.floor(settingMs / 1000));
@@ -46,7 +43,11 @@ export type DiscoveryResult = {
 };
 
 export const useDiscovery = ({ datasource, query, enabled }: UseDiscoveryArgs): DiscoveryResult => {
-  const [state, setState] = useState<{ loading: boolean; error: string | null; options: Array<SelectableValue<string>> }>({ loading: false, error: null, options: [] });
+  const [state, setState] = useState<{
+    loading: boolean;
+    error: string | null;
+    options: Array<SelectableValue<string>>;
+  }>({ loading: false, error: null, options: [] });
   const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {

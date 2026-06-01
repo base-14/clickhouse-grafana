@@ -1,5 +1,5 @@
-import {SelectableValue} from "@grafana/data";
-import {DatasourceMode} from "../../../../types/types";
+import { SelectableValue } from '@grafana/data';
+import { DatasourceMode } from '../../../../types/types';
 
 export interface Query {
   extrapolate: boolean;
@@ -51,7 +51,7 @@ export interface RoundInputProps {
 
 export interface SelectProps {
   query: Query;
-  onChange: (e:  SelectableValue<string>) => void;
+  onChange: (e: SelectableValue<string>) => void;
 }
 
 export interface ToolbarButtonsProps {

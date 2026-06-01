@@ -8,17 +8,33 @@ import {
   DataQueryRequest,
   DataSourceInstanceSettings,
   DataSourceWithLogsContextSupport,
-  DataSourceWithToggleableQueryFiltersSupport, FieldType,
+  DataSourceWithToggleableQueryFiltersSupport,
+  FieldType,
   LogRowContextOptions,
   LogRowContextQueryDirection,
   LogRowModel,
   QueryFilterOptions,
-  TypedVariableModel, VariableSupportType,
+  TypedVariableModel,
+  VariableSupportType,
 } from '@grafana/data';
-import { BackendSrv, config, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
+import {
+  BackendSrv,
+  config,
+  DataSourceWithBackend,
+  getBackendSrv,
+  getTemplateSrv,
+  TemplateSrv,
+} from '@grafana/runtime';
 
-import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY, QUERY_BUILDER_DEFAULTS, QueryBuilderSettings} from '../types/types';
-import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
+import {
+  CHDataSourceOptions,
+  CHQuery,
+  DatasourceMode,
+  DEFAULT_QUERY,
+  QUERY_BUILDER_DEFAULTS,
+  QueryBuilderSettings,
+} from '../types/types';
+import { QueryEditor, QueryEditorVariable } from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation } from './helpers';
@@ -57,7 +73,7 @@ export class CHDataSource
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
-    this.pluginId = instanceSettings.meta.id
+    this.pluginId = instanceSettings.meta.id;
     this.resourceClient = ClickHouseResourceClient.getInstance();
     this.uid = instanceSettings.uid;
     // Set the datasource UID for resource calls
@@ -79,7 +95,8 @@ export class CHDataSource
       autocompleteEnabled:
         instanceSettings.jsonData.queryBuilderAutocompleteEnabled ?? QUERY_BUILDER_DEFAULTS.autocompleteEnabled,
       autocompleteLimit:
-        instanceSettings.jsonData.queryBuilderAutocompleteLimit && instanceSettings.jsonData.queryBuilderAutocompleteLimit > 0
+        instanceSettings.jsonData.queryBuilderAutocompleteLimit &&
+        instanceSettings.jsonData.queryBuilderAutocompleteLimit > 0
           ? instanceSettings.jsonData.queryBuilderAutocompleteLimit
           : QUERY_BUILDER_DEFAULTS.autocompleteLimit,
       rawLogsLimit:
@@ -93,22 +110,18 @@ export class CHDataSource
           ? instanceSettings.jsonData.queryBuilderVariableLimit
           : QUERY_BUILDER_DEFAULTS.variableLimit,
       maxTimerange: instanceSettings.jsonData.queryBuilderMaxTimerange || QUERY_BUILDER_DEFAULTS.maxTimerange,
-      environmentKey:
-        instanceSettings.jsonData.queryBuilderEnvironmentKey || QUERY_BUILDER_DEFAULTS.environmentKey,
+      environmentKey: instanceSettings.jsonData.queryBuilderEnvironmentKey || QUERY_BUILDER_DEFAULTS.environmentKey,
       logsTable: instanceSettings.jsonData.queryBuilderDefaultLogsTable || QUERY_BUILDER_DEFAULTS.logsTable,
-      tracesTable:
-        instanceSettings.jsonData.queryBuilderDefaultTracesTable || QUERY_BUILDER_DEFAULTS.tracesTable,
+      tracesTable: instanceSettings.jsonData.queryBuilderDefaultTracesTable || QUERY_BUILDER_DEFAULTS.tracesTable,
       metricsGaugeTable:
-        instanceSettings.jsonData.queryBuilderDefaultMetricsGaugeTable ||
-        QUERY_BUILDER_DEFAULTS.metricsGaugeTable,
+        instanceSettings.jsonData.queryBuilderDefaultMetricsGaugeTable || QUERY_BUILDER_DEFAULTS.metricsGaugeTable,
       metricsSumTable:
         instanceSettings.jsonData.queryBuilderDefaultMetricsSumTable || QUERY_BUILDER_DEFAULTS.metricsSumTable,
       metricsHistogramTable:
         instanceSettings.jsonData.queryBuilderDefaultMetricsHistogramTable ||
         QUERY_BUILDER_DEFAULTS.metricsHistogramTable,
       metricsSummaryTable:
-        instanceSettings.jsonData.queryBuilderDefaultMetricsSummaryTable ||
-        QUERY_BUILDER_DEFAULTS.metricsSummaryTable,
+        instanceSettings.jsonData.queryBuilderDefaultMetricsSummaryTable || QUERY_BUILDER_DEFAULTS.metricsSummaryTable,
     };
     if (instanceSettings.jsonData.useDefaultConfiguration) {
       this.defaultValues = {
@@ -139,7 +152,7 @@ export class CHDataSource
       // @ts-ignore
       editor: QueryEditorVariable,
       query: this.queryVariables.bind(this),
-    }
+    };
 
     this.annotations = {
       QueryEditor: QueryEditor,
@@ -155,16 +168,16 @@ export class CHDataSource
     // Use a session flag to ensure cleanup runs only once per browser session
     const cleanupKey = 'altinity_cleanup_performed';
     const cleanupPerformed = sessionStorage.getItem(cleanupKey);
-    
+
     if (!cleanupPerformed) {
       try {
         // Cleanup all expired entries
         const stats = await IndexedDBManager.cleanupAllExpired();
-        
+
         if (stats.removedKeys > 0) {
           console.log(`Altinity Plugin: Cleaned up ${stats.removedKeys} expired IndexedDB entries`);
         }
-        
+
         // Mark cleanup as performed for this session
         sessionStorage.setItem(cleanupKey, 'true');
       } catch (error) {
@@ -255,7 +268,7 @@ export class CHDataSource
             ...error,
             originalError: error,
             query: query,
-            requestId: requestId
+            requestId: requestId,
           };
 
           reject(enhancedError);
@@ -275,20 +288,19 @@ export class CHDataSource
     const requestOptions = { ...options, range: this.options.range };
 
     const originalQuery = await this.createQuery(requestOptions, query);
-    
+
     // OPTIMIZED: Use batched AST property extraction to reduce 2 API calls to 1 call
     const astResult = await this.resourceClient.getMultipleAstProperties(
       originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '),
       ['select', 'where']
     );
-    
+
     const select = astResult.properties.select || [];
     const where = astResult.properties.where || [];
 
     const generateQueryForTraceID = (traceId, select) => {
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`;
     };
-
 
     const generateRequestForTimestampForward = (timestampField, timestamp, currentRowTimestamp, select) => {
       return `SELECT ${select.join(
@@ -437,120 +449,122 @@ export class CHDataSource
         to: convertTimestamp(options.range.to),
       });
 
-          if (target.format === 'table') {
-            _.each(sqlSeries.toTable(), (data) => {
-              result.push(data);
-            });
-          } else if (target.format === 'traces') {
-            result = sqlSeries.toTraces();
-          } else if (target.format === 'flamegraph') {
-            result = sqlSeries.toFlamegraph();
-          } else if (target.format === 'logs') {
-            result = sqlSeries.toLogs();
-          } else if (target.refId === 'Anno') {
-            result = sqlSeries.toAnnotation(response.data, response.meta);
-          } else if (target.datasourceMode === DatasourceMode.Variable ) {
-            if (sqlSeries.meta.length === 0) {
-              result =[]
-            }
+      if (target.format === 'table') {
+        _.each(sqlSeries.toTable(), (data) => {
+          result.push(data);
+        });
+      } else if (target.format === 'traces') {
+        result = sqlSeries.toTraces();
+      } else if (target.format === 'flamegraph') {
+        result = sqlSeries.toFlamegraph();
+      } else if (target.format === 'logs') {
+        result = sqlSeries.toLogs();
+      } else if (target.refId === 'Anno') {
+        result = sqlSeries.toAnnotation(response.data, response.meta);
+      } else if (target.datasourceMode === DatasourceMode.Variable) {
+        if (sqlSeries.meta.length === 0) {
+          result = [];
+        }
 
-            let textField: string | null = null;
-            let valueField: string | null = null;
+        let textField: string | null = null;
+        let valueField: string | null = null;
 
-            sqlSeries.meta.forEach((col: any) => {
-              if (col.name.toLowerCase().includes('text')) {
-                textField = col.name;
-              }
-              if (col.name.toLowerCase().includes('value')) {
-                valueField = col.name;
-              }
-            })
-
-            const resultContent: { length: any; refId: string; fields: any[] } = {
-              refId: 'A',
-              length:  sqlSeries.series.length,
-              fields: []
-            }
-
-            if (textField && valueField) {
-              resultContent.fields.push({
-                name: 'text',
-                type: FieldType.string,
-                values: sqlSeries.series.map(item => item[textField!].toString()),
-              })
-              resultContent.fields.push({
-                name: 'value',
-                type: FieldType.string,
-                values: sqlSeries.series.map(item => item[valueField!].toString()),
-              })
-            } else if (textField) {
-              resultContent.fields.push({
-                name: 'text',
-                type: FieldType.string,
-                values: sqlSeries.series.map(item => item[textField!]),
-              })
-            } else {
-              const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');
-              if (getFirstStringField) {
-                resultContent.fields.push({
-                  name: 'text',
-                  type: FieldType.string,
-                  values: sqlSeries.series.map(item => item[getFirstStringField.name]),
-                })
-              } else {
-                const getFirstElement = sqlSeries.meta[0];
-
-                resultContent.fields.push({
-                  name: 'text',
-                  type: FieldType.string,
-                  values: sqlSeries.series.map(item => item[getFirstElement.name]),
-                })
-              }
-            }
-
-            result = [resultContent]
-          } else {
-            _.each(sqlSeries.toTimeSeries(target.extrapolate, target.nullifySparse), (data) => {
-              result.push(data);
-            });
+        sqlSeries.meta.forEach((col: any) => {
+          if (col.name.toLowerCase().includes('text')) {
+            textField = col.name;
+          }
+          if (col.name.toLowerCase().includes('value')) {
+            valueField = col.name;
           }
         });
+
+        const resultContent: { length: any; refId: string; fields: any[] } = {
+          refId: 'A',
+          length: sqlSeries.series.length,
+          fields: [],
+        };
+
+        if (textField && valueField) {
+          resultContent.fields.push({
+            name: 'text',
+            type: FieldType.string,
+            values: sqlSeries.series.map((item) => item[textField!].toString()),
+          });
+          resultContent.fields.push({
+            name: 'value',
+            type: FieldType.string,
+            values: sqlSeries.series.map((item) => item[valueField!].toString()),
+          });
+        } else if (textField) {
+          resultContent.fields.push({
+            name: 'text',
+            type: FieldType.string,
+            values: sqlSeries.series.map((item) => item[textField!]),
+          });
+        } else {
+          const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');
+          if (getFirstStringField) {
+            resultContent.fields.push({
+              name: 'text',
+              type: FieldType.string,
+              values: sqlSeries.series.map((item) => item[getFirstStringField.name]),
+            });
+          } else {
+            const getFirstElement = sqlSeries.meta[0];
+
+            resultContent.fields.push({
+              name: 'text',
+              type: FieldType.string,
+              values: sqlSeries.series.map((item) => item[getFirstElement.name]),
+            });
+          }
+        }
+
+        result = [resultContent];
+      } else {
+        _.each(sqlSeries.toTimeSeries(target.extrapolate, target.nullifySparse), (data) => {
+          result.push(data);
+        });
+      }
+    });
 
     return { data: result };
   }
 
-  async executeQueries (targets: any[], options: any): Promise<any> {
-    const queries = await Promise.all(
-      targets.map(async (target) => this.createQuery(this.options, target))
-    );
+  async executeQueries(targets: any[], options: any): Promise<any> {
+    const queries = await Promise.all(targets.map(async (target) => this.createQuery(this.options, target)));
 
     if (!queries.length) {
       return { data: [] };
     }
 
-    const responses = await Promise.all(
-      queries.map((query) => this.seriesQuery(query.stmt, query.requestId))
-    ).catch(error => {
-      // Enhance error message with more details if available
-      if (error?.data?.exception) {
-        // ClickHouse exception in data.exception field
-        throw new Error(`Query execution failed: ${error.data.exception}`);
-      } else if (error?.data?.message) {
-        // Generic message in data.message field
-        throw new Error(`Query execution failed: ${error.data.message}`);
-      } else if (error?.status && error?.statusText) {
-        // HTTP status with optional response body
-        const responseDetails = error?.data ? 
-          (typeof error.data === 'string' ? error.data : JSON.stringify(error.data)) : '';
-        throw new Error(`Query execution failed: HTTP ${error.status} ${error.statusText}${responseDetails ? ': ' + responseDetails : ''}`);
-      } else {
-        throw error;
+    const responses = await Promise.all(queries.map((query) => this.seriesQuery(query.stmt, query.requestId))).catch(
+      (error) => {
+        // Enhance error message with more details if available
+        if (error?.data?.exception) {
+          // ClickHouse exception in data.exception field
+          throw new Error(`Query execution failed: ${error.data.exception}`);
+        } else if (error?.data?.message) {
+          // Generic message in data.message field
+          throw new Error(`Query execution failed: ${error.data.message}`);
+        } else if (error?.status && error?.statusText) {
+          // HTTP status with optional response body
+          const responseDetails = error?.data
+            ? typeof error.data === 'string'
+              ? error.data
+              : JSON.stringify(error.data)
+            : '';
+          throw new Error(
+            `Query execution failed: HTTP ${error.status} ${error.statusText}${responseDetails ? ': ' + responseDetails : ''}`
+          );
+        } else {
+          throw error;
+        }
       }
-    });
+    );
 
-    return this.processQueryResponse(responses, options, queries)
+    return this.processQueryResponse(responses, options, queries);
   }
-
 
   query(options: DataQueryRequest<CHQuery>): any {
     const queryProcessing = async () => {
@@ -570,10 +584,17 @@ export class CHDataSource
   queryVariables(options: DataQueryRequest<CHQuery>): any {
     const queryProcessing = async () => {
       this.options = options;
-      const targets = options.targets.filter((target) => !target.hide && (target?.query?.trim() || typeof target === 'string'));
-      const queries = await Promise.all(targets.map(async (target) => {
-        return this.createQuery(options, (typeof target === 'string') ? {query: target, datasourceMode: DatasourceMode.Variable} : target)
-      }));
+      const targets = options.targets.filter(
+        (target) => !target.hide && (target?.query?.trim() || typeof target === 'string')
+      );
+      const queries = await Promise.all(
+        targets.map(async (target) => {
+          return this.createQuery(
+            options,
+            typeof target === 'string' ? { query: target, datasourceMode: DatasourceMode.Variable } : target
+          );
+        })
+      );
 
       // No valid targets, return the empty result to save a round trip.
       if (!queries.length) {
@@ -606,7 +627,7 @@ export class CHDataSource
           });
 
           if (sqlSeries.meta.length === 0) {
-            result =[]
+            result = [];
           }
 
           let textField: string | null = null;
@@ -619,51 +640,51 @@ export class CHDataSource
             if (col.name.toLowerCase().includes('value')) {
               valueField = col.name;
             }
-          })
+          });
 
           const resultContent: { length: any; refId: string; fields: any[] } = {
             refId: 'A',
-            length:  sqlSeries.series.length,
-            fields: []
-          }
+            length: sqlSeries.series.length,
+            fields: [],
+          };
 
           if (textField && valueField) {
             resultContent.fields.push({
               name: 'text',
               type: FieldType.string,
-              values: sqlSeries.series.map(item => item[textField!].toString()),
-            })
+              values: sqlSeries.series.map((item) => item[textField!].toString()),
+            });
             resultContent.fields.push({
               name: 'value',
               type: FieldType.string,
-              values: sqlSeries.series.map(item => item[valueField!].toString()),
-            })
+              values: sqlSeries.series.map((item) => item[valueField!].toString()),
+            });
           } else if (textField) {
             resultContent.fields.push({
               name: 'text',
               type: FieldType.string,
-              values: sqlSeries.series.map(item => item[textField!]),
-            })
+              values: sqlSeries.series.map((item) => item[textField!]),
+            });
           } else {
             const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');
             if (getFirstStringField) {
               resultContent.fields.push({
                 name: 'text',
                 type: FieldType.string,
-                values: sqlSeries.series.map(item => item[getFirstStringField.name]),
-              })
+                values: sqlSeries.series.map((item) => item[getFirstStringField.name]),
+              });
             } else {
               const getFirstElement = sqlSeries.meta[0];
 
               resultContent.fields.push({
                 name: 'text',
                 type: FieldType.string,
-                values: sqlSeries.series.map(item => item[getFirstElement.name]),
-              })
+                values: sqlSeries.series.map((item) => item[getFirstElement.name]),
+              });
             }
           }
 
-          result = [resultContent]
+          result = [resultContent];
         });
 
         return { data: result };
@@ -740,7 +761,11 @@ export class CHDataSource
           text: '',
         },
       };
-      query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
+      query = this.templateSrv.replace(
+        query,
+        scopedVars,
+        createContextAwareInterpolation(query, this.templateSrv.getVariables())
+      );
     }
     const conditionalQuery = conditionalTest(query, this.templateSrv);
     interpolatedQuery = this.templateSrv.replace(
@@ -753,7 +778,11 @@ export class CHDataSource
       let from = convertTimestamp(options.range.from);
       let to = convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = await this.resourceClient.replaceTimeFilters(interpolatedQuery, options.range, options.dateTimeType);
+      interpolatedQuery = await this.resourceClient.replaceTimeFilters(
+        interpolatedQuery,
+        options.range,
+        options.dateTimeType
+      );
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 
@@ -838,9 +867,7 @@ export class CHDataSource
       const wildcardChar = '%';
       if (target.query?.indexOf('__searchFilter') !== -1) {
         const existingSearchFilter = options.scopedVars?.__searchFilter?.value;
-        const searchFilterValue = existingSearchFilter
-          ? `${existingSearchFilter}${wildcardChar}`
-          : `${wildcardChar}`;
+        const searchFilterValue = existingSearchFilter ? `${existingSearchFilter}${wildcardChar}` : `${wildcardChar}`;
         options = {
           ...options,
           scopedVars: {
@@ -928,7 +955,11 @@ export class CHDataSource
         const fallbackScopedVars = {
           __searchFilter: { value: '%', text: '' },
         };
-        query = this.templateSrv.replace(query, fallbackScopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
+        query = this.templateSrv.replace(
+          query,
+          fallbackScopedVars,
+          createContextAwareInterpolation(query, this.templateSrv.getVariables())
+        );
       }
 
       // Important: use transformed query for context-aware interpolation (fix for issue #847)

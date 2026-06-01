@@ -1,10 +1,4 @@
-import {
-  FilterCondition,
-  FilterGroup,
-  FilterNode,
-  FilterOp,
-  SignalType,
-} from '../../../../../types/types';
+import { FilterCondition, FilterGroup, FilterNode, FilterOp, SignalType } from '../../../../../types/types';
 import { accessExpr, formatValue, inList, mapColumnForScope, quote } from './util';
 
 const isVariableRef = (raw: string): boolean => /^\$\{?\w+/.test(raw.trim());
@@ -100,9 +94,7 @@ const compileNode = (node: FilterNode, signal: SignalType): string | null => {
   if (node.kind === 'condition') {
     return compileCondition(node, signal);
   }
-  const parts = node.children
-    .map((c) => compileNode(c, signal))
-    .filter((s): s is string => !!s);
+  const parts = node.children.map((c) => compileNode(c, signal)).filter((s): s is string => !!s);
   if (parts.length === 0) {
     return null;
   }

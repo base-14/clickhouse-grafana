@@ -2,13 +2,7 @@ import React, { useMemo } from 'react';
 import { IconButton, Input, MultiSelect, Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { useTemplateVariables } from '../hooks/useTemplateVariables';
-import {
-  DurationUnit,
-  FilterCondition,
-  FilterOp,
-  FilterValueType,
-  SignalType,
-} from '../../../../../types/types';
+import { DurationUnit, FilterCondition, FilterOp, FilterValueType, SignalType } from '../../../../../types/types';
 import { DiscoveredKey, resolveScopeForKey } from './resolveScope';
 import { opIsMulti, opOptions, opTakesValues } from './tree';
 
@@ -46,10 +40,7 @@ export const FilterConditionRow = ({
   onChange,
   onRemove,
 }: Props) => {
-  const keyOptions = useMemo(
-    () => discoveredKeys.map((d) => ({ label: d.key, value: d.key })),
-    [discoveredKeys]
-  );
+  const keyOptions = useMemo(() => discoveredKeys.map((d) => ({ label: d.key, value: d.key })), [discoveredKeys]);
   const tplVars = useTemplateVariables();
   const operators = opOptions(condition.type, condition.scope);
   const isDuration = condition.scope === 'column' && condition.key === 'Duration';
@@ -78,9 +69,7 @@ export const FilterConditionRow = ({
     const wasMulti = opIsMulti(condition.op);
     const willBeMulti = opIsMulti(item.value);
     const nextValues =
-      wasMulti && !willBeMulti && condition.values.length > 1
-        ? [condition.values[0]]
-        : condition.values;
+      wasMulti && !willBeMulti && condition.values.length > 1 ? [condition.values[0]] : condition.values;
     onChange({ op: item.value, values: nextValues });
   };
 

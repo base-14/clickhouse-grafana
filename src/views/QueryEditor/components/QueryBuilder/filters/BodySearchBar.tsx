@@ -13,14 +13,7 @@ type Props = {
   onAddFilter: (cond: FilterCondition) => void;
 };
 
-export const BodySearchBar = ({
-  value,
-  isRegex,
-  signal,
-  discoveredKeys,
-  onCommit,
-  onAddFilter,
-}: Props) => {
+export const BodySearchBar = ({ value, isRegex, signal, discoveredKeys, onCommit, onAddFilter }: Props) => {
   const [draft, setDraft] = useState(value);
   const [regex, setRegex] = useState(isRegex);
 

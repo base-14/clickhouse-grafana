@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/altinity/clickhouse-grafana/pkg/adhoc"
-	"github.com/altinity/clickhouse-grafana/pkg/eval"
-	"github.com/altinity/clickhouse-grafana/pkg/requests"
-	"github.com/altinity/clickhouse-grafana/pkg/timeutils"
+	"github.com/base-14/clickhouse-grafana/pkg/adhoc"
+	"github.com/base-14/clickhouse-grafana/pkg/eval"
+	"github.com/base-14/clickhouse-grafana/pkg/requests"
+	"github.com/base-14/clickhouse-grafana/pkg/timeutils"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 

@@ -2,11 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { SelectableValue } from '@grafana/data';
 import { extractErrorMessage } from './errorMessage';
 import { FilterScope, QueryBuilderSettings, SignalType } from '../../../../../types/types';
-import {
-  buildKeyDiscoveryQuery,
-  buildValueDiscoveryQuery,
-  FilterDiscoveryDeps,
-} from '../discoveryQueries';
+import { buildKeyDiscoveryQuery, buildValueDiscoveryQuery, FilterDiscoveryDeps } from '../discoveryQueries';
 import { DiscoveredKey, mergeKeysByPriority } from '../filters/resolveScope';
 
 type Datasource = { metricFindQuery: (q: string) => Promise<any[]> };
@@ -40,7 +36,11 @@ export const useKeyDiscovery = (args: {
   deps: FilterDiscoveryDeps | null;
 }): KeyState => {
   const { datasource, enabled, deps } = args;
-  const [state, setState] = useState<{ loading: boolean; error: string | null; keys: DiscoveredKey[] }>({ loading: false, error: null, keys: [] });
+  const [state, setState] = useState<{ loading: boolean; error: string | null; keys: DiscoveredKey[] }>({
+    loading: false,
+    error: null,
+    keys: [],
+  });
   const [retryToken, setRetryToken] = useState(0);
   const queryKey = enabled && deps ? buildKeyDiscoveryQuery(deps).query : null;
 

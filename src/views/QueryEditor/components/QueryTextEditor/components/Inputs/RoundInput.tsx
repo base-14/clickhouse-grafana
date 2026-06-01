@@ -10,11 +10,6 @@ export const RoundInput: React.FC<RoundInputProps> = ({ query, handleRoundChange
       </InlineLabel>
     }
   >
-    <Input 
-      data-testid="round-input" 
-      placeholder="" 
-      onChange={handleRoundChange} 
-      value={query.round} 
-    />
+    <Input data-testid="round-input" placeholder="" onChange={handleRoundChange} value={query.round} />
   </InlineField>
 );

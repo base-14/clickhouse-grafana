@@ -12,7 +12,7 @@ describe('Log context query generation (issue #706)', () => {
       "facility = arrayElement(splitByChar('-', 'MY-SERVICE'), 1)",
       "AND node = arrayElement(splitByChar('-', 'MY-SERVICE'), 2)",
     ];
-    const query = generateQueryForTimestampBackward('time', "toDateTime64(1775584028746/1000,3)", whereConditions);
+    const query = generateQueryForTimestampBackward('time', 'toDateTime64(1775584028746/1000,3)', whereConditions);
     const outerWhere = query.split(') WHERE')[1];
     expect(outerWhere).not.toContain('facility');
     expect(outerWhere).not.toContain('node');
@@ -23,7 +23,7 @@ describe('Log context query generation (issue #706)', () => {
       "facility = arrayElement(splitByChar('-', 'MY-SERVICE'), 1)",
       "AND node = arrayElement(splitByChar('-', 'MY-SERVICE'), 2)",
     ];
-    const query = generateQueryForTimestampForward('time', "toDateTime64(1775584028746/1000,3)", whereConditions);
+    const query = generateQueryForTimestampForward('time', 'toDateTime64(1775584028746/1000,3)', whereConditions);
     const outerWhere = query.split(') WHERE')[1];
     expect(outerWhere).not.toContain('facility');
     expect(outerWhere).not.toContain('node');

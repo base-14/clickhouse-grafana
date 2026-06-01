@@ -10,11 +10,6 @@ export const StepInput: React.FC<InputProps> = ({ query, handleStepChange }) => 
       </InlineLabel>
     }
   >
-    <Input 
-      placeholder="" 
-      onChange={handleStepChange} 
-      data-testid="interval-input" 
-      value={query.interval} 
-    />
+    <Input placeholder="" onChange={handleStepChange} data-testid="interval-input" value={query.interval} />
   </InlineField>
 );

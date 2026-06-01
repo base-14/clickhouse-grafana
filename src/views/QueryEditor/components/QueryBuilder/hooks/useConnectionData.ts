@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { TimestampFormat } from '../../../../../types/types';
-import { 
-  isPermissionError, 
-  getPermissionErrorMessage, 
-  PermissionErrorContext, 
-  PermissionErrorContextType 
+import {
+  isPermissionError,
+  getPermissionErrorMessage,
+  PermissionErrorContext,
+  PermissionErrorContextType,
 } from '../../../../../utils/clickhouseErrorHandling';
 
 export const useConnectionData = (query, datasource) => {
@@ -155,7 +155,7 @@ export const useConnectionData = (query, datasource) => {
             default:
               context = PermissionErrorContext.QUERY_BUILDER;
           }
-          
+
           // Permission error - return empty array gracefully
           console.info(getPermissionErrorMessage(context));
           return [];

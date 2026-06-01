@@ -1,12 +1,7 @@
 import React from 'react';
 import { Button, IconButton, Input, Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import {
-  DurationUnit,
-  OperationKind,
-  QueryBuilderOperation,
-  SignalType,
-} from '../../../../../types/types';
+import { DurationUnit, OperationKind, QueryBuilderOperation, SignalType } from '../../../../../types/types';
 import {
   appendOperation,
   columnsForSignal,
@@ -28,8 +23,7 @@ type Props = {
   onChange: (next: QueryBuilderOperation[]) => void;
 };
 
-const findPreset = (p?: number) =>
-  PERCENTILE_PRESETS.find((opt) => opt.value === p) ?? null;
+const findPreset = (p?: number) => PERCENTILE_PRESETS.find((opt) => opt.value === p) ?? null;
 
 const Row = ({
   signal,
@@ -57,11 +51,11 @@ const Row = ({
       return;
     }
     const willNeedColumn = kindNeedsColumn(item.value);
-    const column = willNeedColumn ? op.column ?? columns[0] : undefined;
+    const column = willNeedColumn ? (op.column ?? columns[0]) : undefined;
     const patch: Partial<QueryBuilderOperation> = {
       kind: item.value,
       column,
-      unit: column === 'Duration' ? op.unit ?? 'ns' : undefined,
+      unit: column === 'Duration' ? (op.unit ?? 'ns') : undefined,
     };
     if (item.value === 'percentile' && op.percentile === undefined) {
       patch.percentile = 99;
@@ -97,7 +91,7 @@ const Row = ({
     }
     onPatch({
       column: item.value,
-      unit: item.value === 'Duration' ? op.unit ?? 'ns' : undefined,
+      unit: item.value === 'Duration' ? (op.unit ?? 'ns') : undefined,
     });
   };
 
@@ -131,11 +125,7 @@ const Row = ({
           width={18}
           placeholder={summaryQuantiles && summaryQuantiles.length > 0 ? 'Quantile' : 'No quantiles found'}
           options={(summaryQuantiles ?? []).map((q) => ({ label: `p${q * 100}`, value: q * 100 }))}
-          value={
-            op.percentile !== undefined
-              ? { label: `p${op.percentile}`, value: op.percentile }
-              : null
-          }
+          value={op.percentile !== undefined ? { label: `p${op.percentile}`, value: op.percentile } : null}
           onChange={(item) => onPatch({ percentile: item?.value })}
         />
       )}

@@ -37,18 +37,21 @@ export default class AdHocFilter {
     if (query && query.length > 0) {
       q = query;
     }
-    return this.datasource.metricFindQuery(q).then(function (response: any) {
-      return self.processTagKeysResponse(response);
-    }).catch(function (error: any) {
-      if (isPermissionError(error)) {
-        // Permission error - return empty array gracefully
-        console.info(getPermissionErrorMessage(PermissionErrorContext.ADHOC_KEYS));
-        self.tagKeys = [];
-        return [];
-      }
-      // Re-throw non-permission errors
-      throw error;
-    });
+    return this.datasource
+      .metricFindQuery(q)
+      .then(function (response: any) {
+        return self.processTagKeysResponse(response);
+      })
+      .catch(function (error: any) {
+        if (isPermissionError(error)) {
+          // Permission error - return empty array gracefully
+          console.info(getPermissionErrorMessage(PermissionErrorContext.ADHOC_KEYS));
+          self.tagKeys = [];
+          return [];
+        }
+        // Re-throw non-permission errors
+        throw error;
+      });
   }
 
   processTagKeysResponse(response: any): Promise<any[]> {
@@ -109,7 +112,7 @@ export default class AdHocFilter {
             field = item.name;
             database = item.database;
             table = item.table;
-            return buildQuery("(" + initialQuery + ")");
+            return buildQuery('(' + initialQuery + ')');
           });
           return true;
         })
@@ -126,7 +129,7 @@ export default class AdHocFilter {
         return [];
       }
       return this.datasource
-        .metricFindQuery(allValuesSQL.join(" UNION ALL "))
+        .metricFindQuery(allValuesSQL.join(' UNION ALL '))
         .then((response: any) => {
           // Process and cache the response
           this.tagValues[options.key] = this.processTagValuesResponse(response);
@@ -156,7 +159,6 @@ export default class AdHocFilter {
       database = this.datasource.defaultDatabase;
       [table, field] = keyItems;
     }
-
 
     // Execute the initial query
     return this.datasource

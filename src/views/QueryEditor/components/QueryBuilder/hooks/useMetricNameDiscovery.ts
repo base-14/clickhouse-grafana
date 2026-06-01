@@ -41,11 +41,7 @@ const parseRow = (row: any): MetricNameEntry | null => {
   return { name, tables };
 };
 
-export const useMetricNameDiscovery = ({
-  datasource,
-  query,
-  enabled,
-}: Args): MetricNameDiscoveryResult => {
+export const useMetricNameDiscovery = ({ datasource, query, enabled }: Args): MetricNameDiscoveryResult => {
   const [state, setState] = useState<{ loading: boolean; error: string | null; entries: MetricNameEntry[] }>({
     loading: false,
     error: null,
@@ -67,9 +63,7 @@ export const useMetricNameDiscovery = ({
         if (cancelled) {
           return;
         }
-        const entries = (rows || [])
-          .map(parseRow)
-          .filter((e): e is MetricNameEntry => !!e);
+        const entries = (rows || []).map(parseRow).filter((e): e is MetricNameEntry => !!e);
         setState({ loading: false, error: null, entries });
       })
       .catch((err) => {

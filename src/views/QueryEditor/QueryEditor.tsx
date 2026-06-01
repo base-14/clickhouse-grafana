@@ -1,18 +1,21 @@
-import React, {useEffect, useState} from 'react';
-import {CoreApp, QueryEditorProps} from '@grafana/data';
+import React, { useEffect, useState } from 'react';
+import { CoreApp, QueryEditorProps } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import {CHDataSource} from '../../datasource/datasource';
-import {CHDataSourceOptions, CHQuery, DatasourceMode, EditorMode} from '../../types/types';
-import {QueryHeader} from './components/QueryHeader/QueryHeader';
-import {QueryTextEditor} from './components/QueryTextEditor/QueryTextEditor';
-import {QueryBuilder} from './components/QueryBuilder/QueryBuilder';
-import {Alert} from '@grafana/ui';
-import {useQueryState} from './hooks/useQueryState';
-import {useFormattedData} from './hooks/useFormattedData';
-import {useAutocompleteData} from './hooks/useAutocompletionData';
-import {initializeQueryDefaults, initializeQueryDefaultsForVariables} from './helpers/initializeQueryDefaults';
-import {getAdhocFilters} from './helpers/getAdHocFilters';
-import {detectVariableMacroIntersections, createVariableMacroConflictWarning} from './helpers/detectVariableMacroIntersections';
+import { CHDataSource } from '../../datasource/datasource';
+import { CHDataSourceOptions, CHQuery, DatasourceMode, EditorMode } from '../../types/types';
+import { QueryHeader } from './components/QueryHeader/QueryHeader';
+import { QueryTextEditor } from './components/QueryTextEditor/QueryTextEditor';
+import { QueryBuilder } from './components/QueryBuilder/QueryBuilder';
+import { Alert } from '@grafana/ui';
+import { useQueryState } from './hooks/useQueryState';
+import { useFormattedData } from './hooks/useFormattedData';
+import { useAutocompleteData } from './hooks/useAutocompletionData';
+import { initializeQueryDefaults, initializeQueryDefaultsForVariables } from './helpers/initializeQueryDefaults';
+import { getAdhocFilters } from './helpers/getAdHocFilters';
+import {
+  detectVariableMacroIntersections,
+  createVariableMacroConflictWarning,
+} from './helpers/detectVariableMacroIntersections';
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>): any {
   const { datasource, query, onChange, onRunQuery, data } = props;
@@ -23,7 +26,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   useEffect(() => {
     if (formattedData !== initializedQuery.query) {
-      onChange({ ...initializedQuery, formattedQuery: formattedData })
+      onChange({ ...initializedQuery, formattedQuery: formattedData });
     }
 
     // eslint-disable-next-line
@@ -68,10 +71,10 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       />
       {error ? <Alert title={error} elevated style={{ marginTop: '5px', marginBottom: '5px' }} /> : null}
       {conflictWarning ? (
-        <Alert 
-          title="Variable/Macro Name Conflict Warning" 
-          severity="warning" 
-          elevated 
+        <Alert
+          title="Variable/Macro Name Conflict Warning"
+          severity="warning"
+          elevated
           style={{ marginTop: '5px', marginBottom: '5px' }}
         >
           {conflictWarning}
@@ -105,23 +108,22 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 }
 
 export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>): any {
-
   const { datasource, query, onChange, onRunQuery, data } = props;
-  let processedQuery
-  if (typeof props.query as string | CHQuery === 'string') {
-    processedQuery = {query: query, datasourceMode: DatasourceMode.Variable }
+  let processedQuery;
+  if ((typeof props.query as string | CHQuery) === 'string') {
+    processedQuery = { query: query, datasourceMode: DatasourceMode.Variable };
   } else {
-    processedQuery = query
-  };
+    processedQuery = query;
+  }
 
-  const isAnnotationView = false
+  const isAnnotationView = false;
   const initializedQuery = initializeQueryDefaultsForVariables(processedQuery, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
 
   useEffect(() => {
     if (formattedData !== initializedQuery.query) {
-      onChange({ ...initializedQuery, formattedQuery: formattedData })
+      onChange({ ...initializedQuery, formattedQuery: formattedData });
     }
 
     // eslint-disable-next-line
@@ -163,10 +165,10 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
       />
       {error ? <Alert title={error} elevated style={{ marginTop: '5px', marginBottom: '5px' }} /> : null}
       {conflictWarning ? (
-        <Alert 
-          title="Variable/Macro Name Conflict Warning" 
-          severity="warning" 
-          elevated 
+        <Alert
+          title="Variable/Macro Name Conflict Warning"
+          severity="warning"
+          elevated
           style={{ marginTop: '5px', marginBottom: '5px' }}
         >
           {conflictWarning}

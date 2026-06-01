@@ -5,10 +5,7 @@
 
 describe('$adhoc Macro Replacement (Issue #804)', () => {
   // Simulate the fixed logic from resource_handlers.go
-  const simulateAdhocReplacement = (
-    sql: string,
-    adhocConditions: string[]
-  ): string => {
+  const simulateAdhocReplacement = (sql: string, adhocConditions: string[]): string => {
     // Always handle $adhoc replacement, even for empty filters
     if (sql.includes('$adhoc')) {
       let renderedCondition = '1';
@@ -126,7 +123,7 @@ describe('$adhoc Macro Replacement (Issue #804)', () => {
 
     it('should demonstrate the fix works regardless of filter presence', () => {
       const baseSQL = 'SELECT count() FROM events WHERE $adhoc';
-      
+
       // Case 1: No filters (was broken before fix)
       const resultNoFilters = simulateAdhocReplacement(baseSQL, []);
       expect(resultNoFilters).toBe('SELECT count() FROM events WHERE 1');
@@ -146,7 +143,7 @@ describe('$adhoc Macro Replacement (Issue #804)', () => {
     const simulateTemplateSrvReplace = (query: string): string => {
       // Simulate what Grafana's templateSrv.replace does when there's an adhoc variable
       // named "adhoc" — it replaces $adhoc with the rendered filter as a quoted string
-      return query.replace(/\$adhoc/g, "'default.test_grafana.service_name=\"mysql\"'");
+      return query.replace(/\$adhoc/g, '\'default.test_grafana.service_name="mysql"\'');
     };
 
     const protectAndRestore = (query: string): string => {
@@ -232,11 +229,7 @@ ORDER BY t WITH FILL STEP ($interval*1000*5)`;
 
     it('should handle multiple conditions properly', () => {
       const sql = 'SELECT * FROM events WHERE $adhoc';
-      const adhocConditions = [
-        "status = 'active'",
-        "level = 'info'",
-        "source = 'api'",
-      ];
+      const adhocConditions = ["status = 'active'", "level = 'info'", "source = 'api'"];
 
       const result = simulateAdhocReplacement(sql, adhocConditions);
 

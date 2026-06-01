@@ -125,7 +125,8 @@ const getMacrosAutocompletion = function () {
     {
       name: '$deltaColumnsAggregated',
       def: '$deltaColumnsAggregated(key, subkey, aggFunction1, value1, aggFunctionN, valueN)',
-      docText: 'if you need to calculate `$delta` for higher cardinality dimension and then aggregate by lower cardinality dimension',
+      docText:
+        'if you need to calculate `$delta` for higher cardinality dimension and then aggregate by lower cardinality dimension',
     },
     {
       name: '$increaseColumns',
@@ -214,7 +215,7 @@ const getMacrosAutocompletion = function () {
         '    AND toLowerCase(column3) ilike ${text_with_single_quote:sqlstring},\n' +
         '    $text_with_single_quote\n' +
         '  )\n' +
-        '  $conditionalTest(AND status = \'active\', AND status = \'all\', $statusFilter)\n' +
+        "  $conditionalTest(AND status = 'active', AND status = 'all', $statusFilter)\n" +
         'GROUP BY t\n' +
         'ORDER BY t',
     },

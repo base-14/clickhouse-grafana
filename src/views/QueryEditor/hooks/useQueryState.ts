@@ -16,7 +16,7 @@ export const useQueryState = (query, onChange, datasource) => {
 
   useEffect(() => {
     const accessKey = `dataStorage_${datasourceName}_${datasourceUid}_${refId}`;
-    
+
     const initializeQueryState = async () => {
       try {
         // On component mount - check for recent data
@@ -67,13 +67,13 @@ export const useQueryState = (query, onChange, datasource) => {
         name: accessKey,
         timestamp: Date.now(),
       };
-      
+
       // Store with a 1 hour TTL (query states don't need to persist long)
       // Note: We can't await in cleanup function, so we handle errors silently
       IndexedDBManager.setItem(accessKey, dataToStore, 60).catch((error) => {
         console.error('Failed to store query state on unmount:', error);
       });
-      
+
       // Ensure we don't exceed the limit after storing
       IndexedDBManager.limitQueryStatesPerDatasource(datasourceUid).catch((error) => {
         console.error('Failed to limit query states on unmount:', error);

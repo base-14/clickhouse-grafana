@@ -19,4 +19,4 @@ export const NullifySparseSwitch: React.FC<SwitchProps> = ({ query, onChange }) 
       transparent
     />
   </InlineField>
-); 
+);

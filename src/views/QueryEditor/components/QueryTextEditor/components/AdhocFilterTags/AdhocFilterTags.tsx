@@ -10,10 +10,10 @@ const tagsInputClassName = css({
   },
 });
 
-export const AdhocFilterTags: React.FC<AdhocFilterTagsProps> = ({ 
-  adhocFilters, 
-  areAdHocFiltersAvailable, 
-  onFieldChange 
+export const AdhocFilterTags: React.FC<AdhocFilterTagsProps> = ({
+  adhocFilters,
+  areAdHocFiltersAvailable,
+  onFieldChange,
 }) => {
   if (areAdHocFiltersAvailable || adhocFilters.length === 0) {
     return null;
@@ -22,9 +22,7 @@ export const AdhocFilterTags: React.FC<AdhocFilterTagsProps> = ({
   return (
     <TagsInput
       className={tagsInputClassName}
-      tags={adhocFilters.map((filter: AdhocFilter) => 
-        `${filter.key} ${filter.operator} ${filter.value}`
-      )}
+      tags={adhocFilters.map((filter: AdhocFilter) => `${filter.key} ${filter.operator} ${filter.value}`)}
       onChange={(tagsList: string[]) => {
         onFieldChange({
           fieldName: 'adHocFilters',

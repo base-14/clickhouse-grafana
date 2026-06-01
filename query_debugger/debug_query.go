@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/altinity/clickhouse-grafana/pkg/eval"
+	"github.com/base-14/clickhouse-grafana/pkg/eval"
 )
 
 // QueryRequest represents the structure of the query request

@@ -23,21 +23,17 @@ describe('getAdhocFilters', () => {
           type: 'adhoc',
           datasource: {
             type: 'vertamedia-clickhouse-datasource',
-            uid: 'ClickHouse'
+            uid: 'ClickHouse',
           },
-          filters: [
-            { key: 'status', value: 'active', operator: '=' }
-          ]
-        }
+          filters: [{ key: 'status', value: 'active', operator: '=' }],
+        },
       ];
 
       mockTemplateSrv.getVariables.mockReturnValue(variables);
 
       const result = getAdhocFilters('datasourceName', 'ClickHouse');
 
-      expect(result).toEqual([
-        { key: 'status', value: 'active', operator: '=' }
-      ]);
+      expect(result).toEqual([{ key: 'status', value: 'active', operator: '=' }]);
     });
 
     it('should skip filters for non-matching direct UID', () => {
@@ -47,12 +43,10 @@ describe('getAdhocFilters', () => {
           type: 'adhoc',
           datasource: {
             type: 'vertamedia-clickhouse-datasource',
-            uid: 'OtherDataSource'
+            uid: 'OtherDataSource',
           },
-          filters: [
-            { key: 'status', value: 'active', operator: '=' }
-          ]
-        }
+          filters: [{ key: 'status', value: 'active', operator: '=' }],
+        },
       ];
 
       mockTemplateSrv.getVariables.mockReturnValue(variables);
@@ -71,20 +65,18 @@ describe('getAdhocFilters', () => {
           type: 'datasource',
           current: {
             value: 'P788589A3A7614F2B',
-            text: 'clickhouse-direct'
-          }
+            text: 'clickhouse-direct',
+          },
         },
         {
           name: 'query2',
           type: 'adhoc',
           datasource: {
             uid: '${query1}',
-            type: 'vertamedia-clickhouse-datasource'
+            type: 'vertamedia-clickhouse-datasource',
           },
-          filters: [
-            { key: 'attributes', value: '123', operator: '!=' }
-          ]
-        }
+          filters: [{ key: 'attributes', value: '123', operator: '!=' }],
+        },
       ];
 
       mockTemplateSrv.getVariables.mockReturnValue(variables);
@@ -93,9 +85,7 @@ describe('getAdhocFilters', () => {
       const result = getAdhocFilters('datasourceName', 'P788589A3A7614F2B');
 
       expect(mockTemplateSrv.replace).toHaveBeenCalledWith('${query1}');
-      expect(result).toEqual([
-        { key: 'attributes', value: '123', operator: '!=' }
-      ]);
+      expect(result).toEqual([{ key: 'attributes', value: '123', operator: '!=' }]);
     });
 
     it('should handle variable resolution failure gracefully', () => {
@@ -105,12 +95,10 @@ describe('getAdhocFilters', () => {
           type: 'adhoc',
           datasource: {
             uid: '${nonexistent}',
-            type: 'vertamedia-clickhouse-datasource'
+            type: 'vertamedia-clickhouse-datasource',
           },
-          filters: [
-            { key: 'attributes', value: '123', operator: '!=' }
-          ]
-        }
+          filters: [{ key: 'attributes', value: '123', operator: '!=' }],
+        },
       ];
 
       mockTemplateSrv.getVariables.mockReturnValue(variables);
@@ -139,12 +127,10 @@ describe('getAdhocFilters', () => {
           type: 'adhoc',
           datasource: {
             uid: 'DirectUID',
-            type: 'vertamedia-clickhouse-datasource'
+            type: 'vertamedia-clickhouse-datasource',
           },
-          filters: [
-            { key: 'status', value: 'active', operator: '=' }
-          ]
-        }
+          filters: [{ key: 'status', value: 'active', operator: '=' }],
+        },
       ];
 
       mockTemplateSrv.getVariables.mockReturnValue(variables);
@@ -152,9 +138,7 @@ describe('getAdhocFilters', () => {
       const result = getAdhocFilters('datasourceName', 'DirectUID');
 
       expect(mockTemplateSrv.replace).not.toHaveBeenCalled();
-      expect(result).toEqual([
-        { key: 'status', value: 'active', operator: '=' }
-      ]);
+      expect(result).toEqual([{ key: 'status', value: 'active', operator: '=' }]);
     });
   });
 
@@ -165,10 +149,8 @@ describe('getAdhocFilters', () => {
           name: 'query0',
           type: 'adhoc',
           datasource: null,
-          filters: [
-            { key: 'status', value: 'active', operator: '=' }
-          ]
-        }
+          filters: [{ key: 'status', value: 'active', operator: '=' }],
+        },
       ];
 
       mockTemplateSrv.getVariables.mockReturnValue(variables);
@@ -184,13 +166,11 @@ describe('getAdhocFilters', () => {
           name: 'query0',
           type: 'adhoc',
           datasource: {
-            type: 'vertamedia-clickhouse-datasource'
+            type: 'vertamedia-clickhouse-datasource',
             // uid is missing
           },
-          filters: [
-            { key: 'status', value: 'active', operator: '=' }
-          ]
-        }
+          filters: [{ key: 'status', value: 'active', operator: '=' }],
+        },
       ];
 
       mockTemplateSrv.getVariables.mockReturnValue(variables);
@@ -207,23 +187,19 @@ describe('getAdhocFilters', () => {
           type: 'adhoc',
           datasource: {
             uid: 'ClickHouse',
-            type: 'vertamedia-clickhouse-datasource'
+            type: 'vertamedia-clickhouse-datasource',
           },
-          filters: [
-            { key: 'status', value: 'active', operator: '=' }
-          ]
+          filters: [{ key: 'status', value: 'active', operator: '=' }],
         },
         {
           name: 'query2',
           type: 'adhoc',
           datasource: {
             uid: '${query1}',
-            type: 'vertamedia-clickhouse-datasource'
+            type: 'vertamedia-clickhouse-datasource',
           },
-          filters: [
-            { key: 'role', value: 'admin', operator: '=' }
-          ]
-        }
+          filters: [{ key: 'role', value: 'admin', operator: '=' }],
+        },
       ];
 
       mockTemplateSrv.getVariables.mockReturnValue(variables);
@@ -233,7 +209,7 @@ describe('getAdhocFilters', () => {
 
       expect(result).toEqual([
         { key: 'status', value: 'active', operator: '=' },
-        { key: 'role', value: 'admin', operator: '=' }
+        { key: 'role', value: 'admin', operator: '=' },
       ]);
     });
 
@@ -244,10 +220,10 @@ describe('getAdhocFilters', () => {
           type: 'adhoc',
           datasource: {
             uid: 'ClickHouse',
-            type: 'vertamedia-clickhouse-datasource'
+            type: 'vertamedia-clickhouse-datasource',
           },
-          filters: []
-        }
+          filters: [],
+        },
       ];
 
       mockTemplateSrv.getVariables.mockReturnValue(variables);

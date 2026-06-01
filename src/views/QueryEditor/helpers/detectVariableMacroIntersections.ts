@@ -10,7 +10,7 @@ export function detectVariableMacroIntersections(): string[] {
   const variables = templateSrv.getVariables();
   const conflicts: string[] = [];
 
-  const variableNames = variables.map(variable => `$${variable.name}`);
+  const variableNames = variables.map((variable) => `$${variable.name}`);
 
   // Check for intersections with macros
   for (const variableName of variableNames) {
@@ -31,7 +31,7 @@ export function createVariableMacroConflictWarning(conflicts: string[]): string 
   }
 
   const conflictList = conflicts.join(', ');
-  
+
   if (conflicts.length === 1) {
     return `Template variable "${conflictList}" has the same name as a ClickHouse macro. This may cause unexpected behavior during query processing.`;
   } else {

@@ -122,41 +122,16 @@ export const buildVariableSql = ({ query, database, settings }: Args): string | 
   }
 
   if (signal === SignalType.Metrics && ret.scope !== 'attribute') {
-    const wheres = buildWhereClauses(
-      query,
-      settings,
-      signal,
-      signalNameColumn,
-      useTimeMacro,
-      lookbackSeconds,
-      timeCol
-    );
+    const wheres = buildWhereClauses(query, settings, signal, signalNameColumn, useTimeMacro, lookbackSeconds, timeCol);
     const tables = metricTables(settings);
     const branches = tables
-      .map(
-        (t) =>
-          `SELECT DISTINCT ${access} AS value FROM ${database}.${t} WHERE\n  ${wheres.join('\n  AND ')}`
-      )
+      .map((t) => `SELECT DISTINCT ${access} AS value FROM ${database}.${t} WHERE\n  ${wheres.join('\n  AND ')}`)
       .join('\nUNION ALL\n');
-    return [
-      'SELECT DISTINCT value FROM (',
-      branches,
-      ')',
-      'ORDER BY value ASC',
-      `LIMIT ${limit}`,
-    ].join('\n');
+    return ['SELECT DISTINCT value FROM (', branches, ')', 'ORDER BY value ASC', `LIMIT ${limit}`].join('\n');
   }
 
   const table = tableForSignal(signal, settings, query.metricKind);
-  const wheres = buildWhereClauses(
-    query,
-    settings,
-    signal,
-    signalNameColumn,
-    useTimeMacro,
-    lookbackSeconds,
-    timeCol
-  );
+  const wheres = buildWhereClauses(query, settings, signal, signalNameColumn, useTimeMacro, lookbackSeconds, timeCol);
 
   return [
     `SELECT DISTINCT ${access} AS value`,

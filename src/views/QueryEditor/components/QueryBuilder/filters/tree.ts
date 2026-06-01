@@ -23,11 +23,13 @@ export const ensureRoot = (root?: FilterGroup): FilterGroup => root ?? emptyRoot
 export const isGroup = (n: FilterNode): n is FilterGroup => n.kind === 'group';
 export const isCondition = (n: FilterNode): n is FilterCondition => n.kind === 'condition';
 
-export const makeCondition = (init: Partial<FilterCondition> & {
-  key: string;
-  scope: FilterScope;
-  type: FilterValueType;
-}): FilterCondition => ({
+export const makeCondition = (
+  init: Partial<FilterCondition> & {
+    key: string;
+    scope: FilterScope;
+    type: FilterValueType;
+  }
+): FilterCondition => ({
   kind: 'condition',
   id: init.id ?? nextId('cond'),
   scope: init.scope,
@@ -103,9 +105,7 @@ export const updateCondition = (
 };
 
 export const toggleConnector = (root: FilterGroup, groupId: string): FilterGroup =>
-  mapTree(root, (g) =>
-    g.id === groupId ? { ...g, connector: g.connector === 'AND' ? 'OR' : 'AND' } : g
-  );
+  mapTree(root, (g) => (g.id === groupId ? { ...g, connector: g.connector === 'AND' ? 'OR' : 'AND' } : g));
 
 export const depthOf = (root: FilterGroup): number => {
   if (root.children.length === 0) {
@@ -123,8 +123,7 @@ export const depthOf = (root: FilterGroup): number => {
   return max;
 };
 
-export const oppositeConnector = (c: FilterConnector): FilterConnector =>
-  c === 'AND' ? 'OR' : 'AND';
+export const oppositeConnector = (c: FilterConnector): FilterConnector => (c === 'AND' ? 'OR' : 'AND');
 
 export const OP_OPTIONS_STRING: Array<{ label: string; value: FilterOp }> = [
   { label: '=', value: 'eq' },

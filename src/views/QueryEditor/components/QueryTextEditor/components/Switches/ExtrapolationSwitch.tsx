@@ -13,11 +13,6 @@ export const ExtrapolationSwitch: React.FC<SwitchProps> = ({ query, onChange }) 
       </InlineLabel>
     }
   >
-    <InlineSwitch
-      transparent
-      data-testid="extrapolate-switch"
-      value={query.extrapolate}
-      onChange={onChange}
-    />
+    <InlineSwitch transparent data-testid="extrapolate-switch" value={query.extrapolate} onChange={onChange} />
   </InlineField>
 );

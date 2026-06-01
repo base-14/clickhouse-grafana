@@ -1,6 +1,6 @@
 import React from 'react';
 import { InlineField, InlineLabel, Select } from '@grafana/ui';
-import { CONTEXT_WINDOW_OPTIONS } from '../../constants'
+import { CONTEXT_WINDOW_OPTIONS } from '../../constants';
 import { SelectProps } from '../../types';
 
 export const ContextWindowSizeSelect: React.FC<SelectProps> = ({ query, onChange }) => (

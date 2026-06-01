@@ -1,12 +1,7 @@
 import React from 'react';
 import { Button, IconButton } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import {
-  FilterCondition,
-  FilterGroup,
-  FilterNode,
-  SignalType,
-} from '../../../../../types/types';
+import { FilterCondition, FilterGroup, FilterNode, SignalType } from '../../../../../types/types';
 import { FilterConditionRow } from './FilterConditionRow';
 import { defaultMapScopeForSignal, DiscoveredKey } from './resolveScope';
 import { isGroup, makeCondition, makeGroup, oppositeConnector } from './tree';
@@ -28,13 +23,7 @@ type Props = {
 
 const valueKey = (scope: FilterCondition['scope'], key: string) => `${scope}::${key}`;
 
-const ConnectorChip = ({
-  connector,
-  onToggle,
-}: {
-  connector: 'AND' | 'OR';
-  onToggle: () => void;
-}) => (
+const ConnectorChip = ({ connector, onToggle }: { connector: 'AND' | 'OR'; onToggle: () => void }) => (
   <div style={{ display: 'flex', alignItems: 'center', margin: '2px 0 2px 8px' }}>
     <button
       type="button"
@@ -125,10 +114,7 @@ export const FilterGroupView = ({
           <React.Fragment key={child.id}>
             {nodeView}
             {!isLast && hasMultiple && (
-              <ConnectorChip
-                connector={group.connector}
-                onToggle={() => onToggleConnector(group.id)}
-              />
+              <ConnectorChip connector={group.connector} onToggle={() => onToggleConnector(group.id)} />
             )}
           </React.Fragment>
         );
@@ -147,9 +133,7 @@ export const FilterGroupView = ({
           </>
         )}
         {depth >= 5 && (
-          <span style={{ color: '#e09f3e', fontSize: 11, marginLeft: 8 }}>
-            deep nesting — consider flattening
-          </span>
+          <span style={{ color: '#e09f3e', fontSize: 11, marginLeft: 8 }}>deep nesting — consider flattening</span>
         )}
       </div>
     </>

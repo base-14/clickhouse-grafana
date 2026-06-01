@@ -109,7 +109,10 @@ export const initiateEditor = (
           [new RegExp(`'.*?'`), TokenType.STRING],
           [new RegExp(`\\b(${dataTypesImported.join('|')})\\b`), TokenType.DATATYPES],
           [new RegExp(`\\b(${constantsImported.join('|')})\\b`), TokenType.CONSTANTS],
-          [new RegExp(`\\b(${macrosImported.map((macros) => macros.replace('$', '\\$')).join('|')})\\b`), TokenType.MACROS],
+          [
+            new RegExp(`\\b(${macrosImported.map((macros) => macros.replace('$', '\\$')).join('|')})\\b`),
+            TokenType.MACROS,
+          ],
         ],
       },
     });

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/altinity/clickhouse-grafana/pkg/eval"
+	"github.com/base-14/clickhouse-grafana/pkg/eval"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
 	"golang.org/x/sync/errgroup"

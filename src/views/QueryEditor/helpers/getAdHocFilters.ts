@@ -7,14 +7,14 @@ export const getAdhocFilters = (datasourceName, datasourceUid: any) => {
     .getVariables()
     .filter((variable) => variable.type === 'adhoc') as AdHocVariableModel[];
   let filters: AdHocVariableModel[] = [];
-  
+
   for (const variable of adhocVariables) {
     let variableUid = variable.datasource?.uid;
-    
+
     if (!variableUid) {
       continue;
     }
-    
+
     // Resolve variable references if present
     if (typeof variableUid === 'string' && variableUid.includes('$')) {
       try {
@@ -26,12 +26,12 @@ export const getAdhocFilters = (datasourceName, datasourceUid: any) => {
         continue;
       }
     }
-    
+
     // Now compare resolved UIDs
     if (variableUid === datasourceUid || variableUid === datasourceName) {
       filters = filters.concat(variable.filters);
     }
   }
-  
+
   return filters;
 };
