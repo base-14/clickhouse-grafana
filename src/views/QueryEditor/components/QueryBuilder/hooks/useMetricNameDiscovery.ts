@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { extractErrorMessage } from './errorMessage';
 
 export type MetricNameEntry = {
   name: string;
@@ -15,6 +16,7 @@ export type MetricNameDiscoveryResult = {
   loading: boolean;
   error: string | null;
   entries: MetricNameEntry[];
+  retry: () => void;
 };
 
 const parseRow = (row: any): MetricNameEntry | null => {
@@ -44,11 +46,12 @@ export const useMetricNameDiscovery = ({
   query,
   enabled,
 }: Args): MetricNameDiscoveryResult => {
-  const [state, setState] = useState<MetricNameDiscoveryResult>({
+  const [state, setState] = useState<{ loading: boolean; error: string | null; entries: MetricNameEntry[] }>({
     loading: false,
     error: null,
     entries: [],
   });
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     if (!enabled || !query) {
@@ -73,13 +76,15 @@ export const useMetricNameDiscovery = ({
         if (cancelled) {
           return;
         }
-        setState({ loading: false, error: err?.message || String(err), entries: [] });
+        setState({ loading: false, error: extractErrorMessage(err), entries: [] });
       });
 
     return () => {
       cancelled = true;
     };
-  }, [datasource, query, enabled]);
+  }, [datasource, query, enabled, retryToken]);
 
-  return state;
+  const retry = useCallback(() => setRetryToken((n) => n + 1), []);
+
+  return { ...state, retry };
 };

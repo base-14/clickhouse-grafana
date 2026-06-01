@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { extractErrorMessage } from './errorMessage';
 
 type Args = {
   datasource: { metricFindQuery: (q: string) => Promise<any[]> };
@@ -10,6 +11,7 @@ export type SummaryQuantilesResult = {
   loading: boolean;
   error: string | null;
   quantiles: number[];
+  retry: () => void;
 };
 
 const parseRows = (rows: any[]): number[] => {
@@ -44,11 +46,12 @@ export const useSummaryQuantilesDiscovery = ({
   query,
   enabled,
 }: Args): SummaryQuantilesResult => {
-  const [state, setState] = useState<SummaryQuantilesResult>({
+  const [state, setState] = useState<{ loading: boolean; error: string | null; quantiles: number[] }>({
     loading: false,
     error: null,
     quantiles: [],
   });
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     if (!enabled || !query) {
@@ -70,13 +73,15 @@ export const useSummaryQuantilesDiscovery = ({
         if (cancelled) {
           return;
         }
-        setState({ loading: false, error: err?.message || String(err), quantiles: [] });
+        setState({ loading: false, error: extractErrorMessage(err), quantiles: [] });
       });
 
     return () => {
       cancelled = true;
     };
-  }, [datasource, query, enabled]);
+  }, [datasource, query, enabled, retryToken]);
 
-  return state;
+  const retry = useCallback(() => setRetryToken((n) => n + 1), []);
+
+  return { ...state, retry };
 };

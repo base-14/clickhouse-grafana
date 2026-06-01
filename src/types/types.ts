@@ -141,6 +141,9 @@ export interface CHQuery extends DataQuery {
   logsMode?: 'raw' | 'timeseries';
   metricKind?: MetricKind;
   advancedOptions?: boolean;
+  variableReturn?: { scope: FilterScope; key: string };
+  variableTimeMode?: 'fixed' | 'dashboard';
+  variableLookback?: string;
 
   skip_comments?: boolean;
   add_metadata?: boolean;
@@ -197,12 +200,16 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   queryBuilderDefaultMetricsSummaryTable?: string;
   queryBuilderAutocompleteLimit?: number;
   queryBuilderRawLogsLimit?: number;
+  queryBuilderVariableMaxLookback?: string;
+  queryBuilderVariableLimit?: number;
 }
 
 export interface QueryBuilderSettings {
   autocompleteEnabled: boolean;
   autocompleteLimit: number;
   rawLogsLimit: number;
+  variableMaxLookback: string;
+  variableLimit: number;
   maxTimerange: string;
   environmentKey: string;
   logsTable: string;
@@ -217,6 +224,8 @@ export const QUERY_BUILDER_DEFAULTS: QueryBuilderSettings = {
   autocompleteEnabled: true,
   autocompleteLimit: 100,
   rawLogsLimit: 200,
+  variableMaxLookback: '15m',
+  variableLimit: 1000,
   maxTimerange: '5m',
   environmentKey: 'environment',
   logsTable: 'otel_logs',

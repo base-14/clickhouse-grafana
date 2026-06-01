@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { SelectableValue } from '@grafana/data';
+import { extractErrorMessage } from './errorMessage';
 import { FilterScope, QueryBuilderSettings, SignalType } from '../../../../../types/types';
 import {
   buildKeyDiscoveryQuery,
@@ -14,6 +15,7 @@ type KeyState = {
   loading: boolean;
   error: string | null;
   keys: DiscoveredKey[];
+  retry: () => void;
 };
 
 const valueCacheKey = (scope: FilterScope, key: string) => `${scope}::${key}`;
@@ -38,7 +40,8 @@ export const useKeyDiscovery = (args: {
   deps: FilterDiscoveryDeps | null;
 }): KeyState => {
   const { datasource, enabled, deps } = args;
-  const [state, setState] = useState<KeyState>({ loading: false, error: null, keys: [] });
+  const [state, setState] = useState<{ loading: boolean; error: string | null; keys: DiscoveredKey[] }>({ loading: false, error: null, keys: [] });
+  const [retryToken, setRetryToken] = useState(0);
   const queryKey = enabled && deps ? buildKeyDiscoveryQuery(deps).query : null;
 
   useEffect(() => {
@@ -77,15 +80,17 @@ export const useKeyDiscovery = (args: {
         if (cancelled) {
           return;
         }
-        setState({ loading: false, error: err?.message || String(err), keys: [] });
+        setState({ loading: false, error: extractErrorMessage(err), keys: [] });
       });
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datasource, queryKey, enabled]);
+  }, [datasource, queryKey, enabled, retryToken]);
 
-  return state;
+  const retry = useCallback(() => setRetryToken((n) => n + 1), []);
+
+  return { ...state, retry };
 };
 
 export type ValueCacheEntry = {
@@ -154,7 +159,7 @@ export const useValueDiscovery = (args: {
         .catch((err) => {
           setCache((prev) => {
             const next = new Map(prev);
-            next.set(cacheK, { loading: false, options: [], error: err?.message || String(err) });
+            next.set(cacheK, { loading: false, options: [], error: extractErrorMessage(err) });
             return next;
           });
         });

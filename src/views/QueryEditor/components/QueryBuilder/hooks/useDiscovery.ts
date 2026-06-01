@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { rangeUtil, SelectableValue, TimeRange } from '@grafana/data';
+import { extractErrorMessage } from './errorMessage';
 
 const DEFAULT_LOOKBACK_FALLBACK_MS = 5 * 60 * 1000;
 
@@ -41,10 +42,12 @@ export type DiscoveryResult = {
   loading: boolean;
   error: string | null;
   options: Array<SelectableValue<string>>;
+  retry: () => void;
 };
 
 export const useDiscovery = ({ datasource, query, enabled }: UseDiscoveryArgs): DiscoveryResult => {
-  const [state, setState] = useState<DiscoveryResult>({ loading: false, error: null, options: [] });
+  const [state, setState] = useState<{ loading: boolean; error: string | null; options: Array<SelectableValue<string>> }>({ loading: false, error: null, options: [] });
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     if (!enabled || !query) {
@@ -86,7 +89,7 @@ export const useDiscovery = ({ datasource, query, enabled }: UseDiscoveryArgs): 
         }
         setState({
           loading: false,
-          error: err?.message || String(err),
+          error: extractErrorMessage(err),
           options: [],
         });
       });
@@ -94,7 +97,9 @@ export const useDiscovery = ({ datasource, query, enabled }: UseDiscoveryArgs): 
     return () => {
       cancelled = true;
     };
-  }, [datasource, query, enabled]);
+  }, [datasource, query, enabled, retryToken]);
 
-  return state;
+  const retry = useCallback(() => setRetryToken((n) => n + 1), []);
+
+  return { ...state, retry };
 };

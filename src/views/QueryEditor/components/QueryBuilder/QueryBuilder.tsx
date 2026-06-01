@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo } from 'react';
-import { Alert, InlineField, InlineFieldRow, InlineLabel, InlineSwitch, MultiSelect, RadioButtonGroup, Select } from '@grafana/ui';
-import { SelectableValue, TimeRange } from '@grafana/data';
+import { Alert, IconButton, InlineField, InlineFieldRow, InlineLabel, InlineSwitch, MultiSelect, RadioButtonGroup, Select } from '@grafana/ui';
+import { rangeUtil, SelectableValue, TimeRange } from '@grafana/data';
 import {
   CHQuery,
+  DatasourceMode,
   FilterCondition,
   FilterGroup,
   FilterNode,
+  FilterScope,
   MetricKind,
   QueryBuilderSettings,
   SignalType,
@@ -57,6 +59,33 @@ type QueryBuilderProps = {
 
 const toMulti = (values?: string[]): Array<SelectableValue<string>> =>
   (values ?? []).map((v) => ({ label: v, value: v }));
+
+const DiscoveryErrorAlert = ({
+  label,
+  onRetry,
+}: {
+  label: string;
+  onRetry: () => void;
+}) => (
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8,
+      padding: '6px 10px',
+      marginTop: 4,
+      marginBottom: 4,
+      border: '1px solid rgba(224, 47, 68, 0.4)',
+      background: 'rgba(224, 47, 68, 0.1)',
+      borderRadius: 4,
+      color: '#e02f44',
+      fontSize: 12,
+    }}
+  >
+    <span style={{ flex: 1 }}>{label} discovery query failed</span>
+    <IconButton name="sync" aria-label="Retry" tooltip="Retry" onClick={onRetry} />
+  </div>
+);
 
 const fromMulti = (items: Array<SelectableValue<string>>): string[] =>
   items.map((i) => i.value).filter((v): v is string => !!v);
@@ -143,6 +172,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
   const isMetrics = query.signalType === SignalType.Metrics;
   const isLogs = query.signalType === SignalType.Logs;
   const isTraces = query.signalType === SignalType.Traces;
+  const isVariable = query.datasourceMode === DatasourceMode.Variable;
   const logsMode: 'raw' | 'timeseries' = query.logsMode ?? 'raw';
   const isLogsTimeseries = isLogs && logsMode === 'timeseries';
   const autocomplete = settings.autocompleteEnabled;
@@ -255,7 +285,9 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
 
   const signalNameCol = query.signalType ? signalNameColumn(query.signalType) : null;
 
-  const filtersGateOpen = !!query.signalType && hasServices && hasEnvironments && (isLogs || hasSignalNames);
+  const filtersGateOpen = isVariable
+    ? !!query.signalType
+    : !!query.signalType && hasServices && hasEnvironments && (isLogs || hasSignalNames);
 
   const filterDeps =
     discoveryDeps && filtersGateOpen
@@ -389,12 +421,10 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </InlineFieldRow>
       )}
       {services.error && (
-        <Alert severity="error" title="Service discovery failed" elevated>
-          {services.error}
-        </Alert>
+        <DiscoveryErrorAlert label="Service" onRetry={services.retry} />
       )}
 
-      {query.signalType && hasServices && (
+      {query.signalType && (hasServices || isVariable) && (
         <InlineFieldRow>
           <InlineField label={<InlineLabel width={24}>Environment</InlineLabel>} grow>
             <MultiSelect
@@ -413,12 +443,10 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </InlineFieldRow>
       )}
       {environments.error && (
-        <Alert severity="error" title="Environment discovery failed" elevated>
-          {environments.error}
-        </Alert>
+        <DiscoveryErrorAlert label="Environment" onRetry={environments.retry} />
       )}
 
-      {query.signalType && !isLogs && !isMetrics && hasServices && hasEnvironments && (
+      {query.signalType && !isLogs && !isMetrics && (isVariable || (hasServices && hasEnvironments)) && (
         <InlineFieldRow>
           <InlineField label={<InlineLabel width={24}>{signalNameCol ?? 'Signal name'}</InlineLabel>} grow>
             <MultiSelect
@@ -437,23 +465,26 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </InlineFieldRow>
       )}
       {signalNames.error && (
-        <Alert severity="error" title="Signal-name discovery failed" elevated>
-          {signalNames.error}
-        </Alert>
+        <DiscoveryErrorAlert label="Signal name" onRetry={signalNames.retry} />
       )}
 
-      {isMetrics && hasServices && hasEnvironments && (
+      {isMetrics && (isVariable || (hasServices && hasEnvironments)) && (
         <InlineFieldRow>
           <InlineField label={<InlineLabel width={24}>MetricName</InlineLabel>} grow>
             <MultiSelect
               width={40}
               placeholder={metricNames.loading ? 'Loading…' : 'Select MetricName'}
-              options={metricNames.entries.map((e) => ({
-                label: e.name,
-                value: e.name,
-                description: e.tables.length > 1 ? e.tables.join(', ') : undefined,
-              }))}
-              value={toMulti(query.signalNames)}
+              options={[
+                { label: 'All', value: SIGNAL_NAME_ALL },
+                ...metricNames.entries.map((e) => ({
+                  label: e.name,
+                  value: e.name,
+                  description: e.tables.length > 1 ? e.tables.join(', ') : undefined,
+                })),
+              ]}
+              value={toMulti(query.signalNames).map((v) =>
+                v.value === SIGNAL_NAME_ALL ? { label: 'All', value: SIGNAL_NAME_ALL } : v
+              )}
               onChange={onSignalNamesChange}
               allowCustomValue
               isClearable
@@ -463,12 +494,10 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </InlineFieldRow>
       )}
       {metricNames.error && (
-        <Alert severity="error" title="Metric-name discovery failed" elevated>
-          {metricNames.error}
-        </Alert>
+        <DiscoveryErrorAlert label="Metric name" onRetry={metricNames.retry} />
       )}
 
-      {isLogs && filtersGateOpen && (
+      {isLogs && filtersGateOpen && !isVariable && (
         <div style={{ marginTop: 12 }}>
           <div
             style={{
@@ -526,6 +555,73 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </InlineFieldRow>
       )}
 
+      {isVariable && query.signalType && (
+        <div style={{ marginTop: 12 }}>
+          <div
+            style={{
+              color: '#6e9fff',
+              fontSize: 13,
+              fontWeight: 500,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+              marginBottom: 8,
+            }}
+          >
+            Return distinct values of
+          </div>
+          <Select<string>
+            width={80}
+            placeholder={keyDiscovery.loading ? 'Loading…' : 'Pick a column or attribute key'}
+            options={(() => {
+              const extras: DiscoveredKey[] = extraGroupByColumns(query.signalType!).map((c) => ({
+                key: c.name,
+                scope: 'column',
+              }));
+              const baseKeys = isLogs
+                ? keyDiscovery.keys.filter((k) => !(k.scope === 'column' && k.key === 'Body'))
+                : keyDiscovery.keys;
+              const seen = new Set(baseKeys.map((k) => k.key));
+              const merged = [...baseKeys];
+              for (const e of extras) {
+                if (!seen.has(e.key)) {
+                  merged.push(e);
+                }
+              }
+              return merged
+                .sort((a, b) => a.key.localeCompare(b.key))
+                .map((k) => ({
+                  label: k.key,
+                  value: k.key,
+                  description: k.scope === 'column' ? undefined : k.scope,
+                }));
+            })()}
+            value={
+              query.variableReturn
+                ? { label: query.variableReturn.key, value: query.variableReturn.key }
+                : null
+            }
+            onChange={(item) => {
+              if (!item?.value) {
+                onChange({ ...query, variableReturn: undefined });
+                return;
+              }
+              const allKeys = [
+                ...keyDiscovery.keys,
+                ...extraGroupByColumns(query.signalType!).map<DiscoveredKey>((c) => ({
+                  key: c.name,
+                  scope: 'column' as FilterScope,
+                })),
+              ];
+              const hit = allKeys.find((k) => k.key === item.value);
+              const scope: FilterScope = hit?.scope ?? 'column';
+              onChange({ ...query, variableReturn: { scope, key: item.value } });
+            }}
+            allowCustomValue
+            isLoading={keyDiscovery.loading}
+          />
+        </div>
+      )}
+
       {filtersGateOpen && (
         <div style={{ marginTop: 12 }}>
           <div
@@ -540,7 +636,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
           >
             Filters
           </div>
-          {isLogs && (
+          {isLogs && !isVariable && (
             <BodySearchBar
               value={query.bodySearch ?? ''}
               isRegex={!!query.bodySearchIsRegex}
@@ -565,14 +661,12 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
             depth={1}
           />
           {keyDiscovery.error && (
-            <Alert severity="error" title="Filter-key discovery failed" elevated>
-              {keyDiscovery.error}
-            </Alert>
+            <DiscoveryErrorAlert label="Filter key" onRetry={keyDiscovery.retry} />
           )}
         </div>
       )}
 
-      {filtersGateOpen && (isTraces || isMetrics) && (
+      {filtersGateOpen && !isVariable && (isTraces || isMetrics) && (
         <InlineFieldRow style={{ marginTop: 12 }}>
           <InlineField
             label={<InlineLabel width={24}>Advanced options</InlineLabel>}
@@ -586,7 +680,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </InlineFieldRow>
       )}
 
-      {filtersGateOpen && advancedOptions && (isTraces || isMetrics) && (
+      {filtersGateOpen && !isVariable && advancedOptions && (isTraces || isMetrics) && (
         <div style={{ marginTop: 12 }}>
           <OperationsSection
             signal={query.signalType!}
@@ -598,7 +692,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </div>
       )}
 
-      {filtersGateOpen && (isTraces || isLogsTimeseries || isMetrics) && (
+      {filtersGateOpen && !isVariable && (isTraces || isLogsTimeseries || isMetrics) && (
         <div style={{ marginTop: 12 }}>
           <GroupBySection
             signal={query.signalType!}
@@ -626,6 +720,80 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </div>
       )}
 
+      {isVariable && query.signalType && (() => {
+        const allDurations: Array<{ label: string; value: string }> = [
+          { label: '5m', value: '5m' },
+          { label: '10m', value: '10m' },
+          { label: '15m', value: '15m' },
+          { label: '30m', value: '30m' },
+          { label: '1h', value: '1h' },
+          { label: '6h', value: '6h' },
+          { label: '24h', value: '24h' },
+        ];
+        const maxMs = (() => {
+          try {
+            return rangeUtil.intervalToMs(settings.variableMaxLookback);
+          } catch {
+            return rangeUtil.intervalToMs('15m');
+          }
+        })();
+        const filtered = allDurations.filter((d) => {
+          try {
+            return rangeUtil.intervalToMs(d.value) <= maxMs;
+          } catch {
+            return false;
+          }
+        });
+        const timeMode: 'fixed' | 'dashboard' = query.variableTimeMode ?? 'fixed';
+        const currentLookback = query.variableLookback ?? settings.variableMaxLookback;
+        return (
+          <div style={{ marginTop: 12 }}>
+            <div
+              style={{
+                color: '#6e9fff',
+                fontSize: 13,
+                fontWeight: 500,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                marginBottom: 8,
+              }}
+            >
+              Time range
+            </div>
+            <InlineFieldRow>
+              <InlineField label={<InlineLabel width={16}>Mode</InlineLabel>}>
+                <RadioButtonGroup<'fixed' | 'dashboard'>
+                  options={[
+                    { label: 'Fixed lookback', value: 'fixed' },
+                    { label: 'Dashboard range', value: 'dashboard' },
+                  ]}
+                  value={timeMode}
+                  onChange={(v) =>
+                    onChange({ ...query, variableTimeMode: v ?? 'fixed' })
+                  }
+                  size="sm"
+                />
+              </InlineField>
+              {timeMode === 'fixed' && (
+                <InlineField
+                  label={<InlineLabel width={16}>Lookback</InlineLabel>}
+                  tooltip={`Capped at ${settings.variableMaxLookback} by datasource settings.`}
+                >
+                  <Select<string>
+                    width={16}
+                    options={filtered}
+                    value={filtered.find((d) => d.value === currentLookback) ?? filtered[filtered.length - 1]}
+                    onChange={(item) =>
+                      onChange({ ...query, variableLookback: item?.value })
+                    }
+                  />
+                </InlineField>
+              )}
+            </InlineFieldRow>
+          </div>
+        );
+      })()}
+
       {!autocomplete && query.signalType && (
         <Alert severity="info" title="Autocomplete is disabled" elevated>
           Enable it in the datasource&apos;s Query Builder settings to populate the dropdowns. You can
@@ -633,7 +801,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </Alert>
       )}
 
-      {filtersGateOpen && isMetrics && (query.groupBy?.length ?? 0) === 0 && (
+      {filtersGateOpen && !isVariable && isMetrics && (query.groupBy?.length ?? 0) === 0 && (
         <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12, marginTop: 4 }}>
           No dimensions selected — values are averaged across all attributes. Pick a Group By
           dimension (e.g. <code>ServiceName</code> or <code>host.name</code>) to split per series.

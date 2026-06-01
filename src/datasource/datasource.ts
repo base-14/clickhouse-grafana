@@ -86,6 +86,12 @@ export class CHDataSource
         instanceSettings.jsonData.queryBuilderRawLogsLimit && instanceSettings.jsonData.queryBuilderRawLogsLimit > 0
           ? instanceSettings.jsonData.queryBuilderRawLogsLimit
           : QUERY_BUILDER_DEFAULTS.rawLogsLimit,
+      variableMaxLookback:
+        instanceSettings.jsonData.queryBuilderVariableMaxLookback || QUERY_BUILDER_DEFAULTS.variableMaxLookback,
+      variableLimit:
+        instanceSettings.jsonData.queryBuilderVariableLimit && instanceSettings.jsonData.queryBuilderVariableLimit > 0
+          ? instanceSettings.jsonData.queryBuilderVariableLimit
+          : QUERY_BUILDER_DEFAULTS.variableLimit,
       maxTimerange: instanceSettings.jsonData.queryBuilderMaxTimerange || QUERY_BUILDER_DEFAULTS.maxTimerange,
       environmentKey:
         instanceSettings.jsonData.queryBuilderEnvironmentKey || QUERY_BUILDER_DEFAULTS.environmentKey,

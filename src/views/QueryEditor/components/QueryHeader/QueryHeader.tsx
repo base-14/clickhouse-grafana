@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {Button, Label, Modal, RadioButtonGroup, Badge} from '@grafana/ui';
 import { config } from '@grafana/runtime';
-import { EditorMode } from '../../../../types/types';
+import { DatasourceMode, EditorMode } from '../../../../types/types';
 import { QueryHeaderProps } from './QueryHeader.types';
 import { findDifferences } from './helpers/findDifferences';
 import { QueryHeaderTabs } from './QueryHeader.constants';
@@ -42,6 +42,7 @@ export const QueryHeader = ({
 
   const isAdmin = config.bootData?.user?.orgRole === 'Admin';
   const visibleTabs = isAdmin ? QueryHeaderTabs : QueryHeaderTabs.filter((t) => t.value !== EditorMode.SQL);
+  const isVariable = query.datasourceMode === DatasourceMode.Variable;
 
   return (
     <div style={{ display: 'flex', marginTop: '10px' }}>
@@ -51,7 +52,7 @@ export const QueryHeader = ({
         value={editorMode}
         onChange={(e: EditorMode) => onEditorModeChange(e!)}
       />
-      {!isAnnotationView ? (
+      {!isAnnotationView && !isVariable ? (
         <Button variant="primary" icon="play" size={'sm'} style={{ marginLeft: '10px' }} onClick={onTriggerQuery}>
           Run Query
         </Button>

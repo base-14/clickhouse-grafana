@@ -294,6 +294,31 @@ export function ConfigEditor(props: Props) {
           />
         </InlineField>
         <InlineField
+          label="Variable max lookback"
+          labelWidth={36}
+          tooltip="Maximum lookback window allowed for template variable queries (Grafana duration: 5m, 15m, 1h, …). The per-variable picker is capped to this value."
+        >
+          <Input
+            data-test-id="qb-variable-max-lookback-input"
+            value={jsonData.queryBuilderVariableMaxLookback || ''}
+            placeholder={QUERY_BUILDER_DEFAULTS.variableMaxLookback}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderVariableMaxLookback')}
+          />
+        </InlineField>
+        <InlineField
+          label="Variable row limit"
+          labelWidth={36}
+          tooltip="LIMIT applied to template variable queries from the Query Builder."
+        >
+          <Input
+            data-test-id="qb-variable-limit-input"
+            type="number"
+            value={jsonData.queryBuilderVariableLimit ?? ''}
+            placeholder={String(QUERY_BUILDER_DEFAULTS.variableLimit)}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderVariableLimit')}
+          />
+        </InlineField>
+        <InlineField
           label="Environment attribute key"
           labelWidth={36}
           tooltip="ResourceAttributes[...] key used to populate the Environment picker."
