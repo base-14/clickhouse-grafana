@@ -281,6 +281,19 @@ export function ConfigEditor(props: Props) {
           />
         </InlineField>
         <InlineField
+          label="Raw logs row limit"
+          labelWidth={36}
+          tooltip="LIMIT applied to Raw Logs mode in the Query Builder (the per-row log fetch)."
+        >
+          <Input
+            data-test-id="qb-raw-logs-limit-input"
+            type="number"
+            value={jsonData.queryBuilderRawLogsLimit ?? ''}
+            placeholder={String(QUERY_BUILDER_DEFAULTS.rawLogsLimit)}
+            onChange={onUpdateDatasourceJsonDataOption(props, 'queryBuilderRawLogsLimit')}
+          />
+        </InlineField>
+        <InlineField
           label="Environment attribute key"
           labelWidth={36}
           tooltip="ResourceAttributes[...] key used to populate the Environment picker."

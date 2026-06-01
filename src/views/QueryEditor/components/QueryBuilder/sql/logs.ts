@@ -9,8 +9,6 @@ type Args = {
   settings: QueryBuilderSettings;
 };
 
-const RAW_DEFAULT_LIMIT = 200;
-
 const baseWhere = (
   query: CHQuery,
   settings: QueryBuilderSettings,
@@ -48,7 +46,7 @@ const buildRawLogsSql = ({ query, database, settings }: Args): string => {
     'WHERE',
     '  ' + wheres.join('\n  AND '),
     `ORDER BY ${timeCol} DESC`,
-    `LIMIT ${RAW_DEFAULT_LIMIT}`,
+    `LIMIT ${settings.rawLogsLimit}`,
   ].join('\n');
 };
 

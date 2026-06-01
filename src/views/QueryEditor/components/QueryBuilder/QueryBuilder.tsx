@@ -16,9 +16,12 @@ import {
   buildMetricNameDiscoveryQuery,
   buildServiceNameQuery,
   buildSignalNameQuery,
+  buildSummaryQuantilesQuery,
   signalNameColumn,
 } from './discoveryQueries';
 import { useMetricNameDiscovery } from './hooks/useMetricNameDiscovery';
+import { useSummaryQuantilesDiscovery } from './hooks/useSummaryQuantilesDiscovery';
+import { effectiveSignalNames } from './presets';
 import { computeEffectiveLookbackSeconds, formatLookback, useDiscovery } from './hooks/useDiscovery';
 import { useKeyDiscovery, useValueDiscovery } from './hooks/useFilterDiscovery';
 import { BodySearchBar } from './filters/BodySearchBar';
@@ -191,6 +194,8 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
   const KIND_BY_TABLE: Record<string, MetricKind | undefined> = {
     [settings.metricsGaugeTable]: 'gauge',
     [settings.metricsSumTable]: 'sum',
+    [settings.metricsHistogramTable]: 'histogram',
+    [settings.metricsSummaryTable]: 'summary',
   };
 
   const pickedMetricEntries = (query.signalNames ?? [])
@@ -221,6 +226,22 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
     availableKinds.length === 1 ? availableKinds[0] : null;
 
   const effectiveMetricKind: MetricKind = query.metricKind ?? autoResolvedKind ?? 'gauge';
+
+  const firstMetricName = effectiveSignalNames(query.signalNames)[0];
+  const summaryQuantilesQuery =
+    isMetrics && effectiveMetricKind === 'summary' && firstMetricName && defaultDatabase
+      ? buildSummaryQuantilesQuery({
+          database: defaultDatabase,
+          settings,
+          lookback,
+          metricName: firstMetricName,
+        })
+      : null;
+  const summaryQuantiles = useSummaryQuantilesDiscovery({
+    datasource,
+    query: summaryQuantilesQuery,
+    enabled: !!summaryQuantilesQuery && autocomplete,
+  });
 
   const signalNameCol = query.signalType ? signalNameColumn(query.signalType) : null;
 
@@ -469,7 +490,10 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
           >
             <RadioButtonGroup<MetricKind>
               options={availableKinds.map((k) => ({
-                label: k === 'gauge' ? 'Gauge' : 'Sum',
+                label:
+                  k === 'gauge' ? 'Gauge' :
+                  k === 'sum' ? 'Sum' :
+                  k === 'histogram' ? 'Histogram' : 'Summary',
                 value: k,
               }))}
               value={effectiveMetricKind}
@@ -556,6 +580,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
             signal={query.signalType!}
             metricKind={isMetrics ? effectiveMetricKind : undefined}
             operations={query.operations ?? []}
+            summaryQuantiles={summaryQuantiles.quantiles}
             onChange={(operations) => onChange({ ...query, operations })}
           />
         </div>

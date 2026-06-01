@@ -82,6 +82,10 @@ export class CHDataSource
         instanceSettings.jsonData.queryBuilderAutocompleteLimit && instanceSettings.jsonData.queryBuilderAutocompleteLimit > 0
           ? instanceSettings.jsonData.queryBuilderAutocompleteLimit
           : QUERY_BUILDER_DEFAULTS.autocompleteLimit,
+      rawLogsLimit:
+        instanceSettings.jsonData.queryBuilderRawLogsLimit && instanceSettings.jsonData.queryBuilderRawLogsLimit > 0
+          ? instanceSettings.jsonData.queryBuilderRawLogsLimit
+          : QUERY_BUILDER_DEFAULTS.rawLogsLimit,
       maxTimerange: instanceSettings.jsonData.queryBuilderMaxTimerange || QUERY_BUILDER_DEFAULTS.maxTimerange,
       environmentKey:
         instanceSettings.jsonData.queryBuilderEnvironmentKey || QUERY_BUILDER_DEFAULTS.environmentKey,

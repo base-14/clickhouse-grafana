@@ -23,7 +23,7 @@ const GAUGE_KIND_OPTIONS: Array<SelectableValue<OperationKind>> = [
 ];
 
 const SUM_KIND_OPTIONS: Array<SelectableValue<OperationKind>> = [
-  { label: 'Rate', value: 'rate', description: '$rate — per-second' },
+  { label: 'Rate', value: 'rate', description: '$perSecond — per-second delta' },
   { label: 'Increase', value: 'increase', description: '$increase — bucket delta (positive)' },
   { label: 'Sum', value: 'sum', description: 'sum(Value)' },
   { label: 'Min', value: 'min', description: 'min(Value)' },
@@ -32,22 +32,57 @@ const SUM_KIND_OPTIONS: Array<SelectableValue<OperationKind>> = [
   { label: 'Last', value: 'last', description: 'argMax(Value, TimeUnix)' },
 ];
 
+const HISTOGRAM_KIND_OPTIONS: Array<SelectableValue<OperationKind>> = [
+  { label: 'Percentile', value: 'percentile', description: 'bucket interpolation' },
+  { label: 'Rate (Count)', value: 'rate_count', description: '$perSecond(Count)' },
+  { label: 'Rate (Sum)', value: 'rate_sum', description: '$perSecond(Sum)' },
+  { label: 'Increase (Count)', value: 'increase_count', description: '$increase(Count)' },
+  { label: 'Increase (Sum)', value: 'increase_sum', description: '$increase(Sum)' },
+  { label: 'Avg', value: 'avg_quotient', description: '$increase(Sum) / $increase(Count)' },
+  { label: 'Min', value: 'min_observed', description: 'min(Min)' },
+  { label: 'Max', value: 'max_observed', description: 'max(Max)' },
+];
+
+const SUMMARY_KIND_OPTIONS: Array<SelectableValue<OperationKind>> = [
+  { label: 'Quantile', value: 'percentile', description: 'pre-computed in ValueAtQuantiles' },
+  { label: 'Rate (Count)', value: 'rate_count', description: '$perSecond(Count)' },
+  { label: 'Rate (Sum)', value: 'rate_sum', description: '$perSecond(Sum)' },
+  { label: 'Avg', value: 'avg_quotient', description: '$increase(Sum) / $increase(Count)' },
+];
+
+export type MetricKindArg = 'gauge' | 'sum' | 'histogram' | 'summary';
+
 export const kindOptionsForSignal = (
   signal: SignalType,
-  metricKind?: 'gauge' | 'sum'
+  metricKind?: MetricKindArg
 ): Array<SelectableValue<OperationKind>> => {
   if (signal === SignalType.Metrics) {
-    return metricKind === 'sum' ? SUM_KIND_OPTIONS : GAUGE_KIND_OPTIONS;
+    if (metricKind === 'sum') {
+      return SUM_KIND_OPTIONS;
+    }
+    if (metricKind === 'histogram') {
+      return HISTOGRAM_KIND_OPTIONS;
+    }
+    if (metricKind === 'summary') {
+      return SUMMARY_KIND_OPTIONS;
+    }
+    return GAUGE_KIND_OPTIONS;
   }
   return TRACES_KIND_OPTIONS;
 };
 
 export const defaultKindForSignal = (
   signal: SignalType,
-  metricKind?: 'gauge' | 'sum'
+  metricKind?: MetricKindArg
 ): OperationKind => {
   if (signal === SignalType.Metrics) {
-    return metricKind === 'sum' ? 'rate' : 'avg';
+    if (metricKind === 'sum') {
+      return 'rate';
+    }
+    if (metricKind === 'histogram' || metricKind === 'summary') {
+      return 'percentile';
+    }
+    return 'avg';
   }
   return 'count';
 };
@@ -74,7 +109,13 @@ export const kindNeedsColumn = (kind: OperationKind): boolean =>
   kind === 'avg' ||
   kind === 'sum' ||
   kind === 'last' ||
-  kind === 'percentile';
+  kind === 'percentile' ||
+  kind === 'rate_count' ||
+  kind === 'rate_sum' ||
+  kind === 'increase_count' ||
+  kind === 'increase_sum' ||
+  kind === 'min_observed' ||
+  kind === 'max_observed';
 
 export const kindNeedsUnit = (kind: OperationKind, column?: string): boolean =>
   kindNeedsColumn(kind) && column === 'Duration';
@@ -91,7 +132,7 @@ export const columnsForSignal = (signal: SignalType): string[] => {
 
 export const newOperation = (
   signal: SignalType,
-  metricKind?: 'gauge' | 'sum'
+  metricKind?: MetricKindArg
 ): QueryBuilderOperation => {
   const column = columnsForSignal(signal)[0];
   const kind = defaultKindForSignal(signal, metricKind);
@@ -99,6 +140,7 @@ export const newOperation = (
     id: nextId(),
     kind,
     column: kindNeedsColumn(kind) || kind === 'rate' || kind === 'increase' ? column : undefined,
+    percentile: kind === 'percentile' ? 99 : undefined,
     unit: column === 'Duration' ? 'ns' : undefined,
   };
 };
@@ -117,7 +159,7 @@ export const removeOperation = (
 export const appendOperation = (
   ops: QueryBuilderOperation[],
   signal: SignalType,
-  metricKind?: 'gauge' | 'sum'
+  metricKind?: MetricKindArg
 ): QueryBuilderOperation[] => [...ops, newOperation(signal, metricKind)];
 
 export const KIND_OPTIONS = TRACES_KIND_OPTIONS;

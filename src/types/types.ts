@@ -90,9 +90,16 @@ export type OperationKind =
   | 'last'
   | 'rate'
   | 'increase'
-  | 'percentile';
+  | 'percentile'
+  | 'rate_count'
+  | 'rate_sum'
+  | 'increase_count'
+  | 'increase_sum'
+  | 'avg_quotient'
+  | 'min_observed'
+  | 'max_observed';
 
-export type MetricKind = 'gauge' | 'sum';
+export type MetricKind = 'gauge' | 'sum' | 'histogram' | 'summary';
 
 export interface QueryBuilderOperation {
   id: string;
@@ -189,11 +196,13 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   queryBuilderDefaultMetricsHistogramTable?: string;
   queryBuilderDefaultMetricsSummaryTable?: string;
   queryBuilderAutocompleteLimit?: number;
+  queryBuilderRawLogsLimit?: number;
 }
 
 export interface QueryBuilderSettings {
   autocompleteEnabled: boolean;
   autocompleteLimit: number;
+  rawLogsLimit: number;
   maxTimerange: string;
   environmentKey: string;
   logsTable: string;
@@ -207,6 +216,7 @@ export interface QueryBuilderSettings {
 export const QUERY_BUILDER_DEFAULTS: QueryBuilderSettings = {
   autocompleteEnabled: true,
   autocompleteLimit: 100,
+  rawLogsLimit: 200,
   maxTimerange: '5m',
   environmentKey: 'environment',
   logsTable: 'otel_logs',

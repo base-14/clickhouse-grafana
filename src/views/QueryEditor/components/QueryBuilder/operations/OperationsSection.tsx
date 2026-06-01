@@ -13,6 +13,7 @@ import {
   kindNeedsColumn,
   kindNeedsUnit,
   kindOptionsForSignal,
+  MetricKindArg,
   PERCENTILE_PRESETS,
   removeOperation,
   UNIT_OPTIONS,
@@ -21,8 +22,9 @@ import {
 
 type Props = {
   signal: SignalType;
-  metricKind?: 'gauge' | 'sum';
+  metricKind?: MetricKindArg;
   operations: QueryBuilderOperation[];
+  summaryQuantiles?: number[];
   onChange: (next: QueryBuilderOperation[]) => void;
 };
 
@@ -33,12 +35,14 @@ const Row = ({
   signal,
   metricKind,
   op,
+  summaryQuantiles,
   onPatch,
   onRemove,
 }: {
   signal: SignalType;
-  metricKind?: 'gauge' | 'sum';
+  metricKind?: MetricKindArg;
   op: QueryBuilderOperation;
+  summaryQuantiles?: number[];
   onPatch: (patch: Partial<QueryBuilderOperation>) => void;
   onRemove: () => void;
 }) => {
@@ -122,7 +126,20 @@ const Row = ({
       {needsColumn && columns.length <= 1 && op.column && (
         <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12 }}>{op.column}</span>
       )}
-      {isPercentile && (
+      {isPercentile && metricKind === 'summary' && (
+        <Select<number>
+          width={18}
+          placeholder={summaryQuantiles && summaryQuantiles.length > 0 ? 'Quantile' : 'No quantiles found'}
+          options={(summaryQuantiles ?? []).map((q) => ({ label: `p${q * 100}`, value: q * 100 }))}
+          value={
+            op.percentile !== undefined
+              ? { label: `p${op.percentile}`, value: op.percentile }
+              : null
+          }
+          onChange={(item) => onPatch({ percentile: item?.value })}
+        />
+      )}
+      {isPercentile && metricKind !== 'summary' && (
         <>
           <Select<number>
             width={14}
@@ -153,7 +170,7 @@ const Row = ({
   );
 };
 
-export const OperationsSection = ({ signal, metricKind, operations, onChange }: Props) => {
+export const OperationsSection = ({ signal, metricKind, operations, summaryQuantiles, onChange }: Props) => {
   return (
     <div style={{ marginBottom: 12 }}>
       <div
@@ -179,6 +196,7 @@ export const OperationsSection = ({ signal, metricKind, operations, onChange }: 
           signal={signal}
           metricKind={metricKind}
           op={op}
+          summaryQuantiles={summaryQuantiles}
           onPatch={(patch) => onChange(updateOperation(operations, op.id, patch))}
           onRemove={() => onChange(removeOperation(operations, op.id))}
         />

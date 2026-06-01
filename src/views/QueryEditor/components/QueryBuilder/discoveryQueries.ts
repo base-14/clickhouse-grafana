@@ -119,6 +119,16 @@ export const buildSignalNameQuery = (
   return `SELECT DISTINCT MetricName FROM ${database}.${metricsTable} WHERE ${timeCol} > now() - INTERVAL ${lookback}${tail} ORDER BY MetricName ASC LIMIT ${limit}`;
 };
 
+export const buildSummaryQuantilesQuery = (deps: {
+  database: string;
+  settings: QueryBuilderSettings;
+  lookback: string;
+  metricName: string;
+}): string => {
+  const { database, settings, lookback, metricName } = deps;
+  return `SELECT arrayDistinct(arrayFlatten(groupArray(ValueAtQuantiles.Quantile))) AS quantiles FROM ${database}.${settings.metricsSummaryTable} WHERE TimeUnix > now() - INTERVAL ${lookback} AND MetricName = ${quote(metricName)} LIMIT 1`;
+};
+
 export const buildMetricNameDiscoveryQuery = (
   deps: DiscoveryDeps & { serviceNames: string[]; environments: string[] }
 ): string => {
