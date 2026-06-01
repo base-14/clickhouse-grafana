@@ -27,3 +27,11 @@ export const SIGNAL_OPTIONS = [
   { label: 'Traces', value: SignalType.Traces },
   { label: 'Metrics', value: SignalType.Metrics },
 ];
+
+export const SIGNAL_NAME_ALL = '__all__';
+
+export const isSignalNameAll = (names: string[] | undefined): boolean =>
+  !!names && names.includes(SIGNAL_NAME_ALL);
+
+export const effectiveSignalNames = (names: string[] | undefined): string[] =>
+  (names ?? []).filter((n) => n !== SIGNAL_NAME_ALL);

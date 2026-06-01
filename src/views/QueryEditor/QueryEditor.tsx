@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {CoreApp, QueryEditorProps} from '@grafana/data';
+import { config } from '@grafana/runtime';
 import {CHDataSource} from '../../datasource/datasource';
 import {CHDataSourceOptions, CHQuery, DatasourceMode, EditorMode} from '../../types/types';
 import {QueryHeader} from './components/QueryHeader/QueryHeader';
@@ -76,7 +77,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
           {conflictWarning}
         </Alert>
       ) : null}
-      {editorMode === EditorMode.Builder && (
+      {(editorMode === EditorMode.Builder || config.bootData?.user?.orgRole !== 'Admin') && (
         <QueryBuilder
           query={initializedQuery}
           datasource={datasource}
@@ -85,7 +86,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
           range={data?.request?.range}
         />
       )}
-      {editorMode === EditorMode.SQL && (
+      {editorMode === EditorMode.SQL && config.bootData?.user?.orgRole === 'Admin' && (
         <QueryTextEditor
           adhocFilters={initializedQuery.adHocFilters}
           areAdHocFiltersAvailable={areAdHocFiltersAvailable}
@@ -171,7 +172,7 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
           {conflictWarning}
         </Alert>
       ) : null}
-      {editorMode === EditorMode.Builder && (
+      {(editorMode === EditorMode.Builder || config.bootData?.user?.orgRole !== 'Admin') && (
         <QueryBuilder
           query={initializedQuery}
           datasource={datasource}
@@ -180,7 +181,7 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
           range={data?.request?.range}
         />
       )}
-      {editorMode === EditorMode.SQL && (
+      {editorMode === EditorMode.SQL && config.bootData?.user?.orgRole === 'Admin' && (
         <QueryTextEditor
           adhocFilters={initializedQuery.adHocFilters}
           areAdHocFiltersAvailable={areAdHocFiltersAvailable}

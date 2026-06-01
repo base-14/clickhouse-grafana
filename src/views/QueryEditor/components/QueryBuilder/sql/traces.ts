@@ -2,6 +2,7 @@ import { CHQuery, QueryBuilderSettings, SignalType } from '../../../../../types/
 import { compileFilters } from './compileFilters';
 import { compileOperations } from './compileOperations';
 import { accessExpr, dimAlias, inList } from './util';
+import { effectiveSignalNames } from '../presets';
 
 type Args = {
   query: CHQuery;
@@ -52,8 +53,9 @@ export const buildTracesSql = ({ query, database, settings }: Args): string | nu
       `ResourceAttributes['${settings.environmentKey}'] IN (${inList(query.environments!)})`
     );
   }
-  if ((query.signalNames ?? []).length > 0) {
-    wheres.push(`SpanName IN (${inList(query.signalNames!)})`);
+  const spanNames = effectiveSignalNames(query.signalNames);
+  if (spanNames.length > 0) {
+    wheres.push(`SpanName IN (${inList(spanNames)})`);
   }
 
   const filterClause = compileFilters(query.filters, SignalType.Traces);

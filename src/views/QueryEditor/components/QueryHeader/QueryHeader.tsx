@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {Button, Label, Modal, RadioButtonGroup, Badge} from '@grafana/ui';
+import { config } from '@grafana/runtime';
 import { EditorMode } from '../../../../types/types';
 import { QueryHeaderProps } from './QueryHeader.types';
 import { findDifferences } from './helpers/findDifferences';
@@ -39,11 +40,14 @@ export const QueryHeader = ({
     onChange({ ...query, ...fieldsToReset });
   };
 
+  const isAdmin = config.bootData?.user?.orgRole === 'Admin';
+  const visibleTabs = isAdmin ? QueryHeaderTabs : QueryHeaderTabs.filter((t) => t.value !== EditorMode.SQL);
+
   return (
     <div style={{ display: 'flex', marginTop: '10px' }}>
       <RadioButtonGroup
         size="sm"
-        options={QueryHeaderTabs}
+        options={visibleTabs}
         value={editorMode}
         onChange={(e: EditorMode) => onEditorModeChange(e!)}
       />

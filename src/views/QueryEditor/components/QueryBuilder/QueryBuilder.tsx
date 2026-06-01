@@ -9,7 +9,7 @@ import {
   QueryBuilderSettings,
   SignalType,
 } from '../../../../types/types';
-import { buildSignalPresets, SIGNAL_OPTIONS } from './presets';
+import { buildSignalPresets, SIGNAL_NAME_ALL, SIGNAL_OPTIONS } from './presets';
 import {
   buildEnvironmentQuery,
   buildServiceNameQuery,
@@ -110,7 +110,17 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
   };
 
   const onSignalNamesChange = (items: Array<SelectableValue<string>>) => {
-    onChange({ ...query, signalNames: fromMulti(items) });
+    const picked = fromMulti(items);
+    const prev = query.signalNames ?? [];
+    const prevHadAll = prev.includes(SIGNAL_NAME_ALL);
+    const nowHasAll = picked.includes(SIGNAL_NAME_ALL);
+    let next = picked;
+    if (nowHasAll && !prevHadAll) {
+      next = [SIGNAL_NAME_ALL];
+    } else if (nowHasAll && picked.length > 1) {
+      next = picked.filter((n) => n !== SIGNAL_NAME_ALL);
+    }
+    onChange({ ...query, signalNames: next });
   };
 
   const selectedSignal = SIGNAL_OPTIONS.find((o) => o.value === query.signalType);
@@ -326,8 +336,10 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
             <MultiSelect
               width={40}
               placeholder={signalNames.loading ? 'Loading…' : `Select ${signalNameCol ?? 'name'}`}
-              options={signalNames.options}
-              value={toMulti(query.signalNames)}
+              options={[{ label: 'All', value: SIGNAL_NAME_ALL }, ...signalNames.options]}
+              value={toMulti(query.signalNames).map((v) =>
+                v.value === SIGNAL_NAME_ALL ? { label: 'All', value: SIGNAL_NAME_ALL } : v
+              )}
               onChange={onSignalNamesChange}
               allowCustomValue
               isClearable
