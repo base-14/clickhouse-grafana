@@ -10,7 +10,7 @@ import {
   QueryBuilderSettings,
   SignalType,
 } from '../../../../types/types';
-import { buildSignalPresets, SIGNAL_NAME_ALL, SIGNAL_OPTIONS } from './presets';
+import { buildSignalPresets, ENVIRONMENT_ALL, SIGNAL_NAME_ALL, SIGNAL_OPTIONS } from './presets';
 import {
   buildEnvironmentQuery,
   buildMetricNameDiscoveryQuery,
@@ -112,7 +112,17 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
   };
 
   const onEnvironmentsChange = (items: Array<SelectableValue<string>>) => {
-    onChange({ ...query, environments: fromMulti(items), signalNames: [] });
+    const picked = fromMulti(items);
+    const prev = query.environments ?? [];
+    const prevHadAll = prev.includes(ENVIRONMENT_ALL);
+    const nowHasAll = picked.includes(ENVIRONMENT_ALL);
+    let next = picked;
+    if (nowHasAll && !prevHadAll) {
+      next = [ENVIRONMENT_ALL];
+    } else if (nowHasAll && picked.length > 1) {
+      next = picked.filter((e) => e !== ENVIRONMENT_ALL);
+    }
+    onChange({ ...query, environments: next, signalNames: [] });
   };
 
   const onSignalNamesChange = (items: Array<SelectableValue<string>>) => {
@@ -390,8 +400,10 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
             <MultiSelect
               width={40}
               placeholder={environments.loading ? 'Loading…' : `${settings.environmentKey}`}
-              options={environments.options}
-              value={toMulti(query.environments)}
+              options={[{ label: 'All', value: ENVIRONMENT_ALL }, ...environments.options]}
+              value={toMulti(query.environments).map((v) =>
+                v.value === ENVIRONMENT_ALL ? { label: 'All', value: ENVIRONMENT_ALL } : v
+              )}
               onChange={onEnvironmentsChange}
               allowCustomValue
               isClearable

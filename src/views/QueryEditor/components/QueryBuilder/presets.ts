@@ -34,9 +34,13 @@ export const SIGNAL_OPTIONS = [
 ];
 
 export const SIGNAL_NAME_ALL = '__all__';
+export const ENVIRONMENT_ALL = SIGNAL_NAME_ALL;
 
 export const isSignalNameAll = (names: string[] | undefined): boolean =>
   !!names && names.includes(SIGNAL_NAME_ALL);
 
 export const effectiveSignalNames = (names: string[] | undefined): string[] =>
   (names ?? []).filter((n) => n !== SIGNAL_NAME_ALL);
+
+export const effectiveEnvironments = (envs: string[] | undefined): string[] =>
+  (envs ?? []).filter((e) => e !== ENVIRONMENT_ALL);

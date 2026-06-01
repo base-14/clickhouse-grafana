@@ -2,6 +2,7 @@ import { CHQuery, QueryBuilderSettings, SignalType } from '../../../../../types/
 import { compileBodySearch } from './compileBodySearch';
 import { compileFilters } from './compileFilters';
 import { accessExpr, dimAlias, inList } from './util';
+import { effectiveEnvironments } from '../presets';
 
 type Args = {
   query: CHQuery;
@@ -18,10 +19,9 @@ const baseWhere = (
   if ((query.serviceNames ?? []).length > 0) {
     wheres.push(`ServiceName IN (${inList(query.serviceNames!)})`);
   }
-  if ((query.environments ?? []).length > 0) {
-    wheres.push(
-      `ResourceAttributes['${settings.environmentKey}'] IN (${inList(query.environments!)})`
-    );
+  const effEnvs = effectiveEnvironments(query.environments);
+  if (effEnvs.length > 0) {
+    wheres.push(`ResourceAttributes['${settings.environmentKey}'] IN (${inList(effEnvs)})`);
   }
   const body = compileBodySearch(query.bodySearch, !!query.bodySearchIsRegex);
   if (body) {

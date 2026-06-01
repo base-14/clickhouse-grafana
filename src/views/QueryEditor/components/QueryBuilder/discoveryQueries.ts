@@ -1,4 +1,5 @@
 import { FilterScope, QueryBuilderSettings, SignalType } from '../../../../types/types';
+import { effectiveEnvironments } from './presets';
 
 const quote = (v: string) => `'${v.replace(/'/g, "''")}'`;
 const inList = (vals: string[]) => vals.map(quote).join(', ');
@@ -97,8 +98,9 @@ export const buildSignalNameQuery = (
   if (serviceNames.length) {
     wheres.push(`ServiceName IN (${inList(serviceNames)})`);
   }
-  if (environments.length) {
-    wheres.push(`ResourceAttributes[${quote(envKey)}] IN (${inList(environments)})`);
+  const effEnvs = effectiveEnvironments(environments);
+  if (effEnvs.length) {
+    wheres.push(`ResourceAttributes[${quote(envKey)}] IN (${inList(effEnvs)})`);
   }
   const extraWhere = wheres.join(' AND ');
 
@@ -146,8 +148,9 @@ export const buildMetricNameDiscoveryQuery = (
   if (serviceNames.length > 0) {
     wheres.push(`ServiceName IN (${inList(serviceNames)})`);
   }
-  if (environments.length > 0) {
-    wheres.push(`ResourceAttributes[${quote(envKey)}] IN (${inList(environments)})`);
+  const effEnvs = effectiveEnvironments(environments);
+  if (effEnvs.length > 0) {
+    wheres.push(`ResourceAttributes[${quote(envKey)}] IN (${inList(effEnvs)})`);
   }
   const whereSql = wheres.join(' AND ');
 
@@ -207,8 +210,9 @@ const filterScopeWhere = (deps: FilterDiscoveryDeps): string => {
   if (deps.serviceNames.length) {
     wheres.push(`ServiceName IN (${inList(deps.serviceNames)})`);
   }
-  if (deps.environments.length) {
-    wheres.push(`ResourceAttributes[${quote(envKey)}] IN (${inList(deps.environments)})`);
+  const effEnvs = effectiveEnvironments(deps.environments);
+  if (effEnvs.length) {
+    wheres.push(`ResourceAttributes[${quote(envKey)}] IN (${inList(effEnvs)})`);
   }
   return wheres.join(' AND ');
 };
