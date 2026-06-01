@@ -1,6 +1,6 @@
 {
   "name": "base14-clickhouse-grafana",
-  "version": "3.4.11",
+  "version": "3.4.12",
   "description": "Base14 fork of the Altinity ClickHouse Grafana datasource",
   "repository": {
     "type": "git",
