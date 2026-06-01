@@ -1,21 +1,24 @@
 import React, { useEffect, useMemo } from 'react';
-import { Alert, InlineField, InlineFieldRow, InlineLabel, MultiSelect, RadioButtonGroup, Select } from '@grafana/ui';
+import { Alert, InlineField, InlineFieldRow, InlineLabel, InlineSwitch, MultiSelect, RadioButtonGroup, Select } from '@grafana/ui';
 import { SelectableValue, TimeRange } from '@grafana/data';
 import {
   CHQuery,
   FilterCondition,
   FilterGroup,
   FilterNode,
+  MetricKind,
   QueryBuilderSettings,
   SignalType,
 } from '../../../../types/types';
 import { buildSignalPresets, SIGNAL_NAME_ALL, SIGNAL_OPTIONS } from './presets';
 import {
   buildEnvironmentQuery,
+  buildMetricNameDiscoveryQuery,
   buildServiceNameQuery,
   buildSignalNameQuery,
   signalNameColumn,
 } from './discoveryQueries';
+import { useMetricNameDiscovery } from './hooks/useMetricNameDiscovery';
 import { computeEffectiveLookbackSeconds, formatLookback, useDiscovery } from './hooks/useDiscovery';
 import { useKeyDiscovery, useValueDiscovery } from './hooks/useFilterDiscovery';
 import { BodySearchBar } from './filters/BodySearchBar';
@@ -158,7 +161,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
   });
 
   const signalNameQuery =
-    discoveryDeps && hasServices && hasEnvironments
+    discoveryDeps && hasServices && hasEnvironments && !isMetrics
       ? buildSignalNameQuery({
           ...discoveryDeps,
           serviceNames: query.serviceNames ?? [],
@@ -167,9 +170,57 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
       : null;
   const signalNames = useDiscovery({
     datasource,
-    query: discoveryReady && hasServices && hasEnvironments ? signalNameQuery : null,
-    enabled: discoveryReady && hasServices && hasEnvironments && !!signalNameQuery,
+    query: discoveryReady && hasServices && hasEnvironments && !isMetrics ? signalNameQuery : null,
+    enabled: discoveryReady && hasServices && hasEnvironments && !isMetrics,
   });
+
+  const metricNameQuery =
+    discoveryDeps && hasServices && hasEnvironments && isMetrics
+      ? buildMetricNameDiscoveryQuery({
+          ...discoveryDeps,
+          serviceNames: query.serviceNames ?? [],
+          environments: query.environments ?? [],
+        })
+      : null;
+  const metricNames = useMetricNameDiscovery({
+    datasource,
+    query: discoveryReady && hasServices && hasEnvironments && isMetrics ? metricNameQuery : null,
+    enabled: discoveryReady && hasServices && hasEnvironments && isMetrics,
+  });
+
+  const KIND_BY_TABLE: Record<string, MetricKind | undefined> = {
+    [settings.metricsGaugeTable]: 'gauge',
+    [settings.metricsSumTable]: 'sum',
+  };
+
+  const pickedMetricEntries = (query.signalNames ?? [])
+    .filter((n) => n !== SIGNAL_NAME_ALL)
+    .map((n) => metricNames.entries.find((e) => e.name === n))
+    .filter((e): e is { name: string; tables: string[] } => !!e);
+
+  const availableKinds: MetricKind[] = (() => {
+    if (pickedMetricEntries.length === 0) {
+      return [];
+    }
+    let candidates: MetricKind[] | null = null;
+    for (const entry of pickedMetricEntries) {
+      const kinds = entry.tables
+        .map((t) => KIND_BY_TABLE[t])
+        .filter((k): k is MetricKind => !!k);
+      if (candidates === null) {
+        candidates = kinds;
+      } else {
+        candidates = candidates.filter((k) => kinds.includes(k));
+      }
+    }
+    return candidates ?? [];
+  })();
+
+  const needsKindSelector = availableKinds.length > 1;
+  const autoResolvedKind: MetricKind | null =
+    availableKinds.length === 1 ? availableKinds[0] : null;
+
+  const effectiveMetricKind: MetricKind = query.metricKind ?? autoResolvedKind ?? 'gauge';
 
   const signalNameCol = query.signalType ? signalNameColumn(query.signalType) : null;
 
@@ -235,12 +286,16 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
     onChange({ ...query, groupBy: next });
   };
 
+  const advancedOptions = !!query.advancedOptions;
+
   const generatedSql = useMemo(() => {
     if (!query.signalType || !defaultDatabase) {
       return null;
     }
-    return buildPanelSql({ query, database: defaultDatabase, settings });
-  }, [query, defaultDatabase, settings]);
+    const base = isMetrics ? { ...query, metricKind: effectiveMetricKind } : query;
+    const effectiveQuery = advancedOptions ? base : { ...base, operations: [] };
+    return buildPanelSql({ query: effectiveQuery, database: defaultDatabase, settings });
+  }, [query, defaultDatabase, settings, isMetrics, effectiveMetricKind, advancedOptions]);
 
   useEffect(() => {
     if (!generatedSql || !filtersGateOpen) {
@@ -330,7 +385,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </Alert>
       )}
 
-      {query.signalType && !isLogs && hasServices && hasEnvironments && (
+      {query.signalType && !isLogs && !isMetrics && hasServices && hasEnvironments && (
         <InlineFieldRow>
           <InlineField label={<InlineLabel width={24}>{signalNameCol ?? 'Signal name'}</InlineLabel>} grow>
             <MultiSelect
@@ -351,6 +406,32 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
       {signalNames.error && (
         <Alert severity="error" title="Signal-name discovery failed" elevated>
           {signalNames.error}
+        </Alert>
+      )}
+
+      {isMetrics && hasServices && hasEnvironments && (
+        <InlineFieldRow>
+          <InlineField label={<InlineLabel width={24}>MetricName</InlineLabel>} grow>
+            <MultiSelect
+              width={40}
+              placeholder={metricNames.loading ? 'Loading…' : 'Select MetricName'}
+              options={metricNames.entries.map((e) => ({
+                label: e.name,
+                value: e.name,
+                description: e.tables.length > 1 ? e.tables.join(', ') : undefined,
+              }))}
+              value={toMulti(query.signalNames)}
+              onChange={onSignalNamesChange}
+              allowCustomValue
+              isClearable
+              data-testid="qb-metric-name-select"
+            />
+          </InlineField>
+        </InlineFieldRow>
+      )}
+      {metricNames.error && (
+        <Alert severity="error" title="Metric-name discovery failed" elevated>
+          {metricNames.error}
         </Alert>
       )}
 
@@ -380,14 +461,33 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </div>
       )}
 
-      {filtersGateOpen && isTraces && (
-        <div style={{ marginTop: 12 }}>
-          <OperationsSection
-            signal={query.signalType!}
-            operations={query.operations ?? []}
-            onChange={(operations) => onChange({ ...query, operations })}
-          />
-        </div>
+      {isMetrics && needsKindSelector && (
+        <InlineFieldRow>
+          <InlineField
+            label={<InlineLabel width={24}>Use as</InlineLabel>}
+            tooltip="The selected metric exists in more than one table. Pick which kind to query."
+          >
+            <RadioButtonGroup<MetricKind>
+              options={availableKinds.map((k) => ({
+                label: k === 'gauge' ? 'Gauge' : 'Sum',
+                value: k,
+              }))}
+              value={effectiveMetricKind}
+              onChange={(v) => {
+                if (!v || v === effectiveMetricKind) {
+                  return;
+                }
+                onChange({
+                  ...query,
+                  metricKind: v,
+                  operations: [],
+                  groupBy: [],
+                });
+              }}
+              size="sm"
+            />
+          </InlineField>
+        </InlineFieldRow>
       )}
 
       {filtersGateOpen && (
@@ -436,7 +536,32 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </div>
       )}
 
-      {filtersGateOpen && (isTraces || isLogsTimeseries) && (
+      {filtersGateOpen && (isTraces || isMetrics) && (
+        <InlineFieldRow style={{ marginTop: 12 }}>
+          <InlineField
+            label={<InlineLabel width={24}>Advanced options</InlineLabel>}
+            tooltip="Show the Aggregation picker so you can override the default aggregation."
+          >
+            <InlineSwitch
+              value={advancedOptions}
+              onChange={(e) => onChange({ ...query, advancedOptions: e.currentTarget.checked })}
+            />
+          </InlineField>
+        </InlineFieldRow>
+      )}
+
+      {filtersGateOpen && advancedOptions && (isTraces || isMetrics) && (
+        <div style={{ marginTop: 12 }}>
+          <OperationsSection
+            signal={query.signalType!}
+            metricKind={isMetrics ? effectiveMetricKind : undefined}
+            operations={query.operations ?? []}
+            onChange={(operations) => onChange({ ...query, operations })}
+          />
+        </div>
+      )}
+
+      {filtersGateOpen && (isTraces || isLogsTimeseries || isMetrics) && (
         <div style={{ marginTop: 12 }}>
           <GroupBySection
             signal={query.signalType!}
@@ -471,12 +596,11 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
         </Alert>
       )}
 
-      {isMetrics && (
-        <Alert severity="info" title="Metrics table is chosen per-MetricName" elevated>
-          The MetricName picker scans all four metric tables (sum / gauge / histogram / summary).
-          The final query template will pick the right table based on the selected metric — coming
-          in a follow-up.
-        </Alert>
+      {filtersGateOpen && isMetrics && (query.groupBy?.length ?? 0) === 0 && (
+        <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12, marginTop: 4 }}>
+          No dimensions selected — values are averaged across all attributes. Pick a Group By
+          dimension (e.g. <code>ServiceName</code> or <code>host.name</code>) to split per series.
+        </div>
       )}
 
     </div>

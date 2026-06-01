@@ -9,10 +9,48 @@ import {
 let counter = 0;
 const nextId = () => `op-${Date.now()}-${counter++}`;
 
-export const KIND_OPTIONS: Array<SelectableValue<OperationKind>> = [
+const TRACES_KIND_OPTIONS: Array<SelectableValue<OperationKind>> = [
   { label: 'Count', value: 'count', description: 'count()' },
   { label: 'Percentile', value: 'percentile' },
 ];
+
+const GAUGE_KIND_OPTIONS: Array<SelectableValue<OperationKind>> = [
+  { label: 'Avg', value: 'avg', description: 'avg(Value)' },
+  { label: 'Min', value: 'min', description: 'min(Value)' },
+  { label: 'Max', value: 'max', description: 'max(Value)' },
+  { label: 'Last', value: 'last', description: 'argMax(Value, TimeUnix)' },
+  { label: 'Count', value: 'count', description: 'count() — data points in bucket' },
+];
+
+const SUM_KIND_OPTIONS: Array<SelectableValue<OperationKind>> = [
+  { label: 'Rate', value: 'rate', description: '$rate — per-second' },
+  { label: 'Increase', value: 'increase', description: '$increase — bucket delta (positive)' },
+  { label: 'Sum', value: 'sum', description: 'sum(Value)' },
+  { label: 'Min', value: 'min', description: 'min(Value)' },
+  { label: 'Max', value: 'max', description: 'max(Value)' },
+  { label: 'Avg', value: 'avg', description: 'avg(Value)' },
+  { label: 'Last', value: 'last', description: 'argMax(Value, TimeUnix)' },
+];
+
+export const kindOptionsForSignal = (
+  signal: SignalType,
+  metricKind?: 'gauge' | 'sum'
+): Array<SelectableValue<OperationKind>> => {
+  if (signal === SignalType.Metrics) {
+    return metricKind === 'sum' ? SUM_KIND_OPTIONS : GAUGE_KIND_OPTIONS;
+  }
+  return TRACES_KIND_OPTIONS;
+};
+
+export const defaultKindForSignal = (
+  signal: SignalType,
+  metricKind?: 'gauge' | 'sum'
+): OperationKind => {
+  if (signal === SignalType.Metrics) {
+    return metricKind === 'sum' ? 'rate' : 'avg';
+  }
+  return 'count';
+};
 
 export const UNIT_OPTIONS: Array<SelectableValue<DurationUnit>> = [
   { label: 'ns', value: 'ns' },
@@ -31,7 +69,12 @@ export const PERCENTILE_PRESETS: Array<SelectableValue<number>> = [
 ];
 
 export const kindNeedsColumn = (kind: OperationKind): boolean =>
-  kind === 'min' || kind === 'max' || kind === 'avg' || kind === 'sum' || kind === 'percentile';
+  kind === 'min' ||
+  kind === 'max' ||
+  kind === 'avg' ||
+  kind === 'sum' ||
+  kind === 'last' ||
+  kind === 'percentile';
 
 export const kindNeedsUnit = (kind: OperationKind, column?: string): boolean =>
   kindNeedsColumn(kind) && column === 'Duration';
@@ -46,12 +89,16 @@ export const columnsForSignal = (signal: SignalType): string[] => {
   return [];
 };
 
-export const newOperation = (signal: SignalType): QueryBuilderOperation => {
+export const newOperation = (
+  signal: SignalType,
+  metricKind?: 'gauge' | 'sum'
+): QueryBuilderOperation => {
   const column = columnsForSignal(signal)[0];
+  const kind = defaultKindForSignal(signal, metricKind);
   return {
     id: nextId(),
-    kind: 'count',
-    column,
+    kind,
+    column: kindNeedsColumn(kind) || kind === 'rate' || kind === 'increase' ? column : undefined,
     unit: column === 'Duration' ? 'ns' : undefined,
   };
 };
@@ -69,5 +116,8 @@ export const removeOperation = (
 
 export const appendOperation = (
   ops: QueryBuilderOperation[],
-  signal: SignalType
-): QueryBuilderOperation[] => [...ops, newOperation(signal)];
+  signal: SignalType,
+  metricKind?: 'gauge' | 'sum'
+): QueryBuilderOperation[] => [...ops, newOperation(signal, metricKind)];
+
+export const KIND_OPTIONS = TRACES_KIND_OPTIONS;

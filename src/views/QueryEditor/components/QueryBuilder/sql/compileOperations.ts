@@ -40,6 +40,9 @@ const expr = (op: QueryBuilderOperation): string => {
   if (op.kind === 'count_distinct') {
     return `countDistinct(${col})`;
   }
+  if (op.kind === 'last') {
+    return `argMax(${colExpr}, TimeUnix)`;
+  }
   return `${op.kind}(${colExpr})`;
 };
 

@@ -1,6 +1,7 @@
 import { CHQuery, QueryBuilderSettings, SignalType } from '../../../../../types/types';
 import { buildTracesSql } from './traces';
 import { buildLogsSql } from './logs';
+import { buildMetricsSql } from './metrics';
 
 type Args = {
   query: CHQuery;
@@ -17,6 +18,9 @@ export const buildPanelSql = (args: Args): string | null => {
   }
   if (args.query.signalType === SignalType.Logs) {
     return buildLogsSql(args);
+  }
+  if (args.query.signalType === SignalType.Metrics) {
+    return buildMetricsSql(args);
   }
   return null;
 };

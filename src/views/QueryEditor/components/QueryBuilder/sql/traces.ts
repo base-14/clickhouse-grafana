@@ -40,10 +40,7 @@ export const buildTracesSql = ({ query, database, settings }: Args): string | nu
     selects.push('count() AS count_value');
   }
 
-  const wheres: string[] = [
-    `${timeCol} >= toDateTime64(\${__from:date:seconds}, 3)`,
-    `${timeCol} <= toDateTime64(\${__to:date:seconds}, 3)`,
-  ];
+  const wheres: string[] = ['$timeFilter'];
 
   if ((query.serviceNames ?? []).length > 0) {
     wheres.push(`ServiceName IN (${inList(query.serviceNames!)})`);

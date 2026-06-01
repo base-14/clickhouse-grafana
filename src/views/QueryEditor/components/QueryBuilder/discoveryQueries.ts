@@ -111,9 +111,48 @@ export const buildSignalNameQuery = (
     return `SELECT DISTINCT SpanName FROM ${database}.${settings.tracesTable} WHERE ${timeCol} > now() - INTERVAL ${lookback}${tail} ORDER BY SpanName ASC LIMIT ${limit}`;
   }
 
-  const tables = METRIC_TABLES(settings);
-  const inner = unionSelect(tables, database, 'DISTINCT MetricName AS MetricName', timeCol, lookback, extraWhere);
-  return `SELECT DISTINCT MetricName FROM (\n${inner}\n) ORDER BY MetricName ASC LIMIT ${limit}`;
+  const tail = extraWhere ? ` AND ${extraWhere}` : '';
+  const metricsTable =
+    (deps as DiscoveryDeps & { metricKind?: 'gauge' | 'sum' }).metricKind === 'sum'
+      ? settings.metricsSumTable
+      : settings.metricsGaugeTable;
+  return `SELECT DISTINCT MetricName FROM ${database}.${metricsTable} WHERE ${timeCol} > now() - INTERVAL ${lookback}${tail} ORDER BY MetricName ASC LIMIT ${limit}`;
+};
+
+export const buildMetricNameDiscoveryQuery = (
+  deps: DiscoveryDeps & { serviceNames: string[]; environments: string[] }
+): string => {
+  const { database, settings, lookback, serviceNames, environments } = deps;
+  const limit = settings.autocompleteLimit;
+  const envKey = settings.environmentKey;
+  const tables = [
+    settings.metricsSumTable,
+    settings.metricsGaugeTable,
+    settings.metricsHistogramTable,
+    settings.metricsSummaryTable,
+  ];
+
+  const wheres: string[] = [`TimeUnix > now() - INTERVAL ${lookback}`];
+  if (serviceNames.length > 0) {
+    wheres.push(`ServiceName IN (${inList(serviceNames)})`);
+  }
+  if (environments.length > 0) {
+    wheres.push(`ResourceAttributes[${quote(envKey)}] IN (${inList(environments)})`);
+  }
+  const whereSql = wheres.join(' AND ');
+
+  const branches = tables.map(
+    (t) =>
+      `SELECT DISTINCT MetricName, ${quote(t)} AS TableName FROM ${database}.${t} WHERE ${whereSql}`
+  );
+
+  return [
+    'SELECT MetricName, groupArray(TableName) AS Tables FROM (',
+    branches.join('\nUNION ALL\n'),
+    ') AS all_metrics',
+    'GROUP BY MetricName',
+    `ORDER BY MetricName ASC LIMIT ${limit}`,
+  ].join('\n');
 };
 
 export const signalNameColumn = (signal: SignalType): 'MetricName' | 'SpanName' | null => {

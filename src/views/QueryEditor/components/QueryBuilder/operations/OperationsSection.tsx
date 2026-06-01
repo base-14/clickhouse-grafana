@@ -10,9 +10,9 @@ import {
 import {
   appendOperation,
   columnsForSignal,
-  KIND_OPTIONS,
   kindNeedsColumn,
   kindNeedsUnit,
+  kindOptionsForSignal,
   PERCENTILE_PRESETS,
   removeOperation,
   UNIT_OPTIONS,
@@ -21,6 +21,7 @@ import {
 
 type Props = {
   signal: SignalType;
+  metricKind?: 'gauge' | 'sum';
   operations: QueryBuilderOperation[];
   onChange: (next: QueryBuilderOperation[]) => void;
 };
@@ -30,11 +31,13 @@ const findPreset = (p?: number) =>
 
 const Row = ({
   signal,
+  metricKind,
   op,
   onPatch,
   onRemove,
 }: {
   signal: SignalType;
+  metricKind?: 'gauge' | 'sum';
   op: QueryBuilderOperation;
   onPatch: (patch: Partial<QueryBuilderOperation>) => void;
   onRemove: () => void;
@@ -43,6 +46,7 @@ const Row = ({
   const needsColumn = kindNeedsColumn(op.kind);
   const needsUnit = kindNeedsUnit(op.kind, op.column);
   const isPercentile = op.kind === 'percentile';
+  const KIND_OPTIONS = kindOptionsForSignal(signal, metricKind);
 
   const onKindChange = (item: SelectableValue<OperationKind>) => {
     if (!item?.value) {
@@ -149,7 +153,7 @@ const Row = ({
   );
 };
 
-export const OperationsSection = ({ signal, operations, onChange }: Props) => {
+export const OperationsSection = ({ signal, metricKind, operations, onChange }: Props) => {
   return (
     <div style={{ marginBottom: 12 }}>
       <div
@@ -173,6 +177,7 @@ export const OperationsSection = ({ signal, operations, onChange }: Props) => {
         <Row
           key={op.id}
           signal={signal}
+          metricKind={metricKind}
           op={op}
           onPatch={(patch) => onChange(updateOperation(operations, op.id, patch))}
           onRemove={() => onChange(removeOperation(operations, op.id))}
@@ -182,7 +187,7 @@ export const OperationsSection = ({ signal, operations, onChange }: Props) => {
         size="sm"
         variant="secondary"
         icon="plus"
-        onClick={() => onChange(appendOperation(operations, signal))}
+        onClick={() => onChange(appendOperation(operations, signal, metricKind))}
       >
         Aggregation
       </Button>

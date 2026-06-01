@@ -14,12 +14,9 @@ const RAW_DEFAULT_LIMIT = 200;
 const baseWhere = (
   query: CHQuery,
   settings: QueryBuilderSettings,
-  timeCol: string
+  _timeCol: string
 ): string[] => {
-  const wheres: string[] = [
-    `${timeCol} >= toDateTime(\${__from:date:seconds})`,
-    `${timeCol} <= toDateTime(\${__to:date:seconds})`,
-  ];
+  const wheres: string[] = ['$timeFilter'];
   if ((query.serviceNames ?? []).length > 0) {
     wheres.push(`ServiceName IN (${inList(query.serviceNames!)})`);
   }

@@ -9,7 +9,7 @@ export const buildSignalPresets = (
 ): Record<SignalType, SignalPreset | null> => ({
   [SignalType.Logs]: {
     table: settings.logsTable,
-    dateTimeType: TimestampFormat.DateTime64,
+    dateTimeType: TimestampFormat.DateTime,
     dateTimeColDataType: 'TimestampTime',
     dateColDataType: undefined,
   },
@@ -19,7 +19,12 @@ export const buildSignalPresets = (
     dateTimeColDataType: 'Timestamp',
     dateColDataType: undefined,
   },
-  [SignalType.Metrics]: null,
+  [SignalType.Metrics]: {
+    table: settings.metricsGaugeTable,
+    dateTimeType: TimestampFormat.DateTime64,
+    dateTimeColDataType: 'TimeUnix',
+    dateColDataType: undefined,
+  },
 });
 
 export const SIGNAL_OPTIONS = [

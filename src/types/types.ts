@@ -87,7 +87,12 @@ export type OperationKind =
   | 'max'
   | 'avg'
   | 'sum'
+  | 'last'
+  | 'rate'
+  | 'increase'
   | 'percentile';
+
+export type MetricKind = 'gauge' | 'sum';
 
 export interface QueryBuilderOperation {
   id: string;
@@ -127,6 +132,8 @@ export interface CHQuery extends DataQuery {
   operations?: QueryBuilderOperation[];
   groupBy?: QueryBuilderGroupBy[];
   logsMode?: 'raw' | 'timeseries';
+  metricKind?: MetricKind;
+  advancedOptions?: boolean;
 
   skip_comments?: boolean;
   add_metadata?: boolean;

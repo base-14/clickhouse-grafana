@@ -1,9 +1,8 @@
 import React from 'react';
-import { Button, IconButton, RadioButtonGroup } from '@grafana/ui';
+import { Button, IconButton } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import {
   FilterCondition,
-  FilterConnector,
   FilterGroup,
   FilterNode,
   SignalType,
@@ -27,12 +26,36 @@ type Props = {
   depth: number;
 };
 
-const CONNECTOR_OPTIONS: Array<SelectableValue<FilterConnector>> = [
-  { label: 'AND', value: 'AND' },
-  { label: 'OR', value: 'OR' },
-];
-
 const valueKey = (scope: FilterCondition['scope'], key: string) => `${scope}::${key}`;
+
+const ConnectorChip = ({
+  connector,
+  onToggle,
+}: {
+  connector: 'AND' | 'OR';
+  onToggle: () => void;
+}) => (
+  <div style={{ display: 'flex', alignItems: 'center', margin: '2px 0 2px 8px' }}>
+    <button
+      type="button"
+      onClick={onToggle}
+      style={{
+        background: 'rgba(110, 159, 255, 0.12)',
+        color: '#6e9fff',
+        border: '1px solid rgba(110, 159, 255, 0.35)',
+        borderRadius: 10,
+        padding: '1px 10px',
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: 0.5,
+        cursor: 'pointer',
+      }}
+      title="Click to toggle AND / OR"
+    >
+      {connector}
+    </button>
+  </div>
+);
 
 export const FilterGroupView = ({
   group,
@@ -56,66 +79,35 @@ export const FilterGroupView = ({
     onAddChild(group.id, cond);
   };
 
-  const addGroup = () => {
+  const addSubgroup = () => {
     onAddChild(group.id, makeGroup(oppositeConnector(group.connector)));
   };
 
-  return (
-    <div
-      style={{
-        border: '1px solid rgba(110, 159, 255, 0.25)',
-        borderRadius: 4,
-        padding: 8,
-        marginBottom: 6,
-        marginLeft: isRoot ? 0 : 8,
-        background: isRoot ? 'transparent' : 'rgba(110, 159, 255, 0.04)',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6, gap: 8 }}>
-        <RadioButtonGroup<FilterConnector>
-          size="sm"
-          options={CONNECTOR_OPTIONS}
-          value={group.connector}
-          onChange={() => onToggleConnector(group.id)}
-        />
-        {!isRoot && (
-          <IconButton name="trash-alt" aria-label="Remove group" onClick={() => onRemoveChild(group.id)} />
-        )}
-        {depth >= 5 && (
-          <span style={{ color: '#e09f3e', fontSize: 11 }}>
-            deep nesting — consider flattening
-          </span>
-        )}
-      </div>
+  const children = group.children;
+  const hasChildren = children.length > 0;
+  const hasMultiple = children.length > 1;
 
-      {group.children.length === 0 && (
-        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginBottom: 6 }}>
-          empty group
-        </div>
-      )}
-
-      {group.children.map((child) => {
-        if (isGroup(child)) {
-          return (
-            <FilterGroupView
-              key={child.id}
-              group={child}
-              isRoot={false}
-              signal={signal}
-              discoveredKeys={discoveredKeys}
-              loadingKeys={loadingKeys}
-              valueCache={valueCache}
-              fetchValues={fetchValues}
-              onToggleConnector={onToggleConnector}
-              onAddChild={onAddChild}
-              onRemoveChild={onRemoveChild}
-              onUpdateCondition={onUpdateCondition}
-              depth={depth + 1}
-            />
-          );
-        }
-        const cached = valueCache.get(valueKey(child.scope, child.key));
-        return (
+  const body = (
+    <>
+      {children.map((child, idx) => {
+        const isLast = idx === children.length - 1;
+        const nodeView = isGroup(child) ? (
+          <FilterGroupView
+            key={child.id}
+            group={child}
+            isRoot={false}
+            signal={signal}
+            discoveredKeys={discoveredKeys}
+            loadingKeys={loadingKeys}
+            valueCache={valueCache}
+            fetchValues={fetchValues}
+            onToggleConnector={onToggleConnector}
+            onAddChild={onAddChild}
+            onRemoveChild={onRemoveChild}
+            onUpdateCondition={onUpdateCondition}
+            depth={depth + 1}
+          />
+        ) : (
           <FilterConditionRow
             key={child.id}
             condition={child}
@@ -123,22 +115,89 @@ export const FilterGroupView = ({
             discoveredKeys={discoveredKeys}
             loadingKeys={loadingKeys}
             fetchValues={fetchValues}
-            values={cached?.options ?? []}
-            loadingValues={cached?.loading ?? false}
+            values={valueCache.get(valueKey(child.scope, child.key))?.options ?? []}
+            loadingValues={valueCache.get(valueKey(child.scope, child.key))?.loading ?? false}
             onChange={(patch) => onUpdateCondition(child.id, patch)}
             onRemove={() => onRemoveChild(child.id)}
           />
         );
+        return (
+          <React.Fragment key={child.id}>
+            {nodeView}
+            {!isLast && hasMultiple && (
+              <ConnectorChip
+                connector={group.connector}
+                onToggle={() => onToggleConnector(group.id)}
+              />
+            )}
+          </React.Fragment>
+        );
       })}
 
-      <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: hasChildren ? 6 : 0 }}>
         <Button size="sm" variant="secondary" icon="plus" onClick={addCondition}>
-          Condition
+          Add filter
         </Button>
-        <Button size="sm" variant="secondary" icon="plus" onClick={addGroup}>
-          Group
-        </Button>
+        {hasChildren && (
+          <>
+            <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, padding: '0 4px' }}>·</span>
+            <Button size="sm" variant="secondary" fill="text" icon="plus" onClick={addSubgroup}>
+              Subgroup
+            </Button>
+          </>
+        )}
+        {depth >= 5 && (
+          <span style={{ color: '#e09f3e', fontSize: 11, marginLeft: 8 }}>
+            deep nesting — consider flattening
+          </span>
+        )}
       </div>
+    </>
+  );
+
+  if (isRoot) {
+    return <div>{body}</div>;
+  }
+
+  return (
+    <div
+      style={{
+        border: '1px solid rgba(110, 159, 255, 0.3)',
+        borderRadius: 4,
+        padding: 8,
+        marginTop: 4,
+        background: 'rgba(110, 159, 255, 0.04)',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 6,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => onToggleConnector(group.id)}
+          style={{
+            background: 'rgba(110, 159, 255, 0.12)',
+            color: '#6e9fff',
+            border: '1px solid rgba(110, 159, 255, 0.35)',
+            borderRadius: 10,
+            padding: '1px 12px',
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: 0.5,
+            cursor: 'pointer',
+          }}
+          title="Click to toggle AND / OR"
+        >
+          {group.connector}
+        </button>
+        <IconButton name="trash-alt" aria-label="Remove group" onClick={() => onRemoveChild(group.id)} />
+      </div>
+      {body}
     </div>
   );
 };
