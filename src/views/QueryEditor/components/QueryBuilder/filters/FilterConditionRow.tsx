@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { IconButton, Input, MultiSelect, Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
+import { useTemplateVariables } from '../hooks/useTemplateVariables';
 import {
   DurationUnit,
   FilterCondition,
@@ -49,6 +50,7 @@ export const FilterConditionRow = ({
     () => discoveredKeys.map((d) => ({ label: d.key, value: d.key })),
     [discoveredKeys]
   );
+  const tplVars = useTemplateVariables();
   const operators = opOptions(condition.type, condition.scope);
   const isDuration = condition.scope === 'column' && condition.key === 'Duration';
   const takesValues = opTakesValues(condition.op);
@@ -139,7 +141,7 @@ export const FilterConditionRow = ({
         <MultiSelect<string>
           width={40}
           placeholder={loadingValues ? 'Loading values…' : 'values'}
-          options={values}
+          options={[...values, ...tplVars]}
           value={toMulti(condition.values)}
           onChange={onMultiValueChange}
           onOpenMenu={onValueMenuOpen}

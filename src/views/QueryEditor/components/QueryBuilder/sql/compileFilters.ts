@@ -5,7 +5,9 @@ import {
   FilterOp,
   SignalType,
 } from '../../../../../types/types';
-import { accessExpr, inList, mapColumnForScope, quote } from './util';
+import { accessExpr, formatValue, inList, mapColumnForScope, quote } from './util';
+
+const isVariableRef = (raw: string): boolean => /^\$\{?\w+/.test(raw.trim());
 
 const NANO_PER: Record<string, number> = {
   ns: 1,
@@ -15,6 +17,9 @@ const NANO_PER: Record<string, number> = {
 };
 
 const toStorageNumber = (cond: FilterCondition, raw: string): string => {
+  if (isVariableRef(raw)) {
+    return formatValue(raw);
+  }
   if (cond.key === 'Duration' && cond.unit && NANO_PER[cond.unit]) {
     const n = Number(raw);
     if (Number.isFinite(n)) {
@@ -51,12 +56,12 @@ const compileCondition = (cond: FilterCondition, signal: SignalType): string | n
       if (cond.type === 'number') {
         return `${access} = ${toStorageNumber(cond, v0)}`;
       }
-      return `${access} = ${quote(v0)}`;
+      return `${access} = ${formatValue(v0)}`;
     case 'neq':
       if (cond.type === 'number') {
         return `${access} != ${toStorageNumber(cond, v0)}`;
       }
-      return `${access} != ${quote(v0)}`;
+      return `${access} != ${formatValue(v0)}`;
     case 'in':
       if (cond.type === 'number') {
         return `${access} IN (${cond.values.map((v) => toStorageNumber(cond, v)).join(', ')})`;
@@ -68,13 +73,13 @@ const compileCondition = (cond: FilterCondition, signal: SignalType): string | n
       }
       return `${access} NOT IN (${inList(cond.values)})`;
     case 'like':
-      return `${access} LIKE ${quote(v0)}`;
+      return `${access} LIKE ${formatValue(v0)}`;
     case 'nlike':
-      return `${access} NOT LIKE ${quote(v0)}`;
+      return `${access} NOT LIKE ${formatValue(v0)}`;
     case 'regex':
-      return `match(${access}, ${quote(v0)})`;
+      return `match(${access}, ${formatValue(v0)})`;
     case 'nregex':
-      return `NOT match(${access}, ${quote(v0)})`;
+      return `NOT match(${access}, ${formatValue(v0)})`;
     case 'lt':
       return `${access} < ${toStorageNumber(cond, v0)}`;
     case 'lte':

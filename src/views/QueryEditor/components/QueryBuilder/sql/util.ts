@@ -1,7 +1,35 @@
 import { FilterScope, SignalType } from '../../../../../types/types';
 
 export const quote = (v: string): string => `'${v.replace(/'/g, "''")}'`;
-export const inList = (vs: string[]): string => vs.map(quote).join(', ');
+
+const BUILTIN_VAR_RE = /^\$\{?__\w+/;
+const VAR_WITH_FMT_RE = /^\$\{(\w+):[^}]+\}$/;
+const VAR_BRACED_RE = /^\$\{(\w+)\}$/;
+const VAR_BARE_RE = /^\$(\w+)$/;
+
+export const formatValue = (raw: string): string => {
+  const v = raw.trim();
+  if (!v) {
+    return quote(raw);
+  }
+  if (BUILTIN_VAR_RE.test(v)) {
+    return v;
+  }
+  if (VAR_WITH_FMT_RE.test(v)) {
+    return v;
+  }
+  const braced = v.match(VAR_BRACED_RE);
+  if (braced) {
+    return `\${${braced[1]}:singlequote}`;
+  }
+  const bare = v.match(VAR_BARE_RE);
+  if (bare) {
+    return `\${${bare[1]}:singlequote}`;
+  }
+  return quote(raw);
+};
+
+export const inList = (vs: string[]): string => vs.map(formatValue).join(', ');
 
 export const mapColumnForScope = (signal: SignalType, scope: FilterScope): string | null => {
   if (scope === 'resource') {

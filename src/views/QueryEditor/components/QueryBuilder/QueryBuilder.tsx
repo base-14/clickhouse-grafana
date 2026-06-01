@@ -23,6 +23,7 @@ import {
 } from './discoveryQueries';
 import { useMetricNameDiscovery } from './hooks/useMetricNameDiscovery';
 import { useSummaryQuantilesDiscovery } from './hooks/useSummaryQuantilesDiscovery';
+import { useTemplateVariables } from './hooks/useTemplateVariables';
 import { effectiveSignalNames } from './presets';
 import { computeEffectiveLookbackSeconds, formatLookback, useDiscovery } from './hooks/useDiscovery';
 import { useKeyDiscovery, useValueDiscovery } from './hooks/useFilterDiscovery';
@@ -93,6 +94,7 @@ const fromMulti = (items: Array<SelectableValue<string>>): string[] =>
 export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilderProps) => {
   const defaultDatabase = datasource?.defaultDatabase || '';
   const settings = datasource.queryBuilder;
+  const tplVars = useTemplateVariables();
 
   const lookbackSeconds = useMemo(
     () => computeEffectiveLookbackSeconds(settings.maxTimerange, range),
@@ -410,7 +412,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
             <MultiSelect
               width={40}
               placeholder={services.loading ? 'Loading…' : 'Select services'}
-              options={services.options}
+              options={[...services.options, ...tplVars]}
               value={toMulti(query.serviceNames)}
               onChange={onServiceNamesChange}
               allowCustomValue
@@ -430,7 +432,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
             <MultiSelect
               width={40}
               placeholder={environments.loading ? 'Loading…' : `${settings.environmentKey}`}
-              options={[{ label: 'All', value: ENVIRONMENT_ALL }, ...environments.options]}
+              options={[{ label: 'All', value: ENVIRONMENT_ALL }, ...environments.options, ...tplVars]}
               value={toMulti(query.environments).map((v) =>
                 v.value === ENVIRONMENT_ALL ? { label: 'All', value: ENVIRONMENT_ALL } : v
               )}
@@ -452,7 +454,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
             <MultiSelect
               width={40}
               placeholder={signalNames.loading ? 'Loading…' : `Select ${signalNameCol ?? 'name'}`}
-              options={[{ label: 'All', value: SIGNAL_NAME_ALL }, ...signalNames.options]}
+              options={[{ label: 'All', value: SIGNAL_NAME_ALL }, ...signalNames.options, ...tplVars]}
               value={toMulti(query.signalNames).map((v) =>
                 v.value === SIGNAL_NAME_ALL ? { label: 'All', value: SIGNAL_NAME_ALL } : v
               )}
@@ -481,6 +483,7 @@ export const QueryBuilder = ({ query, datasource, onChange, range }: QueryBuilde
                   value: e.name,
                   description: e.tables.length > 1 ? e.tables.join(', ') : undefined,
                 })),
+                ...tplVars,
               ]}
               value={toMulti(query.signalNames).map((v) =>
                 v.value === SIGNAL_NAME_ALL ? { label: 'All', value: SIGNAL_NAME_ALL } : v
