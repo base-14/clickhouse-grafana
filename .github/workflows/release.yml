@@ -11,8 +11,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    env:
-      GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -47,10 +45,6 @@ jobs:
         with:
           version: latest
           args: buildAll
-
-      - name: Sign plugin (if token present)
-        if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN != '' }}
-        run: npx --yes @grafana/sign-plugin@latest
 
       - name: Read plugin metadata
         id: metadata
